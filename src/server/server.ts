@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import socketIO, { Server as SocketIOServer } from "socket.io";
 import { createServer, Server as HTTPServer } from "http";
+import path from "path";
 
 export class Server {
   private httpServer: HTTPServer;
@@ -10,22 +11,22 @@ export class Server {
 
   private readonly DEFAULT_PORT = 5000;
 
-  constructor() {
-    this.initialize();
+  constructor(app: Application) {
+    this.initialize(app);
 
     this.handleRoutes();
     this.handleSocketConnection();
   }
 
-  private initialize(): void {
-    this.app = express();
+  private initialize(app: Application): void {
+    this.app = app;
     this.httpServer = createServer(this.app);
     this.io = socketIO(this.httpServer);
   }
 
   private handleRoutes(): void {
     this.app.get("/", (req, res) => {
-      res.sendFile(__dirname + "/index.html");
+      res.sendFile(path.join(__dirname + "index.html"));
     });
   }
 
