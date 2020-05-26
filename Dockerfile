@@ -15,8 +15,5 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-RUN npm run build
-WORKDIR ./dist
-
-EXPOSE 5000
-CMD node src/index.js
+EXPOSE 8080
+CMD ["npm", "start"]
