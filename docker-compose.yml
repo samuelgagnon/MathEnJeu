@@ -1,8 +1,10 @@
-version: "3"
+version: "2"
 services:
   app:
     build: .
-    volumes:
-      - .:/usr/src/MathEnJeu
+    #Doesn't seem to work with docker toolkit (legacy) for windows
+    #Would be implemented to rebuild on change for developpement
+    #volumes:
+    #  - .:/usr/src/MathEnJeu
     ports:
       - "8080:8080"
