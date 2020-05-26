@@ -9,7 +9,7 @@ export class Server {
   private io: SocketIOServer;
   private activeSockets: string[] = [];
 
-  private readonly DEFAULT_PORT = 5000;
+  private readonly DEFAULT_PORT = 8080;
 
   constructor(app: Application) {
     this.initialize(app);
@@ -26,7 +26,8 @@ export class Server {
 
   private handleRoutes(): void {
     this.app.get("/", (req, res) => {
-      res.sendFile(path.join(__dirname + "index.html"));
+      //res.sendFile(path.join(__dirname, "../", "/client/index.html"));
+      res.send({ object: "test" });
     });
   }
 
