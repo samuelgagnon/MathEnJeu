@@ -17,7 +17,7 @@ npm run start
 ### Compiles and run for docker
 
 ```
-- docker build -t math-en-jeu .
+- docker-compose build
 
-- docker run -p 8080:8080 math-en-jeu
+- docker-compose up
 ```
