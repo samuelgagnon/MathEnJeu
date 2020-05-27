@@ -8,13 +8,13 @@ Jeu multijoueur où on répond à des questions mathématiques pour progresser.
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Compiles and hot-reloads for development (works on port 8080)
 
 ```
 npm run dev
 ```
 
-### Compiles and run for docker (not working currently)
+### Compiles and run for docker (works on port 8080)
 
 ```
 - docker-compose build
