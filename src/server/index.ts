@@ -1,8 +1,11 @@
-import { Server } from "./server/server";
+import { Server } from "./server";
 import express, { Application } from "express";
+import path from "path";
 
 const app = express();
-app.use(express.static(__dirname + "/client"));
+
+// /static is used to define the root folder when webpack bundles
+app.use("/static", express.static(path.join(__dirname, "../")));
 
 const server = new Server(app);
 

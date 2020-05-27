@@ -26,8 +26,8 @@ export class Server {
 
   private handleRoutes(): void {
     this.app.get("/", (req, res) => {
-      //res.sendFile(path.join(__dirname, "../", "/client/index.html"));
-      res.send({ object: "test" });
+      res.sendFile(path.join(__dirname, "../", "/client/index.html"));
+      //res.send({ object: "test" });
     });
   }
 
