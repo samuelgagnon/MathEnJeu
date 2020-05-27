@@ -1,7 +1,6 @@
-import { physicsTest } from "./../physics/physics";
+import "phaser";
+import Game from "./game";
 
-const test = (input: string): void => {
-  console.log(input);
-};
-test("test");
-physicsTest();
+window.addEventListener("load", () => {
+  let game = new Game();
+});
