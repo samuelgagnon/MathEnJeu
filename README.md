@@ -11,10 +11,10 @@ npm install
 ### Compiles and hot-reloads for development
 
 ```
-npm run start
+npm run dev
 ```
 
-### Compiles and run for docker
+### Compiles and run for docker (not working currently)
 
 ```
 - docker-compose build
