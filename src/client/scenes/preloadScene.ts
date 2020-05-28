@@ -8,5 +8,9 @@ export default class PreloadScene extends Phaser.Scene {
 		this.load.image("starfield", "assets/starfield.jpg");
 	}
 
-	create() {}
+	create() {
+		let starfield = this.add
+			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), "starfield")
+			.setOrigin(0);
+	}
 }
