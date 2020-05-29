@@ -1,9 +1,11 @@
+import IsoPlugin from "phaser3-plugin-isometric";
+import MainScene from "./scenes/mainScene";
 import PreloadScene from "./scenes/preloadScene";
 
 const DEFAULT_WIDTH = 1280;
 const DEFAULT_HEIGHT = 720;
 
-const config = {
+const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
 	backgroundColor: "#FFFFFF",
 	scale: {
@@ -12,6 +14,15 @@ const config = {
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 	},
-	scene: [PreloadScene],
+	scene: [PreloadScene, MainScene],
+	plugins: {
+		scene: [
+			{
+				key: "IsoPlugin",
+				plugin: IsoPlugin,
+				mapping: "iso",
+			},
+		],
+	},
 };
 export default config;
