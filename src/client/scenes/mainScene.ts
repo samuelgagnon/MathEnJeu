@@ -28,7 +28,7 @@ export default class MainScene extends Phaser.Scene {
 					tile.isoZ += 5;
 				});
 
-				tile.on("pointerout", function () {
+				tile.on("pointerout", () => {
 					tile.clearTint();
 					tile.isoZ -= 5;
 				});
