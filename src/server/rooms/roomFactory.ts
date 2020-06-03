@@ -1,6 +1,7 @@
 import { Server as SocketIOServer } from "socket.io";
 import { RaceRoom } from "./raceRoom";
 import Room from "./room";
+import RoomType from "./roomType";
 
 export default class RoomFactory {
 	public static create(type: RoomType, roomId: string, socketServer: SocketIOServer): Room {

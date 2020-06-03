@@ -1,4 +1,4 @@
-export default class Player {
+export default class PlayerCharacter {
 	name: string;
 	points: number;
 	position: {
