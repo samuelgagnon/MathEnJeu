@@ -1,12 +1,13 @@
+import { CST } from "./../CST";
 export default class MainScene extends Phaser.Scene {
 	constructor() {
-		const sceneConfig = { key: "MainScene", mapAdd: { isoPlugin: "iso" } };
+		const sceneConfig = { key: CST.SCENES.MAIN, mapAdd: { isoPlugin: "iso" } };
 		super(sceneConfig);
 	}
 
 	create() {
 		let starfield = this.add
-			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), "starfield")
+			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
 			.setOrigin(0);
 
 		//@ts-ignore
@@ -20,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
 		for (var xx = 0; xx < 256; xx += 38) {
 			for (var yy = 0; yy < 256; yy += 38) {
 				//@ts-ignore
-				let tile = this.add.isoSprite(xx, yy, 0, "tile", this.isoGroup);
+				let tile = this.add.isoSprite(xx, yy, 0, CST.IMAGES.TILE, this.isoGroup);
 				tile.setInteractive();
 
 				tile.on("pointerover", () => {
