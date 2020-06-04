@@ -6,7 +6,5 @@ export default class CreateRoom extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	create() {
-		this.scene.start(CST.SCENES.MENU);
-	}
+	create() {}
 }
