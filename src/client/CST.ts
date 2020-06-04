@@ -1,8 +1,10 @@
 export const CST = {
 	SCENES: {
-		LOAD: "Load",
-		MENU: "Menu",
-		MAIN: "MainScene",
+		LOAD: "loadScene",
+		MENU: "menuScene",
+		MAIN: "mainScene",
+		CREATE_ROOM: "createRoomScene",
+		ROOM_SELECTION: "roomSelectionScene",
 	},
 	IMAGES: {
 		BACKGROUD: "starfield.jpg",

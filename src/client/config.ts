@@ -2,6 +2,7 @@ import IsoPlugin from "phaser3-plugin-isometric";
 import LoadScene from "./scenes/loadScene";
 import MainScene from "./scenes/mainScene";
 import MenuScene from "./scenes/menuScene";
+import RoomSelection from "./scenes/roomSelection";
 
 const DEFAULT_WIDTH = 1280;
 const DEFAULT_HEIGHT = 720;
@@ -15,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 	},
-	scene: [LoadScene, MenuScene, MainScene],
+	scene: [LoadScene, MenuScene, MainScene, RoomSelection],
 	plugins: {
 		scene: [
 			{
