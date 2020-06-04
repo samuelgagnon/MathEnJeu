@@ -3,7 +3,6 @@ export const CST = {
 		LOAD: "Load",
 		MENU: "Menu",
 		MAIN: "MainScene",
-		PRELOAD: "PreloadScene",
 	},
 	IMAGES: {
 		BACKGROUD: "starfield.jpg",
