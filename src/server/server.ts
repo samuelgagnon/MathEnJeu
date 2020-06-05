@@ -12,6 +12,7 @@ export class Server {
 	private app: Application;
 	private io: SocketIOServer;
 	private rooms = new Map<string, Room>();
+	private updateLoopTimestep: number = 45;
 
 	private readonly DEFAULT_PORT = 8080;
 
@@ -37,9 +38,6 @@ export class Server {
 	private handleSocketEvents(): void {
 		this.io.on("connection", (socket) => {
 			console.log("connection");
-			socket.on("user-data-updated", () => {
-				console.log("server class pinged");
-			});
 
 			socket.on("join-room", (request) => {
 				this.rooms.get(request.roomId).joinRoom(socket);
@@ -80,5 +78,12 @@ export class Server {
 		if (room.isRoomEmtpty()) {
 			this.rooms.delete(roomdId);
 		}
+	}
+
+	public updateTest() {
+		setTimeout(() => {
+			this.io.emit("update");
+			this.updateTest();
+		}, this.updateLoopTimestep);
 	}
 }

@@ -5,6 +5,7 @@ export const CST = {
 		MAIN: "mainScene",
 		CREATE_ROOM: "createRoomScene",
 		ROOM_SELECTION: "roomSelectionScene",
+		WAITING_ROOM: "waitingRoomScene",
 	},
 	IMAGES: {
 		BACKGROUD: "starfield.jpg",
