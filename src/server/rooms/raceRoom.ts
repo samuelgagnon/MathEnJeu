@@ -15,6 +15,7 @@ export class RaceRoom implements Room {
 		this.io = socketServer;
 		this.roomString = `room-${this.id}`;
 	}
+
 	public getRoomId(): string {
 		return this.id;
 	}
@@ -38,10 +39,12 @@ export class RaceRoom implements Room {
 	}
 
 	public handleSocketEvents(clientSocket: Socket): void {
-		this.io.sockets.in(this.roomString).emit("user-joined");
+		clientSocket.on("race-client-room-update", (req) => {
+			clientSocket.emit("race-client-room-update", { test: "test" });
+		});
 	}
 
 	private removeListeners(clientSocket: Socket) {
-		clientSocket.removeAllListeners("test");
+		clientSocket.removeAllListeners("race-client-room-update");
 	}
 }

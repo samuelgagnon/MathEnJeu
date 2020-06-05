@@ -34,7 +34,7 @@ export default class MenuScene extends Phaser.Scene {
 
 		playButton.on("pointerup", () => {
 			playButton.clearTint();
-			this.scene.start(CST.SCENES.MAIN);
+			this.scene.start(CST.SCENES.ROOM_SELECTION);
 		});
 	}
 }
