@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 
-interface Room {
+interface RoomInterface {
 	getRoomId(): string;
 	joinRoom(clientSocket: Socket): void;
 	leaveRoom(clientSocket: Socket): void;
@@ -8,4 +8,4 @@ interface Room {
 	handleSocketEvents(clientSocket: Socket): void;
 }
 
-export default Room;
+export default RoomInterface;

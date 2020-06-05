@@ -1,7 +1,7 @@
-import config from "./config";
+import gameConfig from "./gameConfig";
 
 export default class Game extends Phaser.Game {
 	constructor() {
-		super(config);
+		super(gameConfig);
 	}
 }

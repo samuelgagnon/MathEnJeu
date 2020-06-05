@@ -9,7 +9,7 @@ import WaitingRoomScene from "./scenes/waitingRoomScene";
 const DEFAULT_WIDTH = 1280;
 const DEFAULT_HEIGHT = 720;
 
-const config: Phaser.Types.Core.GameConfig = {
+const gameConfig: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
 	backgroundColor: "#FFFFFF",
 	scale: {
@@ -34,4 +34,4 @@ const config: Phaser.Types.Core.GameConfig = {
 		],
 	},
 };
-export default config;
+export default gameConfig;

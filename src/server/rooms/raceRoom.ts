@@ -1,9 +1,9 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import RaceGame from "../../GameCore/GameModes/RaceGame";
-import User from "../user";
-import Room from "./room";
+import User from "../data/user";
+import RoomInterface from "./roomInterface";
 
-export class RaceRoom implements Room {
+export class RaceRoom implements RoomInterface {
 	private id: string;
 	private io: SocketIOServer;
 	private roomString: string;

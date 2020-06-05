@@ -1,4 +1,5 @@
 import { CST } from "../CST";
+import { pingServerRace } from "../services/roomService";
 
 export default class MenuScene extends Phaser.Scene {
 	constructor() {
@@ -7,6 +8,8 @@ export default class MenuScene extends Phaser.Scene {
 	}
 
 	create() {
+		const socketRace = pingServerRace();
+
 		this.add
 			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
 			.setOrigin(0)
