@@ -1,11 +1,9 @@
 import { Application } from "express";
-import { createServer, Server as HTTPServer } from "http";
+import { Server as HTTPServer } from "http";
 import path from "path";
-import socketIO, { Server as SocketIOServer, Socket } from "socket.io";
-import { v4 as uuidv4 } from "uuid";
+import { Server as SocketIOServer } from "socket.io";
+import RoomRepository from "./data/roomRepository";
 import Room from "./rooms/room";
-import RoomFactory from "./rooms/roomFactory";
-import RoomType from "./rooms/roomType";
 
 export class Server {
 	private httpServer: HTTPServer;
@@ -13,25 +11,27 @@ export class Server {
 	private io: SocketIOServer;
 	private rooms = new Map<string, Room>();
 	private updateLoopTimestep: number = 45;
+	private roomRepo: RoomRepository;
 
 	private readonly DEFAULT_PORT = 8080;
 
-	constructor(app: Application) {
-		this.initialize(app);
+	constructor(app: Application, httpServer: HTTPServer, io: SocketIOServer, roomRepo: RoomRepository) {
+		this.app = app;
+		this.httpServer = httpServer;
+		this.io = io;
+		this.roomRepo = roomRepo;
 
 		this.handleRoutes();
 		this.handleSocketEvents();
 	}
 
-	private initialize(app: Application): void {
-		this.app = app;
-		this.httpServer = createServer(this.app);
-		this.io = socketIO(this.httpServer);
-	}
-
 	private handleRoutes(): void {
 		this.app.get("/", (req, res) => {
 			res.sendFile(path.join(__dirname, "../", "/client/index.html"));
+		});
+
+		this.app.get("rooms", (req, res) => {
+			res.send(this.roomRepo.getAllRooms());
 		});
 	}
 
@@ -39,45 +39,14 @@ export class Server {
 		this.io.on("connection", (socket) => {
 			console.log("connection");
 
-			socket.on("join-room", (request) => {
-				this.rooms.get(request.roomId).joinRoom(socket);
-			});
-
-			socket.on("create-room", (request) => {
-				let newRoom = this.createRoom(RoomType[request.roomType]);
-				this.rooms.set(newRoom.getRoomId(), newRoom);
-
-				newRoom.joinRoom(socket);
-			});
-
 			socket.on("disconnect", () => {
 				console.log("Disconnection");
-				console.log(socket.rooms);
-				if (Object.getOwnPropertyNames(socket.rooms).length > 0) {
-					this.removeUserFromRoom("", socket);
-					socket.leaveAll();
-					console.log(socket.rooms);
-				}
 			});
 		});
 	}
 
 	public listen(callback: (port: number) => void): void {
 		this.httpServer.listen(this.DEFAULT_PORT, () => callback(this.DEFAULT_PORT));
-	}
-
-	private createRoom(roomType: RoomType): Room {
-		const roomId: string = uuidv4();
-		let newRoom: Room = RoomFactory.create(roomType, roomId, this.io);
-		return newRoom;
-	}
-
-	private removeUserFromRoom(roomdId: string, clientSocket: Socket): void {
-		const room = this.rooms.get(roomdId);
-		room.leaveRoom(clientSocket);
-		if (room.isRoomEmtpty()) {
-			this.rooms.delete(roomdId);
-		}
 	}
 
 	public updateTest() {

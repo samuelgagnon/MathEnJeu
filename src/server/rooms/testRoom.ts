@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import User from "../data/user";
 import Room from "./room";
 
-export class RaceRoom implements Room {
+export class TestRoom implements Room {
 	private id: string;
 	private nsp: SocketIO.Namespace;
 	private roomString: string;

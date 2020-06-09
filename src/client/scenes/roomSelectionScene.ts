@@ -1,14 +1,19 @@
 import { CST } from "../CST";
+import { createRoom, joinRoom } from "./../services/roomService";
 
 export default class RoomSelection extends Phaser.Scene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private joinRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
 
+	private socket: SocketIOClient.Socket;
+
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.ROOM_SELECTION };
 		super(sceneConfig);
 	}
+
+	init() {}
 
 	preload() {}
 
@@ -60,6 +65,7 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
+			createRoom("asdasd");
 			this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 
@@ -77,6 +83,7 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
+			joinRoom("123123");
 			this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 

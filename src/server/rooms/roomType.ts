@@ -1,7 +1,7 @@
 enum RoomType {
 	RaceRoom = "RaceRoom",
+	TestRoom = "TestRoom",
 	ClassicRoom = "ClassicRoom",
-	QnARoom = "QnARoom",
 }
 
 export default RoomType;
