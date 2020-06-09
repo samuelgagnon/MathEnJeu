@@ -1,10 +1,11 @@
 import { CST } from "../CST";
-import { createRoom, joinRoom } from "./../services/roomService";
+import { createRoom, joinRoom } from "../services/roomService";
 
 export default class RoomSelection extends Phaser.Scene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private joinRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
+	private htmlElement: Phaser.GameObjects.DOMElement;
 
 	private socket: SocketIOClient.Socket;
 
@@ -15,15 +16,28 @@ export default class RoomSelection extends Phaser.Scene {
 
 	init() {}
 
-	preload() {}
+	preload() {
+		this.load.setBaseURL("static/client/");
+		this.load.html("htmlTest", "/scenes/htmlElements/playerInput.html");
+	}
 
 	create() {
+		//let text = this.add.text(300, 300, "Enter room number", { color: "white", fontSize: "20px" });
+
+		//let element = this.add.dom()
+
+		this.htmlElement = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache("htmlTest");
+
+		// this.htmlElement = this.add
+		// 	.dom(600, this.game.renderer.height * 0.5)
+		// 	.createFromHTML('<input type="text" name="roomField" placeholder="Enter room id" style="font-size: 32px">');
+
 		this.add
 			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
 			.setOrigin(0)
 			.setDepth(0);
 
-		this.createRoomButton = this.add.text(10, this.game.renderer.height * 0.2, "Create Room", {
+		this.createRoomButton = this.add.text(385, this.game.renderer.height * 0.2, "Create Room", {
 			fontFamily: "Courier",
 			fontSize: "64px",
 			align: "center",
@@ -31,7 +45,7 @@ export default class RoomSelection extends Phaser.Scene {
 			fontStyle: "bold",
 		});
 
-		this.joinRoomButton = this.add.text(10, this.game.renderer.height * 0.4, "Join Room", {
+		this.joinRoomButton = this.add.text(385, this.game.renderer.height * 0.6, "Join Room", {
 			fontFamily: "Courier",
 			fontSize: "64px",
 			align: "center",
@@ -83,7 +97,8 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
-			joinRoom("123123");
+			const roomId = (<HTMLInputElement>this.htmlElement.getChildByName("roomField")).value;
+			joinRoom(roomId);
 			this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 

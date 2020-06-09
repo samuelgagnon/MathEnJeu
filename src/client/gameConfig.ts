@@ -33,5 +33,8 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 			},
 		],
 	},
+	dom: {
+		createContainer: true,
+	},
 };
 export default gameConfig;
