@@ -5,11 +5,23 @@ export const pingServerRace = (): SocketIOClient.Socket => {
 	return socket;
 };
 
-export const joinRoom = (roomId: string, userName: string, gameType: string): SocketIOClient.Socket => {
-	const socket = io.connect(`${process.env.GAME_APP_API_URL}/${gameType}`, {
+export const createRoom = (gameType: string): SocketIOClient.Socket => {
+	const socket = io.connect("http://localhost:8080/game", {
 		query: {
+			request: "create",
+			roomId: "",
+			gameType,
+		},
+	});
+	return socket;
+};
+
+export const joinRoom = (roomId: string): SocketIOClient.Socket => {
+	const socket = io.connect("http://localhost:8080/game", {
+		query: {
+			request: "join",
 			roomId,
-			userName,
+			gameType: "",
 		},
 	});
 	return socket;

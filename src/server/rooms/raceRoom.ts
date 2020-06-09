@@ -1,18 +1,17 @@
-import { Server as SocketIOServer, Socket } from "socket.io";
-import RaceGame from "../../GameCore/GameModes/RaceGame";
+import { Socket } from "socket.io";
 import User from "../data/user";
-import RoomInterface from "./roomInterface";
+import Room from "./room";
 
-export class RaceRoom implements RoomInterface {
+export class RaceRoom implements Room {
 	private id: string;
-	private io: SocketIOServer;
+	private nsp: SocketIO.Namespace;
 	private roomString: string;
-	private users: User[];
-	private game: RaceGame;
+	private users: User[] = [];
+	private game: any;
 
-	constructor(id: string, socketServer: SocketIOServer) {
+	constructor(id: string, nsp: SocketIO.Namespace) {
 		this.id = id;
-		this.io = socketServer;
+		this.nsp = nsp;
 		this.roomString = `room-${this.id}`;
 	}
 
@@ -22,29 +21,29 @@ export class RaceRoom implements RoomInterface {
 
 	public joinRoom(clientSocket: Socket): void {
 		const user: User = {
-			socket: clientSocket,
+			userId: clientSocket.id,
 			currentRoomId: this.getRoomId(),
 		};
+		this.users.push(user);
 		clientSocket.join(this.roomString);
 		this.handleSocketEvents(clientSocket);
+
+		console.log(this.users);
 	}
 
 	public leaveRoom(clientSocket: Socket): void {
+		this.users = this.users.filter((user) => user.userId !== clientSocket.id);
 		this.removeListeners(clientSocket);
 		clientSocket.leave(this.roomString);
+
+		console.log(this.users);
 	}
 
 	public isRoomEmtpty(): boolean {
 		return this.users.length === 0;
 	}
 
-	public handleSocketEvents(clientSocket: Socket): void {
-		clientSocket.on("race-client-room-update", (req) => {
-			clientSocket.emit("race-client-room-update", { test: "test" });
-		});
-	}
+	public handleSocketEvents(clientSocket: Socket): void {}
 
-	private removeListeners(clientSocket: Socket) {
-		clientSocket.removeAllListeners("race-client-room-update");
-	}
+	private removeListeners(clientSocket: Socket) {}
 }

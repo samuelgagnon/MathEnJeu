@@ -1,4 +1,4 @@
-import Room from "./room";
+import Room from "../rooms/room";
 import RoomRepository from "./roomRepository";
 
 export default class RoomInMemoryRepository implements RoomRepository {
@@ -7,7 +7,7 @@ export default class RoomInMemoryRepository implements RoomRepository {
 	constructor() {}
 
 	public addRoom(room: Room): void {
-		this.rooms.set(room.roomId, room);
+		this.rooms.set(room.getRoomId(), room);
 	}
 
 	public getRoomById(roomId: string): Room {

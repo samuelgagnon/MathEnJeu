@@ -4,7 +4,8 @@ import path from "path";
 import socketIO from "socket.io";
 import RoomRepository from "./data/roomRepository";
 import RoomInMemoryRepository from "./data/roomsInMemoryRepository";
-import RaceNamespace from "./namespaces/raceNamespace";
+import GameNamespace from "./namespace/gameNamespace";
+import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
 import { Server } from "./server";
 
 const app = express();
@@ -15,7 +16,10 @@ const io = socketIO(httpServer);
 app.use("/static", express.static(path.join(__dirname, "../")));
 
 const roomRepo: RoomRepository = new RoomInMemoryRepository();
-const raceNamespace: RaceNamespace = new RaceNamespace(io, roomRepo);
+
+//Namespaces for game modes and seperation of concerns
+const gameNamespace: GameNamespace = new GameNamespace(io, roomRepo);
+const roomSelectionNamespace: RoomSelectionNamespace = new RoomSelectionNamespace(io, roomRepo);
 
 const server = new Server(app, httpServer, io, roomRepo);
 
