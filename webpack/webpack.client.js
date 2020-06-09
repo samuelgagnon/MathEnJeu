@@ -44,5 +44,11 @@ module.exports = {
 				concurrency: 100,
 			},
 		}),
+		new CopyWebpackPlugin({
+			patterns: [{ from: "src/client/scenes/htmlElements", to: "scenes/htmlElements" }],
+			options: {
+				concurrency: 100,
+			},
+		}),
 	],
 };
