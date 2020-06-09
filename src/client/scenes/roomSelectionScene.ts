@@ -65,7 +65,7 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-			createRoom("RaceRoom");
+			createRoom("asdasd");
 			this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 

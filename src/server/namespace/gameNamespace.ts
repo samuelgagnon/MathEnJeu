@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import RoomRepository from "../data/roomRepository";
 import RoomFactory from "../rooms/roomFactory";
+import RoomType from "../rooms/roomType";
 
 export default class GameNamespace {
 	private io: SocketIOServer;
@@ -20,26 +21,29 @@ export default class GameNamespace {
 			console.log("connection on game");
 			const { request, joinRoomId, gameType } = socket.handshake.query;
 
-			console.log(socket.handshake.query);
-
 			switch (request) {
 				case "create":
-					//creating room
-					const newRoom = RoomFactory.create(gameType, this.nsp);
-					newRoom.joinRoom(socket);
-					this.roomRepo.addRoom(newRoom);
+					if (!Object.values(RoomType).includes(gameType)) {
+						socket.error({
+							type: 400,
+							msg: "Invalid room type",
+						});
+					} else {
+						const newRoom = RoomFactory.create(gameType, this.nsp);
+						newRoom.joinRoom(socket);
+						this.roomRepo.addRoom(newRoom);
 
-					const roomId = newRoom.getRoomId();
+						const roomId = newRoom.getRoomId();
 
-					console.log(this.roomRepo);
+						console.log(this.roomRepo);
 
-					this.handleLeavingRoom(socket, roomId);
-					this.handleDisconnection(socket, roomId);
+						this.handleLeavingRoom(socket, roomId);
+						this.handleDisconnection(socket, roomId);
+					}
 
 					break;
 
 				case "join":
-					//joining room
 					this.roomRepo.getRoomById(joinRoomId).joinRoom(socket);
 
 					this.handleLeavingRoom(socket, joinRoomId);
@@ -49,7 +53,7 @@ export default class GameNamespace {
 
 				default:
 					socket.error({
-						type: 404,
+						type: 400,
 						msg: "Invalid request",
 					});
 			}

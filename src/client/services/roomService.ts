@@ -13,6 +13,7 @@ export const createRoom = (gameType: string): SocketIOClient.Socket => {
 			gameType,
 		},
 	});
+
 	return socket;
 };
 
@@ -24,5 +25,6 @@ export const joinRoom = (roomId: string): SocketIOClient.Socket => {
 			gameType: "",
 		},
 	});
+
 	return socket;
 };
