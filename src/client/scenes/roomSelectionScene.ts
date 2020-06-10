@@ -1,11 +1,12 @@
 import { CST } from "../CST";
-import { createRoom, joinRoom } from "../services/roomService";
+import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/roomService";
 
 export default class RoomSelection extends Phaser.Scene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private joinRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
-	private htmlElement: Phaser.GameObjects.DOMElement;
+	private inputHtml: Phaser.GameObjects.DOMElement;
+	private roomsListHtml: Phaser.GameObjects.DOMElement;
 
 	private socket: SocketIOClient.Socket;
 
@@ -14,23 +15,36 @@ export default class RoomSelection extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	init() {}
+	init() {
+		this.socket = connectToRoomSelectionNamespace();
+		this.events.on("shutdown", () => {
+			this.socket.close();
+		});
+	}
 
 	preload() {
 		this.load.setBaseURL("static/client/");
-		this.load.html("htmlTest", "/scenes/htmlElements/playerInput.html");
+		this.load.html("playerInput", "/scenes/htmlElements/playerInput.html");
+		this.load.html("roomsList", "/scenes/htmlElements/roomsList.html");
 	}
 
 	create() {
-		//let text = this.add.text(300, 300, "Enter room number", { color: "white", fontSize: "20px" });
+		this.inputHtml = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache("playerInput");
+		this.roomsListHtml = this.add.dom(1000, this.game.renderer.height * 0.3).createFromCache("roomsList");
 
-		//let element = this.add.dom()
+		this.socket.on("room-update", (rooms: []) => {
+			let roomList = <HTMLInputElement>this.roomsListHtml.getChildByID("roomList");
 
-		this.htmlElement = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache("htmlTest");
+			while (roomList.firstChild) {
+				roomList.removeChild(roomList.firstChild);
+			}
 
-		// this.htmlElement = this.add
-		// 	.dom(600, this.game.renderer.height * 0.5)
-		// 	.createFromHTML('<input type="text" name="roomField" placeholder="Enter room id" style="font-size: 32px">');
+			rooms.forEach((room) => {
+				var li = document.createElement("li");
+				li.appendChild(document.createTextNode(room));
+				roomList.appendChild(li);
+			});
+		});
 
 		this.add
 			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
@@ -79,8 +93,10 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-			createRoom("asdasd");
-			this.scene.start(CST.SCENES.WAITING_ROOM);
+			const socket = connectToGameNamespace();
+
+			createRoom(socket, "RaceRoom");
+			// this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 
 		this.joinRoomButton.on("pointerover", () => {
@@ -97,9 +113,8 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
-			const roomId = (<HTMLInputElement>this.htmlElement.getChildByName("roomField")).value;
-			joinRoom(roomId);
-			this.scene.start(CST.SCENES.WAITING_ROOM);
+			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
+			//this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 
 		this.backButton.on("pointerover", () => {

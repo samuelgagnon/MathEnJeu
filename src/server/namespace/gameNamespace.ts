@@ -1,7 +1,6 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import RoomRepository from "../data/roomRepository";
 import RoomFactory from "../rooms/roomFactory";
-import RoomType from "../rooms/roomType";
 
 export default class GameNamespace {
 	private io: SocketIOServer;
@@ -19,44 +18,86 @@ export default class GameNamespace {
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
 			console.log("connection on game");
-			const { request, joinRoomId, gameType } = socket.handshake.query;
 
-			switch (request) {
-				case "create":
-					if (!Object.values(RoomType).includes(gameType)) {
-						socket.error({
-							type: 400,
-							msg: "Invalid room type",
-						});
-					} else {
-						const newRoom = RoomFactory.create(gameType, this.nsp);
-						newRoom.joinRoom(socket);
-						this.roomRepo.addRoom(newRoom);
+			socket.on("disconnect", () => {
+				console.log("disconnected");
+			});
 
-						const roomId = newRoom.getRoomId();
+			// socket.use((packet, next) => {
+			// 	console.log(packet);
+			// });
+			//const { request, joinRoomId, gameType } = socket.handshake.query;
 
-						console.log(this.roomRepo);
+			socket.on("create-game", (req) => {
+				console.log("create game");
+				try {
+					const { gameType } = req;
+					const newRoom = RoomFactory.create(gameType, this.nsp);
+					newRoom.joinRoom(socket);
+					this.roomRepo.addRoom(newRoom);
 
-						this.handleLeavingRoom(socket, roomId);
-						this.handleDisconnection(socket, roomId);
-					}
+					const roomId = newRoom.getRoomId();
 
-					break;
+					console.log(this.roomRepo);
 
-				case "join":
-					this.roomRepo.getRoomById(joinRoomId).joinRoom(socket);
-
-					this.handleLeavingRoom(socket, joinRoomId);
-					this.handleDisconnection(socket, joinRoomId);
-
-					break;
-
-				default:
+					this.handleLeavingRoom(socket, roomId);
+					this.handleDisconnection(socket, roomId);
+				} catch (err) {
+					console.log("sup");
+					console.log(err);
 					socket.error({
 						type: 400,
-						msg: "Invalid request",
+						msg: err.message,
 					});
-			}
+				}
+			});
+
+			socket.on("join-game", (req) => {
+				const roomId = req.roomId;
+				this.roomRepo.getRoomById(roomId).joinRoom(socket);
+
+				this.handleLeavingRoom(socket, roomId);
+				this.handleDisconnection(socket, roomId);
+			});
+
+			// switch (request) {
+			// 	case "create":
+			// 		try {
+			// 			const newRoom = RoomFactory.create(gameType, this.nsp);
+			// 			newRoom.joinRoom(socket);
+			// 			this.roomRepo.addRoom(newRoom);
+
+			// 			const roomId = newRoom.getRoomId();
+
+			// 			console.log(this.roomRepo);
+
+			// 			this.handleLeavingRoom(socket, roomId);
+			// 			this.handleDisconnection(socket, roomId);
+			// 		} catch (err) {
+			// 			if (typeof err == typeof UndefinedRoomTypeError) {
+			// 				socket.error({
+			// 					type: 400,
+			// 					msg: err.message,
+			// 				});
+			// 			}
+			// 		}
+
+			// 		break;
+
+			// 	case "join":
+			// 		this.roomRepo.getRoomById(joinRoomId).joinRoom(socket);
+
+			// 		this.handleLeavingRoom(socket, joinRoomId);
+			// 		this.handleDisconnection(socket, joinRoomId);
+
+			// 		break;
+
+			// 	default:
+			// 		socket.error({
+			// 			type: 400,
+			// 			msg: "Invalid request",
+			// 		});
+			// }
 		});
 	}
 
@@ -66,7 +107,7 @@ export default class GameNamespace {
 		}
 	}
 
-	private removingUserFromRoom(roomId: string, socket: Socket) {
+	private removeUserFromRoom(roomId: string, socket: Socket) {
 		const currentRoom = this.roomRepo.getRoomById(roomId);
 		currentRoom.leaveRoom(socket);
 		this.roomRepo.addRoom(currentRoom);
@@ -78,13 +119,13 @@ export default class GameNamespace {
 		socket.on("disconnect", () => {
 			console.log("disconnection");
 
-			this.removingUserFromRoom(roomId, socket);
+			this.removeUserFromRoom(roomId, socket);
 		});
 	}
 
 	private handleLeavingRoom(socket: Socket, roomId: string): void {
 		socket.on("leave-room", () => {
-			this.removingUserFromRoom(roomId, socket);
+			this.removeUserFromRoom(roomId, socket);
 		});
 	}
 }
