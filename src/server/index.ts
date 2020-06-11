@@ -21,7 +21,7 @@ const roomRepo: RoomRepository = new RoomInMemoryRepository();
 const gameNamespace: GameNamespace = new GameNamespace(io, roomRepo);
 const roomSelectionNamespace: RoomSelectionNamespace = new RoomSelectionNamespace(io, roomRepo);
 
-const server = new Server(app, httpServer, io, roomRepo);
+const server = new Server(app, httpServer);
 
 server.listen((port) => {
 	console.log(`Server is listening on http://localhost:${port}`);

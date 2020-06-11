@@ -6,7 +6,7 @@ export default class RoomSelectionNamespace {
 	private roomRepo: RoomRepository;
 	private nsp: SocketIO.Namespace;
 	private readonly namespace: string = "/roomSelection";
-	private readonly ROOM_UPDATE_TIME_INTERVAL = 5000;
+	private readonly ROOM_UPDATE_TIME_INTERVAL = 10000;
 
 	constructor(ioServer: SocketIOServer, roomRepo: RoomRepository) {
 		this.io = ioServer;
@@ -17,11 +17,16 @@ export default class RoomSelectionNamespace {
 
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
-			console.log("connection on room selection");
+			//console.log("connection on room selection");
 
-			socket.on("disconnect", () => {
-				console.log("disconnection");
-			});
+			socket.emit(
+				"room-update",
+				this.roomRepo.getAllRooms().map((room) => room.getRoomId())
+			);
+
+			// socket.on("disconnect", () => {
+			// 	console.log("room selection disconnection");
+			// });
 
 			this.sendRoomsToClient(socket);
 		});
@@ -29,8 +34,11 @@ export default class RoomSelectionNamespace {
 
 	private sendRoomsToClient(socket: Socket) {
 		setTimeout(() => {
-			socket.emit("room-update", this.roomRepo.getAllRooms());
-			console.log("update sent");
+			console.log(this.roomRepo.getAllRooms().map((room) => room.getRoomId()));
+			socket.emit(
+				"room-update",
+				this.roomRepo.getAllRooms().map((room) => room.getRoomId())
+			);
 			this.sendRoomsToClient(socket);
 		}, this.ROOM_UPDATE_TIME_INTERVAL);
 	}

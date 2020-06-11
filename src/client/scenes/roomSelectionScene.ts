@@ -1,10 +1,12 @@
 import { CST } from "../CST";
-import { createRoom, joinRoom } from "./../services/roomService";
+import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/roomService";
 
 export default class RoomSelection extends Phaser.Scene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private joinRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
+	private inputHtml: Phaser.GameObjects.DOMElement;
+	private roomsListHtml: Phaser.GameObjects.DOMElement;
 
 	private socket: SocketIOClient.Socket;
 
@@ -13,17 +15,43 @@ export default class RoomSelection extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	init() {}
+	init() {
+		this.socket = connectToRoomSelectionNamespace();
+		this.events.on("shutdown", () => {
+			this.socket.close();
+		});
+	}
 
-	preload() {}
+	preload() {
+		this.load.setBaseURL("static/client/");
+		this.load.html("playerInput", "/scenes/htmlElements/playerInput.html");
+		this.load.html("roomsList", "/scenes/htmlElements/roomsList.html");
+	}
 
 	create() {
+		this.inputHtml = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache("playerInput");
+		this.roomsListHtml = this.add.dom(1000, this.game.renderer.height * 0.3).createFromCache("roomsList");
+
+		this.socket.on("room-update", (rooms: []) => {
+			let roomList = <HTMLInputElement>this.roomsListHtml.getChildByID("roomList");
+
+			while (roomList.firstChild) {
+				roomList.removeChild(roomList.firstChild);
+			}
+
+			rooms.forEach((room) => {
+				var li = document.createElement("li");
+				li.appendChild(document.createTextNode(room));
+				roomList.appendChild(li);
+			});
+		});
+
 		this.add
 			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
 			.setOrigin(0)
 			.setDepth(0);
 
-		this.createRoomButton = this.add.text(10, this.game.renderer.height * 0.2, "Create Room", {
+		this.createRoomButton = this.add.text(385, this.game.renderer.height * 0.2, "Create Room", {
 			fontFamily: "Courier",
 			fontSize: "64px",
 			align: "center",
@@ -31,7 +59,7 @@ export default class RoomSelection extends Phaser.Scene {
 			fontStyle: "bold",
 		});
 
-		this.joinRoomButton = this.add.text(10, this.game.renderer.height * 0.4, "Join Room", {
+		this.joinRoomButton = this.add.text(385, this.game.renderer.height * 0.6, "Join Room", {
 			fontFamily: "Courier",
 			fontSize: "64px",
 			align: "center",
@@ -65,8 +93,10 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-			createRoom("asdasd");
-			this.scene.start(CST.SCENES.WAITING_ROOM);
+			const socket = connectToGameNamespace();
+
+			createRoom(socket, "RaceRoom");
+			// this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 
 		this.joinRoomButton.on("pointerover", () => {
@@ -83,8 +113,8 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
-			joinRoom("123123");
-			this.scene.start(CST.SCENES.WAITING_ROOM);
+			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
+			//this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 
 		this.backButton.on("pointerover", () => {
