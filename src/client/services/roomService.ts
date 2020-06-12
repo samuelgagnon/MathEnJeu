@@ -13,35 +13,9 @@ export const connectToGameNamespace = (): SocketIOClient.Socket => {
 };
 
 export const createRoom = (socket: SocketIOClient.Socket, gameType: string) => {
-	socket.emit("create-game", { gameType });
+	socket.emit("create-game");
 };
 
 export const joinRoom = (socket: SocketIOClient.Socket, roomId: string) => {
 	socket.emit("join-game", { roomId: roomId });
 };
-
-//À vérifier si c'est plus clean de faire un handshake avec des données non utilisées. 2020-06-10
-
-// export const createRoom = (gameType: string): SocketIOClient.Socket => {
-// 	const socket = io.connect("http://localhost:8080/game", {
-// 		query: {
-// 			request: "create",
-// 			roomId: "",
-// 			gameType,
-// 		},
-// 	});
-
-// 	return socket;
-// };
-
-// export const joinRoom = (roomId: string): SocketIOClient.Socket => {
-// 	const socket = io.connect("http://localhost:8080/game", {
-// 		query: {
-// 			request: "join",
-// 			roomId,
-// 			gameType: "",
-// 		},
-// 	});
-
-// 	return socket;
-// };

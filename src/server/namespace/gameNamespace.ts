@@ -23,7 +23,7 @@ export default class GameNamespace {
 				console.log("disconnected");
 			});
 
-			socket.on("create-game", (req) => {
+			socket.on("create-game", () => {
 				console.log("create game");
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
@@ -37,7 +37,6 @@ export default class GameNamespace {
 					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {
-					console.log(err);
 					socket.error({
 						type: 400,
 						msg: err.message,
@@ -46,11 +45,22 @@ export default class GameNamespace {
 			});
 
 			socket.on("join-game", (req) => {
-				const roomId = req.roomId;
-				this.roomRepo.getRoomById(roomId).joinRoom(socket);
+				try {
+					const roomId: string = req.roomId;
+					const currentRoom = this.roomRepo.getRoomById(roomId);
+					if (currentRoom == undefined) {
+						throw new RoomNotFoundError(`Room ${roomId} was not found`);
+					}
 
-				this.handleLeavingRoom(socket, roomId);
-				this.handleDisconnection(socket, roomId);
+					currentRoom.joinRoom(socket);
+					this.handleLeavingRoom(socket, roomId);
+					this.handleDisconnection(socket, roomId);
+				} catch (err) {
+					socket.error({
+						type: 400,
+						msg: err.message,
+					});
+				}
 			});
 		});
 	}
