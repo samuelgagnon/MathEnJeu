@@ -23,16 +23,10 @@ export default class GameNamespace {
 				console.log("disconnected");
 			});
 
-			// socket.use((packet, next) => {
-			// 	console.log(packet);
-			// });
-			//const { request, joinRoomId, gameType } = socket.handshake.query;
-
-			socket.on("create-game", (req) => {
+			socket.on("create-game", () => {
 				console.log("create game");
 				try {
-					const { gameType } = req;
-					const newRoom = RoomFactory.create(gameType, this.nsp);
+					const newRoom = RoomFactory.create(this.nsp);
 					newRoom.joinRoom(socket);
 					this.roomRepo.addRoom(newRoom);
 
@@ -43,8 +37,6 @@ export default class GameNamespace {
 					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {
-					console.log("sup");
-					console.log(err);
 					socket.error({
 						type: 400,
 						msg: err.message,
@@ -53,51 +45,23 @@ export default class GameNamespace {
 			});
 
 			socket.on("join-game", (req) => {
-				const roomId = req.roomId;
-				this.roomRepo.getRoomById(roomId).joinRoom(socket);
+				try {
+					const roomId: string = req.roomId;
+					const currentRoom = this.roomRepo.getRoomById(roomId);
+					if (currentRoom == undefined) {
+						throw new RoomNotFoundError(`Room ${roomId} was not found`);
+					}
 
-				this.handleLeavingRoom(socket, roomId);
-				this.handleDisconnection(socket, roomId);
+					currentRoom.joinRoom(socket);
+					this.handleLeavingRoom(socket, roomId);
+					this.handleDisconnection(socket, roomId);
+				} catch (err) {
+					socket.error({
+						type: 400,
+						msg: err.message,
+					});
+				}
 			});
-
-			// switch (request) {
-			// 	case "create":
-			// 		try {
-			// 			const newRoom = RoomFactory.create(gameType, this.nsp);
-			// 			newRoom.joinRoom(socket);
-			// 			this.roomRepo.addRoom(newRoom);
-
-			// 			const roomId = newRoom.getRoomId();
-
-			// 			console.log(this.roomRepo);
-
-			// 			this.handleLeavingRoom(socket, roomId);
-			// 			this.handleDisconnection(socket, roomId);
-			// 		} catch (err) {
-			// 			if (typeof err == typeof UndefinedRoomTypeError) {
-			// 				socket.error({
-			// 					type: 400,
-			// 					msg: err.message,
-			// 				});
-			// 			}
-			// 		}
-
-			// 		break;
-
-			// 	case "join":
-			// 		this.roomRepo.getRoomById(joinRoomId).joinRoom(socket);
-
-			// 		this.handleLeavingRoom(socket, joinRoomId);
-			// 		this.handleDisconnection(socket, joinRoomId);
-
-			// 		break;
-
-			// 	default:
-			// 		socket.error({
-			// 			type: 400,
-			// 			msg: "Invalid request",
-			// 		});
-			// }
 		});
 	}
 
