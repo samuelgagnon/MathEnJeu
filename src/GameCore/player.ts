@@ -1,10 +1,15 @@
-export default class PlayerCharacter {
+export default class Player {
+	readonly socketId: string;
 	name: string;
 	points: number;
-	position: {
-		x: number;
-		y: number;
-	};
+	position: Point;
 	items: [];
-	constructor() {}
+	coins: number;
+	constructor(socketId: string) {
+		this.socketId = socketId;
+	}
+
+	public movePlayerTo(position: Point): void {
+		this.position = position;
+	}
 }
