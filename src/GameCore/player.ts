@@ -8,4 +8,8 @@ export default class Player {
 	constructor(socketId: string) {
 		this.socketId = socketId;
 	}
+
+	public movePlayerTo(position: Point): void {
+		this.position = position;
+	}
 }

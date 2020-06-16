@@ -16,4 +16,14 @@ class GameController {
 	public removePlayer(socketId: string) {
 		this.players = this.players.filter((player) => player.socketId !== socketId);
 	}
+
+	public movePlayerTo(playerId: string, position: Point): void {
+		const movedPlayer = this.findPlayer(playerId);
+		this.players.filter((player) => player.socketId !== playerId);
+		this.players.push(movedPlayer);
+	}
+
+	private findPlayer(playerId: string): Player {
+		return this.players.find((player) => player.socketId == playerId);
+	}
 }

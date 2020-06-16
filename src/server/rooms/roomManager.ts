@@ -2,7 +2,7 @@ import { Server as SocketIOServer, Socket } from "socket.io";
 import RoomRepository from "../data/roomRepository";
 import RoomFactory from "../rooms/roomFactory";
 
-export default class GameNamespace {
+export default class RoomManager {
 	private io: SocketIOServer;
 	private roomRepo: RoomRepository;
 	private nsp: SocketIO.Namespace;

@@ -4,8 +4,6 @@ import { Room } from "../rooms/room";
 export default class RoomInMemoryRepository implements RoomRepository {
 	private rooms: Map<string, Room> = new Map<string, Room>();
 
-	constructor() {}
-
 	public addRoom(room: Room): void {
 		this.rooms.set(room.getRoomId(), room);
 	}
