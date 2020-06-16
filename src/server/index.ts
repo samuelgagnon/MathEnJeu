@@ -4,7 +4,7 @@ import path from "path";
 import socketIO from "socket.io";
 import RoomRepository from "./data/roomRepository";
 import RoomInMemoryRepository from "./data/roomsInMemoryRepository";
-import RoomManager from "./namespace/gameNamespace";
+import RoomManager from "./rooms/roomManager";
 import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
 import { Server } from "./server";
 import GameManager from "./gameManager";
