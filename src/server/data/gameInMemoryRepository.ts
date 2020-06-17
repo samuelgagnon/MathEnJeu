@@ -1,20 +1,23 @@
 import GameRepository from "./gameRepository";
+import Game from "../../GameCore/game";
 
 export default class GameInMemoryRepository implements GameRepository {
+	private games: Map<string, Game> = new Map<string, Game>();
+
 	constructor() {}
 
-	public addGame(game: any): void {
-		throw new Error("Method not implemented.");
+	public addGame(game: Game): void {
+		this.games.set(game.getGameId(), game);
 	}
-	public getGameById(gameId: string) {
-		throw new Error("Method not implemented.");
+	public getGameById(gameId: string): Game {
+		return this.games.get(gameId);
 	}
 
-	public getAllGames(): [] {
-		throw new Error("Method not implemented.");
+	public getAllGames(): Game[] {
+		return Array.from(this.games.values());
 	}
 
 	public deleteGameById(gameId: string): void {
-		throw new Error("Method not implemented.");
+		this.games.delete(gameId);
 	}
 }
