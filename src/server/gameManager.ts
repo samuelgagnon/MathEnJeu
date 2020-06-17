@@ -2,6 +2,7 @@ import GameRepository from "./data/gameRepository";
 
 export default class GameManager {
 	private gameRepo: GameRepository;
+	private FREQUENCY: number = 45;
 
 	constructor(gameRepo: GameRepository) {
 		this.gameRepo = gameRepo;
@@ -18,6 +19,6 @@ export default class GameManager {
 			});
 
 			this.update();
-		}, 1000);
+		}, this.FREQUENCY);
 	}
 }
