@@ -8,8 +8,8 @@ import RoomManager from "./rooms/roomManager";
 import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
 import { Server } from "./server";
 import GameManager from "./gameManager";
-import GameInMemoryRepository from "./data/gameInMemoryRepository";
-import GameRepository from "./data/gameRepository";
+import applyCommonContext, { serviceConstants } from "./context/commonContext";
+import ServiceLocator from "./context/serviceLocator";
 
 const app = express();
 const httpServer = createServer(app);
@@ -18,13 +18,13 @@ const io = socketIO(httpServer);
 // /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));
 
-const roomRepo: RoomRepository = new RoomInMemoryRepository();
-const gameRepo: GameRepository = new GameInMemoryRepository();
+//needed to intialize ServiceLocator
+applyCommonContext();
 
 //Namespaces for game modes and seperation of concerns
-const roomManager: RoomManager = new RoomManager(io, roomRepo);
-const roomSelectionNamespace: RoomSelectionNamespace = new RoomSelectionNamespace(io, roomRepo);
-const gameManager: GameManager = new GameManager(gameRepo);
+const roomManager: RoomManager = new RoomManager(io, ServiceLocator.resolve(serviceConstants.ROOM_REPOSITORY_CLASS));
+const roomSelectionNamespace: RoomSelectionNamespace = new RoomSelectionNamespace(io, ServiceLocator.resolve(serviceConstants.ROOM_REPOSITORY_CLASS));
+const gameManager: GameManager = new GameManager(ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS));
 
 const server = new Server(app, httpServer);
 
