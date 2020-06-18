@@ -1,12 +1,13 @@
 import { Socket } from "socket.io";
 import User from "../data/user";
+import GameFSM from "../../GameCore/gameState/gameFSM";
 
 export class Room {
 	private id: string;
 	private nsp: SocketIO.Namespace;
 	private roomString: string;
 	private users: User[] = [];
-	private game: any;
+	private gameFSM: GameFSM;
 
 	constructor(id: string, nsp: SocketIO.Namespace) {
 		this.id = id;
@@ -21,7 +22,7 @@ export class Room {
 	public joinRoom(clientSocket: Socket): void {
 		const user: User = {
 			userId: clientSocket.id,
-			currentRoomId: this.getRoomId(),
+			socket: clientSocket,
 		};
 		this.users.push(user);
 		clientSocket.join(this.roomString);

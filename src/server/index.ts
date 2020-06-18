@@ -10,6 +10,9 @@ import { Server } from "./server";
 import GameManager from "./gameManager";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
+import gameFSM from "../GameCore/gameState/gameFSM";
+import GameFSM from "../GameCore/gameState/gameFSM";
+import PreGame from "../GameCore/gameState/preGame";
 
 const app = express();
 const httpServer = createServer(app);
