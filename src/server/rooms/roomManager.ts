@@ -23,8 +23,8 @@ export default class RoomManager {
 				console.log("disconnected");
 			});
 
-			socket.on("create-game", () => {
-				console.log("create game");
+			socket.on("create-room", () => {
+				console.log("create room");
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
 					newRoom.joinRoom(socket);
@@ -44,7 +44,7 @@ export default class RoomManager {
 				}
 			});
 
-			socket.on("join-game", (req) => {
+			socket.on("join-room", (req) => {
 				try {
 					const roomId: string = req.roomId;
 					const currentRoom = this.roomRepo.getRoomById(roomId);
@@ -74,7 +74,6 @@ export default class RoomManager {
 	private removeUserFromRoom(roomId: string, socket: Socket) {
 		const currentRoom = this.roomRepo.getRoomById(roomId);
 		currentRoom.leaveRoom(socket);
-		this.roomRepo.addRoom(currentRoom);
 
 		this.deleteRoomIfEmpty(roomId);
 	}

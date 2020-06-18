@@ -1,13 +1,21 @@
 import Player from "./player";
+import Game from "./game";
 
-class GameController {
-	grid: Grid;
-	players: Player[];
+class GameController implements Game {
+	private gameId: string;
+	private grid: Grid;
+	private players: Player[];
 
 	constructor(grid: Grid, players: Player[]) {
 		this.grid = grid;
 		this.players = players;
 	}
+
+	public getGameId(): string {
+		return this.gameId;
+	}
+
+	public update(): void {}
 
 	public addPlayer(player: Player): void {
 		this.players.push(player);
