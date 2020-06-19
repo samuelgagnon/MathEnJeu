@@ -1,7 +1,7 @@
-import State from "./state";
 import GameRepository from "../../server/data/gameRepository";
 import User from "../../server/data/user";
 import Game from "../game";
+import State from "./state";
 export default class GameFSM {
 	private gameState: State;
 	private readonly roomString: string;
