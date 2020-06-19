@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import User from "../data/user";
 import GameFSM from "../../GameCore/gameState/gameFSM";
+import User from "../data/user";
 
 export class Room {
 	private id: string;
@@ -28,8 +28,6 @@ export class Room {
 		this.users.push(user);
 		clientSocket.join(this.roomString);
 		this.handleSocketEvents(clientSocket);
-
-		console.log(this.users);
 	}
 
 	public leaveRoom(clientSocket: Socket): void {

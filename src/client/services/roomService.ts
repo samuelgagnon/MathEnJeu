@@ -12,10 +12,10 @@ export const connectToGameNamespace = (): SocketIOClient.Socket => {
 	return socket;
 };
 
-export const createRoom = (socket: SocketIOClient.Socket, gameType: string) => {
-	socket.emit("create-game");
+export const createRoom = (socket: SocketIOClient.Socket) => {
+	socket.emit("create-room");
 };
 
 export const joinRoom = (socket: SocketIOClient.Socket, roomId: string) => {
-	socket.emit("join-game", { roomId: roomId });
+	socket.emit("join-room", { roomId: roomId });
 };
