@@ -3,6 +3,7 @@ import RaceGame from "./raceGame";
 import Player from "../player";
 import User from "../../server/data/user";
 import { v4 as uuidv4 } from "uuid";
+import StateFactory from "./stateFactory";
 
 export default class PreGame extends State {
 	private tick: number = 0;
@@ -18,7 +19,7 @@ export default class PreGame extends State {
 	public userLeft(user: User): void {}
 
 	private startRaceGame(): void {
-		const raceGame = new RaceGame("1");
+		const raceGame = StateFactory.createRaceGame();
 		this.context.gameStarted(raceGame);
 		this.context.transitionTo(raceGame);
 	}
