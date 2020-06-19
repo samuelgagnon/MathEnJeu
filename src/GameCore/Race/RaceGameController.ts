@@ -7,10 +7,10 @@ export default abstract class RaceGameController implements Game, RaceGameState 
 	private gameId: string;
 
 	private grid: RaceGrid;
-	private _players: Player[];
+	private _players: Player[] = [];
 	private _items: Item[];
 
-	constructor(players: Player[]) {
+	constructor(players: Player[] = []) {
 		this._players = players;
 	}
 

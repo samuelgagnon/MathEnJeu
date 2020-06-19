@@ -4,7 +4,9 @@ export default class MoveCharacterEvent implements SocketEvent {
 	private static readonly _Name: string = "MoveCharacterEvent";
 	private _data: { targetPoint: Point };
 
-	constructor(timestamp: number, targetPoint: Point) {}
+	constructor(targetPoint: Point) {
+		this._data.targetPoint = targetPoint;
+	}
 
 	get Name(): string {
 		return (this.constructor as typeof MoveCharacterEvent)._Name;
