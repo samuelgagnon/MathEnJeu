@@ -2,15 +2,12 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import socketIO from "socket.io";
-import RoomRepository from "./data/roomRepository";
-import RoomInMemoryRepository from "./data/roomsInMemoryRepository";
 import RoomManager from "./rooms/roomManager";
 import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
 import { Server } from "./server";
 import GameManager from "./gameManager";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
-import gameFSM from "../GameCore/gameState/gameFSM";
 import GameFSM from "../GameCore/gameState/gameFSM";
 import PreGame from "../GameCore/gameState/preGame";
 
@@ -34,6 +31,8 @@ const server = new Server(app, httpServer);
 server.listen((port) => {
 	console.log(`Server is listening on http://localhost:${port}`);
 });
+
+const fsm1 = new GameFSM(new PreGame(), ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS));
 
 // à voir le nom de la méthode si on prend update() directement
 gameManager.startLoop();

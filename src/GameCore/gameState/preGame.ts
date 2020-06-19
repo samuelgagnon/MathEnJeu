@@ -1,8 +1,5 @@
 import State from "./state";
-import RaceGame from "./raceGame";
-import Player from "../player";
 import User from "../../server/data/user";
-import { v4 as uuidv4 } from "uuid";
 import StateFactory from "./stateFactory";
 
 export default class PreGame extends State {
