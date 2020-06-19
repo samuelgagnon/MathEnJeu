@@ -9,9 +9,10 @@ export class Room {
 	private users: User[] = [];
 	private gameFSM: GameFSM;
 
-	constructor(id: string, nsp: SocketIO.Namespace) {
+	constructor(id: string, nsp: SocketIO.Namespace, gameFSM: GameFSM) {
 		this.id = id;
 		this.nsp = nsp;
+		this.gameFSM = gameFSM;
 		this.roomString = `room-${this.id}`;
 	}
 
