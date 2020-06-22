@@ -1,37 +1,40 @@
-import State from "./state";
+import { Socket } from "socket.io";
 import User from "../../server/data/user";
+import State from "./state";
 import StateFactory from "./stateFactory";
 
 export default class PreGame extends State {
-	private tick: number = 0;
-
 	constructor() {
 		super();
-		this.handleSocketEvent();
-		this.waitingForPlayers();
+		this.handleAllUsersSocketEvents();
 	}
 
-	public userJoined(user: User): void {}
+	public userJoined(user: User): void {
+		this.handleSocketEvents(user.socket);
+	}
 
-	public userLeft(user: User): void {}
+	public userLeft(user: User): void {
+		this.removeSocketEvents(user.socket);
+	}
 
 	private startRaceGame(): void {
-		const raceGame = StateFactory.createRaceGame();
+		const raceGame = StateFactory.createRaceGame(this.context.getId());
 		this.context.gameStarted(raceGame);
 		this.context.transitionTo(raceGame);
+		this.removeAllUsersSocketEvents();
 	}
 
-	private waitingForPlayers(): void {
-		setTimeout(() => {
-			if (this.tick < 3) {
-				this.tick += 1;
-				console.log(`Room is Waiting for more players...`);
-				this.waitingForPlayers();
-			} else {
-				this.startRaceGame();
-			}
-		}, 1000);
+	private handleAllUsersSocketEvents(): void {
+		const users = this.context.getUsers();
+		users.forEach((user) => this.handleSocketEvents(user.socket));
 	}
 
-	private handleSocketEvent(): void {}
+	private removeAllUsersSocketEvents(): void {
+		const users = this.context.getUsers();
+		users.forEach((user) => this.removeSocketEvents(user.socket));
+	}
+
+	private handleSocketEvents(socket: Socket): void {}
+
+	private removeSocketEvents(socket: Socket): void {}
 }

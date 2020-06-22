@@ -1,3 +1,4 @@
+import { Namespace } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import GameFSM from "../../GameCore/gameState/gameFSM";
 import StateFactory from "../../GameCore/gameState/stateFactory";
@@ -8,11 +9,13 @@ import { Room } from "./room";
 export default class RoomFactory {
 	public static create(nsp: SocketIO.Namespace): Room {
 		const roomId: string = uuidv4();
-		const gameFSM: GameFSM = this.createGameFSM();
-		return new Room(roomId, nsp, gameFSM);
+		const roomString = `room-${roomId}`;
+		const gameFSM: GameFSM = this.createGameFSM(nsp, roomString);
+		return new Room(roomId, nsp, gameFSM, roomString);
 	}
 
-	private static createGameFSM(): GameFSM {
-		return new GameFSM(StateFactory.createPreGame(), ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS));
+	private static createGameFSM(nsp: Namespace, roomString: string): GameFSM {
+		const fsmId = uuidv4();
+		return new GameFSM(fsmId, StateFactory.createPreGame(), ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS), roomString, nsp);
 	}
 }
