@@ -3,6 +3,7 @@ export const CST = {
 		LOAD: "loadScene",
 		MENU: "menuScene",
 		MAIN: "mainScene",
+		RACEGAME: "raceGameScene",
 		CREATE_ROOM: "createRoomScene",
 		ROOM_SELECTION: "roomSelectionScene",
 		WAITING_ROOM: "waitingRoomScene",

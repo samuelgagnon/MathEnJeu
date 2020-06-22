@@ -1,7 +1,6 @@
 import RaceGameState from "../../GameCore/Race/RaceGameState";
 import { CST } from "../CST";
 import ClientRaceGameController from "../Race/ClientRaceGameController";
-import RaceGameView from "../Race/raceGameView";
 
 export default class LoopTestScene extends Phaser.Scene {
 	//Loops
@@ -9,15 +8,13 @@ export default class LoopTestScene extends Phaser.Scene {
 	physTimestep: number;
 	//Sockets
 	socket: SocketIOClient.Socket;
-	//Visual
-	raceGameView: RaceGameView;
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
 	gameState: RaceGameState;
 
 	constructor() {
-		const sceneConfig = { key: CST.SCENES.LOOPTEST };
+		const sceneConfig = { key: CST.SCENES.RACEGAME };
 		super(sceneConfig);
 	}
 
@@ -26,7 +23,6 @@ export default class LoopTestScene extends Phaser.Scene {
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.gameState = { players: [], items: [] };
-		this.raceGameView = { players: [], items: [] };
 		//this.initializeSocket();
 	}
 

@@ -1,25 +1,16 @@
 import Game from "../game";
 import Item from "../items/item";
 import Player from "../player";
-import RaceGameState from "./RaceGameState";
 
-export default abstract class RaceGameController implements Game, RaceGameState {
+export default abstract class RaceGameController implements Game {
 	private gameId: string;
 
 	private grid: RaceGrid;
-	private _players: Player[] = [];
-	private _items: Item[];
+	private players: Player[] = [];
+	private items: Item[];
 
 	constructor(players: Player[] = []) {
-		this._players = players;
-	}
-
-	get players(): Player[] {
-		return this._players;
-	}
-
-	get items(): Item[] {
-		return this._items;
+		this.players = players;
 	}
 
 	public getGameId(): string {
@@ -33,20 +24,20 @@ export default abstract class RaceGameController implements Game, RaceGameState 
 	protected gameLogicUpdate() {}
 
 	public addPlayer(player: Player): void {
-		this._players.push(player);
+		this.players.push(player);
 	}
 
 	public removePlayer(socketId: string) {
-		this._players = this._players.filter((player) => player.socketId !== socketId);
+		this.players = this.players.filter((player) => player.socketId !== socketId);
 	}
 
 	public movePlayerTo(playerId: string, position: Point): void {
 		const movedPlayer = this.findPlayer(playerId);
-		this._players.filter((player) => player.socketId !== playerId);
-		this._players.push(movedPlayer);
+		this.players.filter((player) => player.socketId !== playerId);
+		this.players.push(movedPlayer);
 	}
 
 	private findPlayer(playerId: string): Player {
-		return this._players.find((player) => player.socketId == playerId);
+		return this.players.find((player) => player.socketId == playerId);
 	}
 }

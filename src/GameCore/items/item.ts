@@ -1,6 +1,4 @@
-import ItemState from "./itemState";
-
-export default abstract class Item implements ItemState {
+export default abstract class Item {
 	name: string;
 	location: Point;
 	use(): void {}

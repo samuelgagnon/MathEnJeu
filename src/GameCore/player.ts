@@ -1,8 +1,7 @@
 import Item from "./items/item";
 import Move from "./move";
-import PlayerState from "./playerState";
 
-export default class Player implements PlayerState {
+export default class Player {
 	readonly socketId: string;
 	name: string;
 	points: number;
