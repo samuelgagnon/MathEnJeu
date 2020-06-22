@@ -2,14 +2,12 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import socketIO from "socket.io";
-import RoomRepository from "./data/roomRepository";
-import RoomInMemoryRepository from "./data/roomsInMemoryRepository";
-import RoomManager from "./rooms/roomManager";
-import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
-import { Server } from "./server";
-import GameManager from "./gameManager";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
+import GameManager from "./gameManager";
+import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
+import RoomManager from "./rooms/roomManager";
+import { Server } from "./server";
 
 const app = express();
 const httpServer = createServer(app);

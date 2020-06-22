@@ -1,5 +1,5 @@
-import Player from "./player";
-import Game from "./game";
+import Player from "../player";
+import Game from "../game";
 
 class GameController implements Game {
 	private gameId: string;
