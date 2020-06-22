@@ -9,11 +9,11 @@ export class Room {
 	private users: User[] = [];
 	private gameFSM: GameFSM;
 
-	constructor(id: string, nsp: SocketIO.Namespace, gameFSM: GameFSM) {
+	constructor(id: string, nsp: SocketIO.Namespace, gameFSM: GameFSM, roomString: string) {
 		this.id = id;
 		this.nsp = nsp;
 		this.gameFSM = gameFSM;
-		this.roomString = `room-${this.id}`;
+		this.roomString = roomString;
 	}
 
 	public getRoomId(): string {
@@ -28,14 +28,15 @@ export class Room {
 		this.users.push(user);
 		clientSocket.join(this.roomString);
 		this.handleSocketEvents(clientSocket);
+		this.gameFSM.userJoined(user);
 	}
 
 	public leaveRoom(clientSocket: Socket): void {
+		const userLeaving = this.users.find((user) => user.userId === clientSocket.id);
 		this.users = this.users.filter((user) => user.userId !== clientSocket.id);
+		this.gameFSM.userLeft(userLeaving);
 		this.removeListeners(clientSocket);
 		clientSocket.leave(this.roomString);
-
-		console.log(this.users);
 	}
 
 	public isRoomEmtpty(): boolean {
