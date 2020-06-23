@@ -1,4 +1,4 @@
-import RaceGameState from "../../GameCore/Race/RaceGameState";
+import RaceGameState from "../../GameCore/Race/raceGameState";
 import { CST } from "../CST";
 import ClientRaceGameController from "../Race/ClientRaceGameController";
 
