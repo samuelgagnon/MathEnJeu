@@ -1,24 +1,29 @@
 import { Socket } from "socket.io";
 import User from "../../server/data/user";
 import Game from "../game";
+import GameFSM from "./gameFSM";
 import State from "./state";
 import StateFactory from "./stateFactory";
 
-export default class RaceGame extends State implements Game {
+export default class RaceGame implements Game, State {
+	private context: GameFSM;
 	private gameId: string;
 	private tick: number = 0;
 
 	constructor(gameId: string) {
-		super();
 		this.gameId = gameId;
 		this.handleAllUsersSocketEvents();
 	}
 
-	getGameId(): string {
+	public setContext(context: GameFSM): void {
+		this.context = context;
+	}
+
+	public getGameId(): string {
 		return this.gameId;
 	}
 
-	update(): void {
+	public update(): void {
 		if (this.tick < 5) {
 			this.tick += 1;
 			console.log(`game ${this.gameId} currently playing on tick: ${this.tick}`);

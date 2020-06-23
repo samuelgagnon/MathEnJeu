@@ -10,8 +10,8 @@ export default abstract class RaceGameController implements Game {
 	private players: Player[] = [];
 	private items: Item[];
 
-	constructor(players: Player[] = []) {
-		this.players = players;
+	constructor(gameId: string) {
+		this.gameId = gameId;
 	}
 
 	public getGameId(): string {
