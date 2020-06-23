@@ -1,5 +1,5 @@
-import ItemState from "../items/itemState";
-import PlayerState from "../playerState";
+import ItemState from "./items/itemState";
+import PlayerState from "./playerState";
 
 export default interface RaceGameState {
 	players: PlayerState[];

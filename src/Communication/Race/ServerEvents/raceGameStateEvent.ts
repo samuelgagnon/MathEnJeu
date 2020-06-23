@@ -1,5 +1,5 @@
-import ItemState from "../../../GameCore/items/itemState";
-import PlayerState from "../../../GameCore/playerState";
+import ItemState from "../../../GameCore/Race/items/itemState";
+import PlayerState from "../../../GameCore/Race/playerState";
 import RaceGameState from "../../../GameCore/Race/RaceGameState";
 import SocketEvent from "../../SocketEvent";
 

@@ -1,6 +1,6 @@
 import Game from "../game";
-import Item from "../items/item";
-import Player from "../player";
+import Item from "./items/item";
+import Player from "./player";
 
 export default abstract class RaceGameController implements Game {
 	private gameId: string;

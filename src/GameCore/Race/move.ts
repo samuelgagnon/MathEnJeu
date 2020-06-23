@@ -1,8 +1,12 @@
+import { GAMECORE_CST } from "../GAMECORE_CST";
+import { RACE_CST } from "./RACE_CST";
+
 export default class Move {
 	startTimestamp: number;
 	startLocation: Point;
 	targetLocation: Point;
-	speed: number;
+	private readonly NORM: GAMECORE_CST.Norm = RACE_CST.MOVE.NORM;
+	private readonly SPEED: number = RACE_CST.MOVE.SPEED;
 
 	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point) {
 		this.startTimestamp = startTimestamp;
@@ -11,19 +15,22 @@ export default class Move {
 	}
 
 	private getTotalTime(): number {
-		return this.getTaxicabDistance() / this.speed;
+		return this.getDistance() / this.SPEED;
 	}
 
-	private getTaxicabDistance(): number {
-		return Math.abs(this.targetLocation.x - this.startLocation.x + (this.targetLocation.y - this.startLocation.y));
-	}
-
-	private getEuclidianDistance(): number {
-		return Math.sqrt((this.targetLocation.x - this.startLocation.x) ** 2 + (this.targetLocation.y - this.startLocation.y) ** 2);
+	private getDistance(): number {
+		switch (this.NORM) {
+			case GAMECORE_CST.Norm.Taxicab:
+				return Math.abs(this.targetLocation.x - this.startLocation.x + (this.targetLocation.y - this.startLocation.y));
+				break;
+			case GAMECORE_CST.Norm.Euclidian:
+				return Math.sqrt((this.targetLocation.x - this.startLocation.x) ** 2 + (this.targetLocation.y - this.startLocation.y) ** 2);
+				break;
+		}
 	}
 
 	public getCurrentPosition(nowTimestamp: number = Date.now()): Point {
-		let d: number = this.getTaxicabDistance();
+		let d: number = this.getDistance();
 
 		//t in [0,1] corresponds to the proportion of the move done.
 		//t=0 means the move isn't started yet. I.e. the current position corresponds to startLocation.

@@ -1,6 +1,6 @@
 import SocketEvent from "../../Communication/SocketEvent";
-import Player from "../../GameCore/player";
-import RaceGameController from "../../GameCore/Race/RaceGameController";
+import Player from "./player";
+import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController {
 	private inputBuffer: SocketEvent[] = [];
