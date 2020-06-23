@@ -25,8 +25,11 @@ export default class PreGame extends State {
 	}
 
 	private handleAllUsersSocketEvents(): void {
-		const users = this.context.getUsers();
-		users.forEach((user) => this.handleSocketEvents(user.socket));
+		//When first initialized, the context doesn't exist yet so we don't need to initialize socketEvents
+		if (this.context !== undefined) {
+			const users = this.context.getUsers();
+			users.forEach((user) => this.handleSocketEvents(user.socket));
+		}
 	}
 
 	private removeAllUsersSocketEvents(): void {

@@ -7,7 +7,7 @@ export default class GameFSM {
 	private readonly fsmId: string;
 	private state: State;
 	private readonly roomString: string;
-	private users: User[];
+	private users: User[] = [];
 	private nsp: SocketIO.Namespace;
 	private gameRepo: GameRepository;
 
