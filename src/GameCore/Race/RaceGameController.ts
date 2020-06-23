@@ -1,13 +1,15 @@
-import Player from "../player";
 import Game from "../game";
+import Item from "../items/item";
+import Player from "../player";
 
-class GameController implements Game {
+export default abstract class RaceGameController implements Game {
 	private gameId: string;
-	private grid: Grid;
-	private players: Player[];
 
-	constructor(grid: Grid, players: Player[]) {
-		this.grid = grid;
+	private grid: RaceGrid;
+	private players: Player[] = [];
+	private items: Item[];
+
+	constructor(players: Player[] = []) {
 		this.players = players;
 	}
 
@@ -15,7 +17,11 @@ class GameController implements Game {
 		return this.gameId;
 	}
 
-	public update(): void {}
+	public update(): void {
+		this.gameLogicUpdate();
+	}
+
+	protected gameLogicUpdate() {}
 
 	public addPlayer(player: Player): void {
 		this.players.push(player);

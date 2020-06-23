@@ -1,3 +1,0 @@
-interface Item {
-	use(): void;
-}

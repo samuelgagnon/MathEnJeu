@@ -1,4 +1,4 @@
-class Grid {
+class RaceGrid {
 	private tiles: Tile;
 	private width: number;
 	private height: number;

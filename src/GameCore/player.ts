@@ -1,10 +1,14 @@
+import Item from "./items/item";
+import Move from "./move";
+
 export default class Player {
 	readonly socketId: string;
 	name: string;
 	points: number;
 	position: Point;
-	items: [];
-	coins: number;
+	move: Move;
+	items: Item[];
+
 	constructor(socketId: string) {
 		this.socketId = socketId;
 	}
