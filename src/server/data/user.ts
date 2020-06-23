@@ -1,4 +1,4 @@
 export default interface User {
 	userId: string;
-	currentRoomId: string;
+	socket: SocketIO.Socket;
 }

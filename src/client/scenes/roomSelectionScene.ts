@@ -46,10 +46,7 @@ export default class RoomSelection extends Phaser.Scene {
 			});
 		});
 
-		this.add
-			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
-			.setOrigin(0)
-			.setDepth(0);
+		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
 		this.createRoomButton = this.add.text(385, this.game.renderer.height * 0.2, "Create Room", {
 			fontFamily: "Courier",
@@ -95,7 +92,7 @@ export default class RoomSelection extends Phaser.Scene {
 			this.createRoomButton.clearTint();
 			const socket = connectToGameNamespace();
 
-			createRoom(socket, "RaceRoom");
+			createRoom(socket);
 			// this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 

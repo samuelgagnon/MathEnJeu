@@ -32,8 +32,6 @@ export default class RoomManager {
 
 					const roomId = newRoom.getRoomId();
 
-					console.log(this.roomRepo);
-
 					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {

@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import GameFSM from "../../GameCore/gameState/gameFSM";
 import User from "../data/user";
 
 export class Room {
@@ -6,12 +7,13 @@ export class Room {
 	private nsp: SocketIO.Namespace;
 	private roomString: string;
 	private users: User[] = [];
-	private game: any;
+	private gameFSM: GameFSM;
 
-	constructor(id: string, nsp: SocketIO.Namespace) {
+	constructor(id: string, nsp: SocketIO.Namespace, gameFSM: GameFSM, roomString: string) {
 		this.id = id;
 		this.nsp = nsp;
-		this.roomString = `room-${this.id}`;
+		this.gameFSM = gameFSM;
+		this.roomString = roomString;
 	}
 
 	public getRoomId(): string {
@@ -21,21 +23,20 @@ export class Room {
 	public joinRoom(clientSocket: Socket): void {
 		const user: User = {
 			userId: clientSocket.id,
-			currentRoomId: this.getRoomId(),
+			socket: clientSocket,
 		};
 		this.users.push(user);
 		clientSocket.join(this.roomString);
 		this.handleSocketEvents(clientSocket);
-
-		console.log(this.users);
+		this.gameFSM.userJoined(user);
 	}
 
 	public leaveRoom(clientSocket: Socket): void {
+		const userLeaving = this.users.find((user) => user.userId === clientSocket.id);
 		this.users = this.users.filter((user) => user.userId !== clientSocket.id);
+		this.gameFSM.userLeft(userLeaving);
 		this.removeListeners(clientSocket);
 		clientSocket.leave(this.roomString);
-
-		console.log(this.users);
 	}
 
 	public isRoomEmtpty(): boolean {
