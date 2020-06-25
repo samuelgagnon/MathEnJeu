@@ -1,6 +1,6 @@
-import { ClientGame } from "../../GameCore/game";
-import RaceGameController from "../../GameCore/Race/RaceGameController";
-import RaceGameState from "../../GameCore/Race/raceGameState";
+import { ClientGame } from "../game";
+import RaceGameController from "./RaceGameController";
+import RaceGameState from "./raceGameState";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	constructor() {

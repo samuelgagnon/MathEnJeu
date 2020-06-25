@@ -1,11 +1,11 @@
 import { Socket } from "socket.io";
 import SocketEvent from "../../Communication/SocketEvent";
-import { ServerGame } from "../../GameCore/game";
-import GameFSM from "../../GameCore/gameState/gameFSM";
-import State from "../../GameCore/gameState/state";
-import StateFactory from "../../GameCore/gameState/stateFactory";
-import RaceGameController from "../../GameCore/Race/RaceGameController";
-import User from "../data/user";
+import User from "../../server/data/user";
+import { ServerGame } from "../game";
+import GameFSM from "../gameState/gameFSM";
+import State from "../gameState/state";
+import StateFactory from "../gameState/stateFactory";
+import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private readonly gameId: string;

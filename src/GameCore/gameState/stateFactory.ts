@@ -1,4 +1,4 @@
-import ServerRaceGameController from "../../server/Race/ServerRaceGameController";
+import ServerRaceGameController from "../Race/ServerRaceGameController";
 import PreGame from "./preGame";
 
 export default class StateFactory {

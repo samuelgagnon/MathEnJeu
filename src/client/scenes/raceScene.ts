@@ -1,6 +1,6 @@
+import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameController";
 import RaceGameState from "../../GameCore/Race/raceGameState";
 import { CST } from "../CST";
-import ClientRaceGameController from "../Race/ClientRaceGameController";
 
 export default class LoopTestScene extends Phaser.Scene {
 	//Loops
