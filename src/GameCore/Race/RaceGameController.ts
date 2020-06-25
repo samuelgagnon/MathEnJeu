@@ -1,8 +1,8 @@
-import Game from "../game";
 import Item from "./items/item";
 import Player from "./player";
+import RaceGrid from "./RaceGrid";
 
-export default abstract class RaceGameController implements Game {
+export default abstract class RaceGameController {
 	private gameId: string;
 
 	private grid: RaceGrid;
@@ -17,10 +17,6 @@ export default abstract class RaceGameController implements Game {
 		return this.gameId;
 	}
 
-	public update(): void {
-		this.gameLogicUpdate();
-	}
-
 	protected gameLogicUpdate() {}
 
 	public addPlayer(player: Player): void {
@@ -31,10 +27,9 @@ export default abstract class RaceGameController implements Game {
 		this.players = this.players.filter((player) => player.socketId !== socketId);
 	}
 
-	public movePlayerTo(playerId: string, position: Point): void {
+	public movePlayerTo(playerId: string, targetLocation: Point): void {
 		const movedPlayer = this.findPlayer(playerId);
-		this.players.filter((player) => player.socketId !== playerId);
-		this.players.push(movedPlayer);
+		movedPlayer.moveTo(targetLocation);
 	}
 
 	private findPlayer(playerId: string): Player {

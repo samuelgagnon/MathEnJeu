@@ -9,11 +9,22 @@ export default class Player {
 	move: Move;
 	items: Item[];
 
-	constructor(socketId: string) {
+	constructor(socketId: string, startLocation: Point) {
 		this.socketId = socketId;
+		this.position = startLocation;
+		this.move = new Move(Date.now(), startLocation, startLocation);
 	}
 
-	public movePlayerTo(position: Point): void {
-		this.position = position;
+	public moveTo(targetLocation: Point): void {
+		this.move = new Move(Date.now(), this.getPosition(), targetLocation);
+	}
+
+	public updatePosition(): void {
+		this.position = this.move.getCurrentPosition();
+	}
+
+	public getPosition(): Point {
+		this.updatePosition();
+		return this.position;
 	}
 }
