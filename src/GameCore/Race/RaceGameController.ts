@@ -3,19 +3,11 @@ import Player from "./player";
 import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
-	private gameId: string;
-
 	private grid: RaceGrid;
 	private players: Player[] = [];
 	private items: Item[];
 
-	constructor(players: Player[] = []) {
-		this.players = players;
-	}
-
-	public getGameId(): string {
-		return this.gameId;
-	}
+	constructor() {}
 
 	protected gameLogicUpdate() {}
 
