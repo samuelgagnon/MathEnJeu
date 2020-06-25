@@ -6,7 +6,8 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	constructor() {
 		super();
 	}
-	update(): void {}
+
+	public update(): void {}
 
 	public setGameState(gameState: RaceGameState) {}
 }
