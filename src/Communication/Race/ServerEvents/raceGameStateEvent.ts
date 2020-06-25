@@ -1,6 +1,6 @@
 import ItemState from "../../../GameCore/Race/items/itemState";
 import PlayerState from "../../../GameCore/Race/playerState";
-import RaceGameState from "../../../GameCore/Race/RaceGameState";
+import RaceGameState from "../../../GameCore/Race/raceGameState";
 import SocketEvent from "../../SocketEvent";
 
 export default class RaceGameStateEvent implements SocketEvent {

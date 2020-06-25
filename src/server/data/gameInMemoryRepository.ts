@@ -1,19 +1,19 @@
+import { ServerGame } from "../../GameCore/game";
 import GameRepository from "./gameRepository";
-import Game from "../../GameCore/game";
 
 export default class GameInMemoryRepository implements GameRepository {
-	private games: Map<string, Game> = new Map<string, Game>();
+	private games: Map<string, ServerGame> = new Map<string, ServerGame>();
 
 	constructor() {}
 
-	public addGame(game: Game): void {
+	public addGame(game: ServerGame): void {
 		this.games.set(game.getGameId(), game);
 	}
-	public getGameById(gameId: string): Game {
+	public getGameById(gameId: string): ServerGame {
 		return this.games.get(gameId);
 	}
 
-	public getAllGames(): Game[] {
+	public getAllGames(): ServerGame[] {
 		return Array.from(this.games.values());
 	}
 

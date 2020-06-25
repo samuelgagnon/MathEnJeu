@@ -1,6 +1,6 @@
 import Item from "./items/item";
 
-class Tile {
+export default class Tile {
 	private item: Item;
 
 	constructor(parameters) {}
