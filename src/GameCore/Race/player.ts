@@ -31,6 +31,15 @@ export default class Player {
 		return this.position;
 	}
 
+	//returns true if player has item of itemType
+	public useItemTypeIfPresent(itemType: string): boolean {
+		const itemUsed = this.items.find((item) => item.name == itemType);
+		if (!itemType) return false;
+
+		itemUsed.use(this);
+		return true;
+	}
+
 	public useItem(item: Item): void {
 		item.use(this);
 	}
