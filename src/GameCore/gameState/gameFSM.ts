@@ -1,13 +1,13 @@
 import { Namespace } from "socket.io";
 import GameRepository from "../../server/data/gameRepository";
 import User from "../../server/data/user";
-import Game from "../game";
+import { ServerGame } from "../game";
 import State from "./state";
 export default class GameFSM {
 	private readonly fsmId: string;
 	private state: State;
 	private readonly roomString: string;
-	private users: User[];
+	private users: User[] = [];
 	private nsp: SocketIO.Namespace;
 	private gameRepo: GameRepository;
 
@@ -37,11 +37,11 @@ export default class GameFSM {
 		this.state.setContext(this);
 	}
 
-	public gameStarted(game: Game): void {
+	public gameStarted(game: ServerGame): void {
 		this.gameRepo.addGame(game);
 	}
 
-	public gameFinished(game: Game): void {
+	public gameFinished(game: ServerGame): void {
 		this.gameRepo.deleteGameById(game.getGameId());
 	}
 

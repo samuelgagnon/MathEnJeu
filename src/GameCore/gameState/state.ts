@@ -1,14 +1,8 @@
-import gameFSM from "./gameFSM";
 import User from "../../server/data/user";
+import gameFSM from "./gameFSM";
 
-export default abstract class State {
-	protected context: gameFSM;
-
-	public setContext(context: gameFSM) {
-		this.context = context;
-	}
-
-	abstract userJoined(user: User): void;
-
-	abstract userLeft(user: User): void;
+export default interface State {
+	setContext(context: gameFSM): void;
+	userJoined(user: User): void;
+	userLeft(user: User): void;
 }

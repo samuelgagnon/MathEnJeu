@@ -1,8 +1,8 @@
-import Game from "../../GameCore/game";
+import { ServerGame } from "../../GameCore/game";
 
 export default interface GameRepository {
-	addGame(game: Game): void;
-	getGameById(gameId: string): Game;
-	getAllGames(): Game[];
+	addGame(game: ServerGame): void;
+	getGameById(gameId: string): ServerGame;
+	getAllGames(): ServerGame[];
 	deleteGameById(gameId: string): void;
 }

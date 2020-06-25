@@ -1,12 +1,18 @@
 import { Socket } from "socket.io";
 import User from "../../server/data/user";
+import GameFSM from "./gameFSM";
 import State from "./state";
 import StateFactory from "./stateFactory";
 
-export default class PreGame extends State {
+export default class PreGame implements State {
+	private context: GameFSM;
+
 	constructor() {
-		super();
 		this.handleAllUsersSocketEvents();
+	}
+
+	public setContext(context: GameFSM): void {
+		this.context = context;
 	}
 
 	public userJoined(user: User): void {
@@ -25,8 +31,11 @@ export default class PreGame extends State {
 	}
 
 	private handleAllUsersSocketEvents(): void {
-		const users = this.context.getUsers();
-		users.forEach((user) => this.handleSocketEvents(user.socket));
+		//When first initialized, the context doesn't exist yet so we don't need to initialize socketEvents
+		if (this.context !== undefined) {
+			const users = this.context.getUsers();
+			users.forEach((user) => this.handleSocketEvents(user.socket));
+		}
 	}
 
 	private removeAllUsersSocketEvents(): void {
