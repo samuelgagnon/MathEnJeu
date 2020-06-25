@@ -1,24 +1,27 @@
 import { Socket } from "socket.io";
 import SocketEvent from "../../Communication/SocketEvent";
+import { ServerGame } from "../../GameCore/game";
 import GameFSM from "../../GameCore/gameState/gameFSM";
+import State from "../../GameCore/gameState/state";
 import StateFactory from "../../GameCore/gameState/stateFactory";
 import RaceGameController from "../../GameCore/Race/RaceGameController";
 import User from "../data/user";
 
-export default class ServerRaceGameController extends RaceGameController {
+export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
+	private readonly gameId: string;
 	private context: GameFSM;
 	private tick: number;
 	private inputBuffer: SocketEvent[] = [];
 
 	constructor(gameId: string) {
-		super(gameId);
+		super();
+		this.gameId = gameId;
 	}
 
 	public setContext(context: GameFSM): void {
 		this.context = context;
 	}
 
-	//necessary ?
 	public getGameId(): string {
 		return this.context.getId();
 	}

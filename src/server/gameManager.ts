@@ -1,5 +1,5 @@
+import { ServerGame } from "../GameCore/game";
 import GameRepository from "./data/gameRepository";
-import Game from "../GameCore/game";
 
 export default class GameManager {
 	private gameRepo: GameRepository;
@@ -15,7 +15,7 @@ export default class GameManager {
 
 	private update() {
 		setTimeout(() => {
-			this.gameRepo.getAllGames().forEach((game: Game) => {
+			this.gameRepo.getAllGames().forEach((game: ServerGame) => {
 				game.update();
 			});
 

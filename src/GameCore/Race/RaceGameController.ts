@@ -1,26 +1,13 @@
-import Game from "../game";
 import Item from "../items/item";
 import Player from "../player";
 import RaceGrid from "./RaceGrid";
 
-export default abstract class RaceGameController implements Game {
-	private gameId: string;
-
+export default abstract class RaceGameController {
 	private grid: RaceGrid;
 	private players: Player[] = [];
 	private items: Item[];
 
-	constructor(gameId: string) {
-		this.gameId = gameId;
-	}
-
-	public getGameId(): string {
-		return this.gameId;
-	}
-
-	public update(): void {
-		this.gameLogicUpdate();
-	}
+	constructor() {}
 
 	protected gameLogicUpdate() {}
 
