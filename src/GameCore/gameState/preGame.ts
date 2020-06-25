@@ -1,12 +1,18 @@
 import { Socket } from "socket.io";
 import User from "../../server/data/user";
+import GameFSM from "./gameFSM";
 import State from "./state";
 import StateFactory from "./stateFactory";
 
-export default class PreGame extends State {
+export default class PreGame implements State {
+	private context: GameFSM;
+
 	constructor() {
-		super();
 		this.handleAllUsersSocketEvents();
+	}
+
+	public setContext(context: GameFSM): void {
+		this.context = context;
 	}
 
 	public userJoined(user: User): void {
