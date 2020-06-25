@@ -1,8 +1,8 @@
 import Player from "../player";
 import Item from "./item";
 
-export default class Banana implements Item {
-	readonly name: string = "Banana";
+export default class Brainiac implements Item {
+	name: string;
 	location: Point;
 
 	constructor(location: Point) {
@@ -10,6 +10,6 @@ export default class Banana implements Item {
 	}
 
 	public use(player: Player): void {
-		player.bananaReceive();
+		player.brainiacActivated();
 	}
 }

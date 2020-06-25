@@ -1,5 +1,7 @@
-export default abstract class Item {
+import Player from "../player";
+
+export default interface Item {
 	name: string;
 	location: Point;
-	use(): void {}
+	use(player: Player): void;
 }
