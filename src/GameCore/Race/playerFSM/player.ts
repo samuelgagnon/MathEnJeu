@@ -2,6 +2,11 @@ import Item from "../items/item";
 import Move from "../move";
 import Status from "./playerStatus/status";
 
+/**
+ * Player is a class that implements a finite state machine. The state will changed depending on the action of the Player class and its
+ * behavior will also be affected depending of the state it is currently in.
+ */
+
 export default class Player {
 	readonly id: string;
 	private playerStatus: Status;
