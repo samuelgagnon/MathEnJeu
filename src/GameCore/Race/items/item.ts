@@ -1,7 +1,9 @@
-import Player from "../player";
+import Player from "../playerFSM/player";
 
 export default interface Item {
-	name: string;
+	readonly type: string;
+	readonly isForAnsweringQuestion: boolean;
 	location: Point;
-	use(player: Player): void;
+	onPickUp(player: Player): void;
+	use(target: Player, from?: Player): void;
 }
