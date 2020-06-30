@@ -1,4 +1,4 @@
-import Player from "../playerFSM/player";
+import Player from "../player/player";
 import Item from "./item";
 
 export default class Book implements Item {
@@ -11,7 +11,7 @@ export default class Book implements Item {
 	}
 
 	public onPickUp(player: Player): void {
-		player.itemPickedUp(this);
+		player.pickUpItem(this);
 	}
 
 	public use(target: Player, from?: Player): void {

@@ -1,11 +1,11 @@
-import UsableItem from "./items/usableItem";
-import Player from "./playerFSM/player";
+import Item from "./items/item";
+import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
 	private grid: RaceGrid;
 	private players: Player[] = [];
-	private items: UsableItem[];
+	private items: Item[];
 
 	constructor() {}
 

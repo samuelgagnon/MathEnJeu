@@ -26,16 +26,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.context.getId();
 	}
 
-	public update(): void {
-		if (this.tick < 5) {
-			this.tick += 1;
-			console.log(`game ${this.getGameId()} currently playing on tick: ${this.tick}`);
-			this.gameLogicUpdate();
-			this.playersUpdate();
-		} else {
-			this.gameFinished();
-		}
-	}
+	public update(): void {}
 
 	private gameFinished() {
 		this.removeAllUsersSocketEvents();

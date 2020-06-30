@@ -1,4 +1,4 @@
-import Player from "../playerFSM/player";
+import Player from "../player/player";
 import Item from "./item";
 
 export default class Brainiac implements Item {

@@ -1,4 +1,4 @@
-import Player from "../playerFSM/player";
+import Player from "../player/player";
 
 export default interface Item {
 	readonly type: string;

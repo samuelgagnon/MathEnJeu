@@ -71,7 +71,7 @@ export default class Player {
 		item.use(this);
 	}
 
-	public itemPickedUp(item: Item): void {
+	public pickUpItem(item: Item): void {
 		if (item === null) return;
 
 		this.items.push(item);
