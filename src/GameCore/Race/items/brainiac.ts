@@ -1,8 +1,8 @@
 import Player from "../player/player";
 import Item from "./item";
 
-export default class Banana implements Item {
-	readonly type: string = "Banana";
+export default class Brainiac implements Item {
+	readonly type: string = "Brainiac";
 	readonly isForAnsweringQuestion: boolean = false;
 	location: Point;
 
@@ -11,10 +11,10 @@ export default class Banana implements Item {
 	}
 
 	public onPickUp(player: Player): void {
-		player.pickUpItem(this);
+		this.use(player);
 	}
 
-	public use(target: Player, from: Player): void {
-		target.bananaReceivedFrom(from);
+	public use(target: Player, from?: Player): void {
+		target.activateBrainiac();
 	}
 }

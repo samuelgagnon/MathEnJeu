@@ -1,5 +1,9 @@
-export default abstract class Item {
-	name: string;
+import Player from "../player/player";
+
+export default interface Item {
+	readonly type: string;
+	readonly isForAnsweringQuestion: boolean;
 	location: Point;
-	use(): void {}
+	onPickUp(player: Player): void;
+	use(target: Player, from?: Player): void;
 }

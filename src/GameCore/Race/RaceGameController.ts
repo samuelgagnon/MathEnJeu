@@ -1,5 +1,5 @@
 import Item from "./items/item";
-import Player from "./player";
+import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
@@ -16,7 +16,7 @@ export default abstract class RaceGameController {
 	}
 
 	public removePlayer(socketId: string) {
-		this.players = this.players.filter((player) => player.socketId !== socketId);
+		this.players = this.players.filter((player) => player.id !== socketId);
 	}
 
 	public movePlayerTo(playerId: string, targetLocation: Point): void {
@@ -25,6 +25,6 @@ export default abstract class RaceGameController {
 	}
 
 	private findPlayer(playerId: string): Player {
-		return this.players.find((player) => player.socketId == playerId);
+		return this.players.find((player) => player.id == playerId);
 	}
 }

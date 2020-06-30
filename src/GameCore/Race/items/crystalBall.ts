@@ -1,9 +1,9 @@
 import Player from "../player/player";
 import Item from "./item";
 
-export default class Banana implements Item {
+export default class CrystalBall implements Item {
 	readonly type: string = "Banana";
-	readonly isForAnsweringQuestion: boolean = false;
+	readonly isForAnsweringQuestion: boolean = true;
 	location: Point;
 
 	constructor(location: Point) {
@@ -14,7 +14,7 @@ export default class Banana implements Item {
 		player.pickUpItem(this);
 	}
 
-	public use(target: Player, from: Player): void {
-		target.bananaReceivedFrom(from);
+	public use(target: Player, from?: Player): void {
+		target.useCrystalBall();
 	}
 }
