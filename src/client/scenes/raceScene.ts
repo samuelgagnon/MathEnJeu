@@ -2,7 +2,7 @@ import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameControll
 import RaceGameState from "../../GameCore/Race/raceGameState";
 import { CST } from "../CST";
 
-export default class LoopTestScene extends Phaser.Scene {
+export default class RaceScene extends Phaser.Scene {
 	//Loops
 	lag: number;
 	physTimestep: number;

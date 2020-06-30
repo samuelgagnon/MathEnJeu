@@ -3,11 +3,16 @@ import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
-	private grid: RaceGrid;
-	private players: Player[] = [];
-	private items: Item[];
+	private gameStartTimeStamp: number;
+	protected grid: RaceGrid;
+	protected players: Player[] = [];
+	protected items: Item[];
 
-	constructor() {}
+	constructor(gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+		this.gameStartTimeStamp = gameStartTimeStamp;
+		this.grid = grid;
+		this.players = players;
+	}
 
 	protected gameLogicUpdate() {}
 
@@ -24,7 +29,14 @@ export default abstract class RaceGameController {
 		movedPlayer.moveTo(targetLocation);
 	}
 
-	private findPlayer(playerId: string): Player {
+	protected findPlayer(playerId: string): Player {
 		return this.players.find((player) => player.id == playerId);
+	}
+
+	protected itemUsed(itemType: string, targetPlayerId: string, fromPlayerId: string): void {
+		const target: Player = this.findPlayer(targetPlayerId);
+		const from: Player = this.findPlayer(fromPlayerId);
+
+		target.useItemType(itemType, from);
 	}
 }

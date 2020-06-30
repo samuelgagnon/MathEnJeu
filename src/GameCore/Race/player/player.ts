@@ -25,6 +25,11 @@ export default class Player {
 		this.transitionTo(status);
 	}
 
+	public update(): void {
+		this.updatePosition();
+		this.playerStatus.update();
+	}
+
 	public setStatusTimeStampToNow() {
 		this.statusTimeStamp = Date.now();
 	}
@@ -33,13 +38,16 @@ export default class Player {
 		return this.statusTimeStamp;
 	}
 
+	public getIsAnsweringQuestion(): boolean {
+		return this.isAnsweringQuestion;
+	}
+
 	public transitionTo(status: Status) {
 		this.playerStatus = status;
 		this.playerStatus.setContext(this);
 	}
 
 	public getPosition(): Point {
-		this.updatePosition();
 		return this.position;
 	}
 

@@ -1,21 +1,25 @@
 import { Socket } from "socket.io";
+import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
+import { ItemUsedEvent } from "../../Communication/Race/ServerEvents/dataInterfaces";
 import SocketEvent from "../../Communication/SocketEvent";
 import User from "../../server/data/user";
+import { getObjectValues } from "../../utils/utils";
 import { ServerGame } from "../game";
 import GameFSM from "../gameState/gameFSM";
 import State from "../gameState/state";
 import StateFactory from "../gameState/stateFactory";
+import Player from "./player/player";
 import RaceGameController from "./RaceGameController";
+import RaceGrid from "./RaceGrid";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
-	private readonly gameId: string;
 	private context: GameFSM;
 	private tick: number;
 	private inputBuffer: SocketEvent[] = [];
 
-	constructor(gameId: string) {
-		super();
-		this.gameId = gameId;
+	constructor(gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+		//The server has the truth regarding the start timestamp.
+		super(Date.now(), grid, players);
 	}
 
 	public setContext(context: GameFSM): void {
@@ -26,7 +30,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.context.getId();
 	}
 
-	public update(): void {}
+	public update(): void {
+		this.playersUpdate();
+	}
 
 	private gameFinished() {
 		this.removeAllUsersSocketEvents();
@@ -42,9 +48,21 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.removeSocketEvents(user.socket);
 	}
 
-	private handleSocketEvents(socket: Socket): void {}
+	private handleSocketEvents(socket: Socket): void {
+		//TODO: generalise it so you
+		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
+			this.itemUsed(data.itemType, data.targetPlayerId, data.fromPayerId);
+		});
+	}
 
-	private removeSocketEvents(socket: Socket): void {}
+	private removeSocketEvents(socket: Socket): void {
+		const events = getObjectValues(e);
+		for (var key in events) {
+			if (events.hasOwnProperty(key)) {
+				socket.removeAllListeners(events[key]);
+			}
+		}
+	}
 
 	private handleAllUsersSocketEvents(): void {
 		const users = this.context.getUsers();
@@ -56,7 +74,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		users.forEach((user) => this.handleSocketEvents(user.socket));
 	}
 
-	private playersUpdate() {}
+	private playersUpdate() {
+		this.players.forEach((player) => player.update());
+	}
 
 	public getGameState() {}
 }

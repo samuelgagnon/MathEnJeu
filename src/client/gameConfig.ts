@@ -3,6 +3,7 @@ import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 import LoadScene from "./scenes/loadScene";
 import MainScene from "./scenes/mainScene";
 import MenuScene from "./scenes/menuScene";
+import RaceScene from "./scenes/raceScene";
 import RoomSelection from "./scenes/roomSelectionScene";
 import WaitingRoomScene from "./scenes/waitingRoomScene";
 
@@ -18,7 +19,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 	},
-	scene: [LoadScene, MenuScene, MainScene, RoomSelection, WaitingRoomScene],
+	scene: [LoadScene, MenuScene, MainScene, RoomSelection, WaitingRoomScene, RaceScene],
 	plugins: {
 		scene: [
 			{
