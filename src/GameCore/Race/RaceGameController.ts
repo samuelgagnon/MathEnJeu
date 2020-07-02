@@ -10,8 +10,9 @@ export default abstract class RaceGameController {
 	protected players: Player[] = [];
 	protected items: Item[];
 
-	constructor(maxGameTime: number, gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
-		this.gameTime, (this.timeRemaining = maxGameTime);
+	constructor(gameTime: number, gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+		this.gameTime = gameTime;
+		this.timeRemaining = gameTime;
 		this.gameStartTimeStamp = gameStartTimeStamp;
 		this.grid = grid;
 		this.players = players;

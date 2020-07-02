@@ -6,8 +6,8 @@ import RaceGrid from "./RaceGrid";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
-	constructor(gameTimeStamp: number, grid: RaceGrid, players: Player[], currentPlayerId: string) {
-		super(gameTimeStamp, grid, players);
+	constructor(gameTime: number, gameTimeStamp: number, grid: RaceGrid, players: Player[], currentPlayerId: string) {
+		super(gameTime, gameTimeStamp, grid, players);
 		this.currentPlayerId = currentPlayerId;
 	}
 
