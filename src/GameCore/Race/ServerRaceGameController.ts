@@ -52,7 +52,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		//TODO: generalise it so you
+		//TODO: generalise it so you can put it in the input buffer
 		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
 			this.itemUsed(data.itemType, data.targetPlayerId, data.fromPayerId);
 		});
