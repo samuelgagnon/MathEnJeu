@@ -17,9 +17,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private tick: number;
 	private inputBuffer: SocketEvent[] = [];
 
-	constructor(gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+	constructor(gameTime: number, grid: RaceGrid, players: Player[]) {
 		//The server has the truth regarding the start timestamp.
-		super(Date.now(), grid, players);
+		super(gameTime, Date.now(), grid, players);
+		this.handleAllUsersSocketEvents();
 	}
 
 	public setContext(context: GameFSM): void {
@@ -32,6 +33,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	public update(): void {
 		this.playersUpdate();
+		this.gameLogicUpdate();
+		if (this.timeRemaining < 0) this.gameFinished();
 	}
 
 	private gameFinished() {

@@ -3,18 +3,23 @@ import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
-	private gameStartTimeStamp: number;
+	private readonly gameTime: number;
+	protected timeRemaining: number;
+	private readonly gameStartTimeStamp: number;
 	protected grid: RaceGrid;
 	protected players: Player[] = [];
 	protected items: Item[];
 
-	constructor(gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+	constructor(maxGameTime: number, gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+		this.gameTime, (this.timeRemaining = maxGameTime);
 		this.gameStartTimeStamp = gameStartTimeStamp;
 		this.grid = grid;
 		this.players = players;
 	}
 
-	protected gameLogicUpdate() {}
+	protected gameLogicUpdate(): void {
+		this.timeRemaining = this.gameTime - (Date.now() - this.gameStartTimeStamp);
+	}
 
 	public addPlayer(player: Player): void {
 		this.players.push(player);
