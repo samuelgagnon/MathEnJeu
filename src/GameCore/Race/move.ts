@@ -1,11 +1,9 @@
-import { GAMECORE_CST } from "../GAMECORE_CST";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {
 	startTimestamp: number;
 	startLocation: Point;
 	targetLocation: Point;
-	private readonly NORM: GAMECORE_CST.Norm = RACE_CST.MOVE.NORM;
 	private readonly SPEED: number = RACE_CST.MOVE.SPEED;
 
 	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point) {
@@ -19,14 +17,7 @@ export default class Move {
 	}
 
 	private getDistance(): number {
-		switch (this.NORM) {
-			case GAMECORE_CST.Norm.Taxicab:
-				return Math.abs(this.targetLocation.x - this.startLocation.x + (this.targetLocation.y - this.startLocation.y));
-				break;
-			case GAMECORE_CST.Norm.Euclidian:
-				return Math.sqrt((this.targetLocation.x - this.startLocation.x) ** 2 + (this.targetLocation.y - this.startLocation.y) ** 2);
-				break;
-		}
+		return Math.abs(this.targetLocation.x - this.startLocation.x) + Math.abs(this.targetLocation.y - this.startLocation.y);
 	}
 
 	public getCurrentPosition(nowTimestamp: number = Date.now()): Point {

@@ -1,4 +1,4 @@
-export const getObjectValues = (obj) => {
+export const getObjectValues = (obj: any) => {
 	const res = {};
 	const recurse = (obj, current?) => {
 		for (const key in obj) {

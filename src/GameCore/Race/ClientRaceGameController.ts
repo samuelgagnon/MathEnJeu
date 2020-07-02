@@ -1,7 +1,7 @@
+import RaceGameState from "../../Communication/Race/raceGameState";
 import { ClientGame } from "../game";
 import Player from "./player/player";
 import RaceGameController from "./RaceGameController";
-import RaceGameState from "./raceGameState";
 import RaceGrid from "./RaceGrid";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {

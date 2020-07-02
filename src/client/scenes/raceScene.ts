@@ -1,5 +1,5 @@
+import RaceGameState from "../../Communication/Race/raceGameState";
 import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameController";
-import RaceGameState from "../../GameCore/Race/raceGameState";
 import { CST } from "../CST";
 
 export default class RaceScene extends Phaser.Scene {
@@ -19,7 +19,7 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	init() {
-		this.raceGame = new ClientRaceGameController();
+		//this.raceGame = new ClientRaceGameController();
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.gameState = { players: [], items: [] };

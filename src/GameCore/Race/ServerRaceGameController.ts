@@ -1,7 +1,6 @@
 import { Socket } from "socket.io";
+import { ItemUsedEvent } from "../../Communication/Race/dataInterfaces";
 import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
-import { ItemUsedEvent } from "../../Communication/Race/ServerEvents/dataInterfaces";
-import SocketEvent from "../../Communication/SocketEvent";
 import User from "../../server/data/user";
 import { getObjectValues } from "../../utils/utils";
 import { ServerGame } from "../game";
@@ -15,7 +14,7 @@ import RaceGrid from "./RaceGrid";
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private context: GameFSM;
 	private tick: number;
-	private inputBuffer: SocketEvent[] = [];
+	private inputBuffer: [] = [];
 
 	constructor(gameTime: number, grid: RaceGrid, players: Player[]) {
 		//The server has the truth regarding the start timestamp.

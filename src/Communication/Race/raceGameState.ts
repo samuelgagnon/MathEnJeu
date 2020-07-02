@@ -1,4 +1,4 @@
-import ItemState from "./items/itemState";
+import ItemState from "../../GameCore/Race/items/itemState";
 import PlayerState from "./playerState";
 
 export default interface RaceGameState {
