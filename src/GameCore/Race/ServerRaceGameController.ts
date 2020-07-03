@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import BufferedInput from "../../Communication/Race/bufferedInput";
 import { ItemUsedEvent } from "../../Communication/Race/dataInterfaces";
 import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
 import User from "../../server/data/user";
@@ -14,7 +15,7 @@ import RaceGrid from "./RaceGrid";
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private context: GameFSM;
 	private tick: number;
-	private inputBuffer: [] = [];
+	private inputBuffer: BufferedInput[] = [];
 
 	constructor(gameTime: number, grid: RaceGrid, players: Player[]) {
 		//The server has the truth regarding the start timestamp.
@@ -54,6 +55,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		//TODO: generalise it so you can put it in the input buffer
 		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
 			this.itemUsed(data.itemType, data.targetPlayerId, data.fromPayerId);
+			//const newInput: BufferedInput = { eventType: e.ITEM_USED, data: data };
+			//this.inputBuffer.push(newInput);
 		});
 	}
 
@@ -81,4 +84,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public getGameState() {}
+
+	public resolveInputs(): void {
+		this.inputBuffer.forEach((input: BufferedInput) => {
+			const inputData = input.data;
+			switch (input.eventType) {
+				case e.ITEM_USED:
+					this.itemUsed(inputData.itemType, inputData.targetPlayerId, inputData.fromPayerId);
+					break;
+
+				default:
+					break;
+			}
+		});
+	}
 }
