@@ -32,12 +32,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public update(): void {
-		this.playersUpdate();
-		this.gameLogicUpdate();
-		if (this.timeRemaining < 0) this.gameFinished();
+		this.resolveInputs();
+		super.update();
 	}
 
-	private gameFinished() {
+	protected gameFinished(): void {
 		this.removeAllUsersSocketEvents();
 		this.context.gameFinished(this);
 		this.context.transitionTo(PreGameFactory.createPreGame());
@@ -54,7 +53,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private handleSocketEvents(socket: Socket): void {
 		//TODO: generalise it so you can put it in the input buffer
 		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
-			this.itemUsed(data.itemType, data.targetPlayerId, data.fromPayerId);
+			this.itemUsed(data.itemType, data.targetPlayerId, data.fromPlayerId);
 			//const newInput: BufferedInput = { eventType: e.ITEM_USED, data: data };
 			//this.inputBuffer.push(newInput);
 		});
@@ -77,10 +76,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private removeAllUsersSocketEvents(): void {
 		const users = this.context.getUsers();
 		users.forEach((user) => this.handleSocketEvents(user.socket));
-	}
-
-	private playersUpdate() {
-		this.players.forEach((player) => player.update());
 	}
 
 	public getGameState() {}

@@ -1,4 +1,5 @@
-import RaceGameState from "../../Communication/Race/raceGameState";
+import { ItemUsedEvent } from "../../Communication/Race/dataInterfaces";
+import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
 import { ClientGame } from "../game";
 import Player from "./player/player";
 import RaceGameController from "./RaceGameController";
@@ -21,9 +22,16 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.playerSocket = playerSocket;
 	}
 
-	public update(): void {}
+	public update(): void {
+		super.update();
+	}
 
-	public setGameState(gameState: RaceGameState) {}
+	protected gameFinished(): void {
+		//Client does something when game is over. Maybe put a flag up to so the interface can act.
+	}
 
-	public itemUsedOn() {}
+	public itemUsed(itemType: string, targetPlayerId: string, fromPlayerId: string) {
+		super.itemUsed(itemType, targetPlayerId, fromPlayerId);
+		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });
+	}
 }
