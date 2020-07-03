@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     build: ./game
-    #Would be implemented to rebuild on change for developpement
+    #Would be implemented to rebuild on change for developpement 
     #volumes:
     #  - .:/usr/src/MathEnJeu
     container_name: app
@@ -13,6 +13,7 @@ services:
     environment:
       - DATABASE_HOST=db
   db:
+    #database
     build: ./database
     container_name: db
     image: mysql
