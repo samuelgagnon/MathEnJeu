@@ -8,3 +8,10 @@ services:
     #  - .:/usr/src/MathEnJeu
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+  db:
+    build: ./database
+
