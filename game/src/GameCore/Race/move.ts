@@ -1,3 +1,4 @@
+import MoveState from "../../Communication/Race/moveState";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {
@@ -10,6 +11,16 @@ export default class Move {
 		this.startTimestamp = startTimestamp;
 		this.startLocation = startLocation;
 		this.targetLocation = targetLocation;
+	}
+
+	public updateFromMoveState(moveState: MoveState): void {
+		this.startTimestamp = moveState.startTimestamp;
+		this.startLocation = moveState.startLocation;
+		this.targetLocation = moveState.targetLocation;
+	}
+
+	public getMoveState(): MoveState {
+		return { startTimestamp: this.startTimestamp, startLocation: this.startLocation, targetLocation: this.targetLocation };
 	}
 
 	private getTotalTime(): number {

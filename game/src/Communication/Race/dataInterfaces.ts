@@ -3,3 +3,8 @@ export interface ItemUsedEvent {
 	targetPlayerId: string;
 	fromPlayerId?: string;
 }
+
+export interface MoveRequestEvent {
+	playerId: string;
+	targetLocation: Point;
+}

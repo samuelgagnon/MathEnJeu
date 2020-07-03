@@ -1,7 +1,8 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../Communication/Race/bufferedInput";
-import { ItemUsedEvent } from "../../Communication/Race/dataInterfaces";
+import { ItemUsedEvent, MoveRequestEvent } from "../../Communication/Race/dataInterfaces";
 import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
+import RaceGameState from "../../Communication/Race/raceGameState";
 import User from "../../server/data/user";
 import { getObjectValues } from "../../utils/utils";
 import { ServerGame } from "../game";
@@ -31,6 +32,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.context.getId();
 	}
 
+	public getGameState(): RaceGameState {
+		let gameState: RaceGameState;
+		this.players.forEach((player: Player) => {
+			gameState.players.push(player.getPlayerState());
+		});
+
+		return gameState;
+	}
+
 	public update(): void {
 		this.resolveInputs();
 		super.update();
@@ -53,9 +63,13 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private handleSocketEvents(socket: Socket): void {
 		//TODO: generalise it so you can put it in the input buffer
 		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
-			this.itemUsed(data.itemType, data.targetPlayerId, data.fromPlayerId);
-			//const newInput: BufferedInput = { eventType: e.ITEM_USED, data: data };
-			//this.inputBuffer.push(newInput);
+			const newInput: BufferedInput = { eventType: e.ITEM_USED, data: data };
+			this.inputBuffer.push(newInput);
+		});
+
+		socket.on(e.MOVE_REQUEST, (data: MoveRequestEvent) => {
+			const newInput: BufferedInput = { eventType: e.MOVE_REQUEST, data: data };
+			this.inputBuffer.push(newInput);
 		});
 	}
 
@@ -78,14 +92,16 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		users.forEach((user) => this.handleSocketEvents(user.socket));
 	}
 
-	public getGameState() {}
-
 	public resolveInputs(): void {
 		this.inputBuffer.forEach((input: BufferedInput) => {
-			const inputData = input.data;
+			let inputData: any = input.data;
 			switch (input.eventType) {
 				case e.ITEM_USED:
-					this.itemUsed(inputData.itemType, inputData.targetPlayerId, inputData.fromPayerId);
+					this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+					break;
+
+				case e.MOVE_REQUEST:
+					this.movePlayerTo((<MoveRequestEvent>inputData).playerId, (<MoveRequestEvent>inputData).targetLocation);
 					break;
 
 				default:

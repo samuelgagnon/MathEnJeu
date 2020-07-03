@@ -1,3 +1,4 @@
+import PlayerState from "../../../Communication/Race/playerState";
 import Item from "../items/item";
 import Move from "../move";
 import Status from "./playerStatus/status";
@@ -29,6 +30,15 @@ export default class Player {
 	public update(): void {
 		this.updatePosition();
 		this.playerStatus.update();
+	}
+
+	public updateFromPlayerState(playerState: PlayerState): void {
+		this.points = playerState.points;
+		this.move.updateFromMoveState(playerState.move);
+	}
+
+	public getPlayerState(): PlayerState {
+		return <PlayerState>{ id: this.id, points: this.points, move: this.move.getMoveState(), items: [] };
 	}
 
 	public setStatusTimeStamp(statusTimeStamp: number) {

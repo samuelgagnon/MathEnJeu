@@ -1,5 +1,6 @@
 import { ItemUsedEvent } from "../../Communication/Race/dataInterfaces";
 import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
+import RaceGameState from "../../Communication/Race/raceGameState";
 import { ClientGame } from "../game";
 import Player from "./player/player";
 import RaceGameController from "./RaceGameController";
@@ -20,6 +21,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		super(gameTime, gameTimeStamp, grid, players);
 		this.currentPlayerId = currentPlayerId;
 		this.playerSocket = playerSocket;
+		this.handleSocketEvents();
 	}
 
 	public update(): void {
@@ -34,4 +36,18 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		super.itemUsed(itemType, targetPlayerId, fromPlayerId);
 		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });
 	}
+
+	private setGameState(gameState: RaceGameState): void {
+		this.players.forEach((player: Player) => {
+			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
+		});
+	}
+
+	private handleSocketEvents(): void {
+		this.playerSocket.on(e.GAME_UPDATE, (gameState: RaceGameState) => {
+			this.setGameState(gameState);
+		});
+	}
+
+	private removeSocketEvents(): void {}
 }
