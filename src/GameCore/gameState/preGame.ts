@@ -2,7 +2,6 @@ import { Socket } from "socket.io";
 import User from "../../server/data/user";
 import GameFSM from "./gameFSM";
 import State from "./state";
-import StateFactory from "./stateFactory";
 
 export default class PreGame implements State {
 	private context: GameFSM;
@@ -24,10 +23,10 @@ export default class PreGame implements State {
 	}
 
 	private startRaceGame(): void {
-		const raceGame = StateFactory.createRaceGame(this.context.getId());
-		this.context.gameStarted(raceGame);
-		this.context.transitionTo(raceGame);
-		this.removeAllUsersSocketEvents();
+		// const raceGame = StateFactory.createRaceGame(this.context.getId());
+		// this.context.gameStarted(raceGame);
+		// this.context.transitionTo(raceGame);
+		// this.removeAllUsersSocketEvents();
 	}
 
 	private handleAllUsersSocketEvents(): void {

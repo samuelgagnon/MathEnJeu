@@ -7,7 +7,7 @@ import { getObjectValues } from "../../utils/utils";
 import { ServerGame } from "../game";
 import GameFSM from "../gameState/gameFSM";
 import State from "../gameState/state";
-import StateFactory from "../gameState/stateFactory";
+import PreGameFactory from "../gameState/stateFactory";
 import Player from "./player/player";
 import RaceGameController from "./RaceGameController";
 import RaceGrid from "./RaceGrid";
@@ -40,7 +40,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private gameFinished() {
 		this.removeAllUsersSocketEvents();
 		this.context.gameFinished(this);
-		this.context.transitionTo(StateFactory.createPreGame());
+		this.context.transitionTo(PreGameFactory.createPreGame());
 	}
 
 	public userJoined(user: User): void {
