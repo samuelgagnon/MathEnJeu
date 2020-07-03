@@ -7,7 +7,7 @@ export default class BananaStatus extends Status {
 
 	constructor() {
 		super();
-		this.context.setStatusTimeStampToNow();
+		this.context.setStatusTimeStamp(Date.now());
 	}
 
 	public update(): void {
@@ -15,7 +15,7 @@ export default class BananaStatus extends Status {
 	}
 
 	public activateBananaStatus(): void {
-		this.context.setStatusTimeStampToNow();
+		this.context.setStatusTimeStamp(Date.now());
 	}
 
 	public activateBrainiacStatus(): void {

@@ -9,6 +9,7 @@ import Status from "./playerStatus/status";
 
 export default class Player {
 	readonly id: string;
+	private qtyQuestionsMissed: number;
 	private playerStatus: Status;
 	private isAnsweringQuestion: boolean = false;
 	private statusTimeStamp: number;
@@ -30,8 +31,8 @@ export default class Player {
 		this.playerStatus.update();
 	}
 
-	public setStatusTimeStampToNow() {
-		this.statusTimeStamp = Date.now();
+	public setStatusTimeStamp(statusTimeStamp: number) {
+		this.statusTimeStamp = statusTimeStamp;
 	}
 
 	public getStatusTimeStamp(): number {
