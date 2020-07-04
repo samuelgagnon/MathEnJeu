@@ -1,6 +1,7 @@
 import BrainiacStatus from "./brainiacStatus";
 import NormalStatus from "./normalStatus";
 import Status from "./status";
+import { StatusType } from "./statusType";
 
 export default class BananaStatus extends Status {
 	private readonly DEFAULT_MAX_TIME_STATUS: Number = 90000; //milliseconds
@@ -26,5 +27,9 @@ export default class BananaStatus extends Status {
 		if (Date.now() - this.context.getStatusTimeStamp() > this.DEFAULT_MAX_TIME_STATUS) {
 			this.context.transitionTo(new NormalStatus());
 		}
+	}
+
+	public getCurrentStatus(): StatusType {
+		return StatusType.BananaStatus;
 	}
 }

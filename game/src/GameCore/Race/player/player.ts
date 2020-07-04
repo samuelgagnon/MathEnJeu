@@ -1,4 +1,4 @@
-import PlayerState from "../../../Communication/Race/playerState";
+import PlayerState, { InventoryState } from "../../../Communication/Race/playerState";
 import Item from "../items/item";
 import Move from "../move";
 import Status from "./playerStatus/status";
@@ -19,6 +19,9 @@ export default class Player {
 	private position: Point;
 	private move: Move;
 	private items: Item[];
+	private bananaCount: number;
+	private crystalBallCount: number;
+	private bookCount: number;
 
 	constructor(id: string, startLocation: Point, status: Status) {
 		this.id = id;
@@ -38,7 +41,21 @@ export default class Player {
 	}
 
 	public getPlayerState(): PlayerState {
-		return <PlayerState>{ id: this.id, points: this.points, move: this.move.getMoveState(), items: [] };
+		return <PlayerState>{
+			id: this.id,
+			points: this.points,
+			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimeStamp: this.statusTimeStamp },
+			move: this.move.getMoveState(),
+			inventoryState: null,
+		};
+	}
+
+	public getInventory(): InventoryState {
+		return <InventoryState>{
+			bananaCount: this.bananaCount,
+			bookCount: this.bookCount,
+			crystalBallCount: this.crystalBallCount,
+		};
 	}
 
 	public setStatusTimeStamp(statusTimeStamp: number) {

@@ -1,4 +1,5 @@
 import Player from "../player";
+import { StatusType } from "./statusType";
 
 export default abstract class Status {
 	protected context: Player;
@@ -8,6 +9,8 @@ export default abstract class Status {
 	}
 
 	public abstract update(): void;
+
+	public abstract getCurrentStatus(): StatusType;
 
 	public abstract activateBananaStatus(): void;
 
