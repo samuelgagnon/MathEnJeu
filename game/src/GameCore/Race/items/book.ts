@@ -6,7 +6,7 @@ export default class Book implements Item {
 	readonly isForAnsweringQuestion: boolean = true;
 	location: Point;
 
-	constructor(location: Point) {
+	constructor(location?: Point) {
 		this.location = location;
 	}
 

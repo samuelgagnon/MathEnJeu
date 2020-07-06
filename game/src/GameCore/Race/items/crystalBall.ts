@@ -2,11 +2,11 @@ import Player from "../player/player";
 import Item from "./item";
 
 export default class CrystalBall implements Item {
-	readonly type: string = "Banana";
+	readonly type: string = "CrystalBall";
 	readonly isForAnsweringQuestion: boolean = true;
 	location: Point;
 
-	constructor(location: Point) {
+	constructor(location?: Point) {
 		this.location = location;
 	}
 
