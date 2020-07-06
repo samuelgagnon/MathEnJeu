@@ -5,6 +5,8 @@ export default interface PlayerState {
 	id: string;
 	points: number;
 	move: MoveState;
+	isAnsweringQuestion: boolean;
+	missedQuestionsCount: number;
 	statusState: StatusState;
 	inventoryState: InventoryState;
 }
