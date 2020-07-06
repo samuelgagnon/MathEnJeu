@@ -6,7 +6,7 @@ export default class Banana implements Item {
 	readonly isForAnsweringQuestion: boolean = false;
 	location: Point;
 
-	constructor(location: Point) {
+	constructor(location?: Point) {
 		this.location = location;
 	}
 
