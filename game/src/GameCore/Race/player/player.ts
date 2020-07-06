@@ -2,7 +2,7 @@ import PlayerState from "../../../Communication/Race/playerState";
 import Item from "../items/item";
 import Move from "../move";
 import Inventory from "./inventory";
-import { startingInventory } from "./inventoryArray";
+import { startingInventory } from "./inventoryObject";
 import Status from "./playerStatus/status";
 
 /**
@@ -15,7 +15,6 @@ export default class Player {
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
 	private isAnsweringQuestion: boolean = false;
-	private statusTimeStamp: number;
 	private name: string;
 	private points: number = 0;
 	private position: Point;
@@ -40,6 +39,8 @@ export default class Player {
 		this.points = playerState.points;
 		this.isAnsweringQuestion = playerState.isAnsweringQuestion;
 		this.missedQuestionsCount = playerState.missedQuestionsCount;
+		this.inventory.updateInventoryFromState(playerState.inventoryState);
+		this.playerStatus.updateFromState(playerState.statusState);
 		this.move.updateFromMoveState(playerState.move);
 	}
 
@@ -47,7 +48,7 @@ export default class Player {
 		return <PlayerState>{
 			id: this.id,
 			points: this.points,
-			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimeStamp: this.statusTimeStamp },
+			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
 			inventoryState: this.inventory.getInventoryState(),
 		};
@@ -55,14 +56,6 @@ export default class Player {
 
 	public getInventory(): Inventory {
 		return this.inventory;
-	}
-
-	public setStatusTimeStamp(statusTimeStamp: number) {
-		this.statusTimeStamp = statusTimeStamp;
-	}
-
-	public getStatusTimeStamp(): number {
-		return this.statusTimeStamp;
 	}
 
 	public getIsAnsweringQuestion(): boolean {

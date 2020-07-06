@@ -13,7 +13,7 @@ export default interface PlayerState {
 
 export interface StatusState {
 	statusType: StatusType;
-	statusTimeStamp: number;
+	statusTimestamp: number;
 }
 
 export interface InventoryState {

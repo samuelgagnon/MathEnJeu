@@ -75,3 +75,5 @@ export default class InventoryObject implements Inventory {
 		}
 	}
 }
+
+export const startingInventory: InventoryObject = new InventoryObject(0, 0, 0);
