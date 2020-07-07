@@ -2,7 +2,7 @@ import { InventoryState } from "../../../Communication/Race/playerState";
 import Banana from "../items/banana";
 import Book from "../items/book";
 import CrystalBall from "../items/crystalBall";
-import Item from "../items/item";
+import Item, { ItemType } from "../items/item";
 import Inventory from "./inventory";
 
 export default class InventoryObject implements Inventory {
@@ -32,13 +32,13 @@ export default class InventoryObject implements Inventory {
 
 	public addItem(item: Item): void {
 		switch (item.type) {
-			case "Banana":
+			case ItemType.Banana:
 				this.bananaCount += 1;
 				break;
-			case "Book":
+			case ItemType.Book:
 				this.bookCount += 1;
 				break;
-			case "CrystalBall":
+			case ItemType.CrystalBall:
 				this.crystalBallCount += 1;
 				break;
 			default:
@@ -48,11 +48,11 @@ export default class InventoryObject implements Inventory {
 
 	public getItem(itemType: string): Item {
 		switch (itemType) {
-			case "Banana":
+			case ItemType.Banana:
 				if (this.bananaCount > 0) return new Banana();
-			case "Book":
+			case ItemType.Book:
 				if (this.bookCount > 0) return new Book();
-			case "CrystalBall":
+			case ItemType.CrystalBall:
 				if (this.crystalBallCount > 0) return new CrystalBall();
 			default:
 				return undefined;
@@ -61,13 +61,13 @@ export default class InventoryObject implements Inventory {
 
 	public removeItem(itemType: string): void {
 		switch (itemType) {
-			case "Banana":
+			case ItemType.Banana:
 				this.bananaCount -= 1;
 				break;
-			case "Book":
+			case ItemType.Book:
 				this.bookCount -= 1;
 				break;
-			case "CrystalBall":
+			case ItemType.CrystalBall:
 				this.crystalBallCount -= 1;
 				break;
 			default:

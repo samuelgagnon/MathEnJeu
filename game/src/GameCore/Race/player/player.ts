@@ -1,5 +1,5 @@
 import PlayerState from "../../../Communication/Race/playerState";
-import Item from "../items/item";
+import Item, { ItemType } from "../items/item";
 import Move from "../move";
 import Inventory from "./inventory";
 import { startingInventory } from "./inventoryObject";
@@ -79,7 +79,7 @@ export default class Player {
 		this.position = this.move.getCurrentPosition();
 	}
 
-	public useItemType(itemType: string, target: Player): void {
+	public useItemType(itemType: ItemType, target: Player): void {
 		// const itemUsedIndex = this.items.findIndex((item) => item.type == itemType);
 		// if (itemUsedIndex == -1) return; //TODO: maybe return false if item is not found ?
 		// const usedItem = this.items[itemUsedIndex];

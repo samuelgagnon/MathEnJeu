@@ -1,5 +1,7 @@
+import { ItemType } from "../../GameCore/Race/items/item";
+
 export interface ItemUsedEvent {
-	itemType: string;
+	itemType: ItemType;
 	targetPlayerId: string;
 	fromPlayerId?: string;
 }

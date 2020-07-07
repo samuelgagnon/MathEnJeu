@@ -1,8 +1,8 @@
 import Player from "../player/player";
-import Item from "./item";
+import Item, { ItemType } from "./item";
 
 export default class Brainiac implements Item {
-	readonly type: string = "Brainiac";
+	readonly type: ItemType = ItemType.Brainiac;
 	readonly isForAnsweringQuestion: boolean = false;
 	location: Point;
 

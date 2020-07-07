@@ -1,9 +1,16 @@
 import Player from "../player/player";
 
 export default interface Item {
-	readonly type: string;
+	readonly type: ItemType;
 	readonly isForAnsweringQuestion: boolean;
 	location: Point;
 	onPickUp(player: Player): void;
 	use(target: Player, from?: Player): void;
+}
+
+export enum ItemType {
+	Banana = "Banana",
+	Brainiac = "Brainiac",
+	Book = "Book",
+	CrystalBall = "CrystalBall",
 }

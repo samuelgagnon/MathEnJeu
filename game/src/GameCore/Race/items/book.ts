@@ -1,8 +1,8 @@
 import Player from "../player/player";
-import Item from "./item";
+import Item, { ItemType } from "./item";
 
 export default class Book implements Item {
-	readonly type: string = "Book";
+	readonly type: ItemType = ItemType.Book;
 	readonly isForAnsweringQuestion: boolean = true;
 	location: Point;
 
