@@ -1,8 +1,7 @@
 import PlayerState from "../../../Communication/Race/playerState";
 import Item, { ItemType } from "../items/item";
 import Move from "../move";
-import Inventory from "./inventory";
-import { startingInventory } from "./inventoryObject";
+import Inventory, { startingInventory } from "./inventory";
 import Status from "./playerStatus/status";
 
 /**
