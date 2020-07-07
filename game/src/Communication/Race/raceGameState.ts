@@ -3,6 +3,6 @@ import PlayerState from "./playerState";
 
 export default interface RaceGameState {
 	players: PlayerState[];
-	items: ItemState[];
+	itemsState: ItemState[];
 	//Data concerning the game remaining time?
 }

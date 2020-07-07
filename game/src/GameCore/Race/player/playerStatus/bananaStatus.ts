@@ -1,30 +1,49 @@
-import BrainiacStatus from "./brainiacStatus";
-import NormalStatus from "./normalStatus";
+import { StatusState } from "../../../../Communication/Race/playerState";
 import Status from "./status";
+import StatusFactory from "./statusFactory";
+import { StatusType } from "./statusType";
 
 export default class BananaStatus extends Status {
 	private readonly DEFAULT_MAX_TIME_STATUS: Number = 90000; //milliseconds
 
-	constructor() {
+	constructor(startTimestamp: number) {
 		super();
-		this.context.setStatusTimeStamp(Date.now());
+		this.startTimeStatus = startTimestamp;
 	}
 
 	public update(): void {
 		this.setToNormalStatusIfCurrentStatusIsOver();
 	}
 
+	public updateFromState(statusState: StatusState): void {
+		switch (statusState.statusType) {
+			case StatusType.BananaStatus:
+				this.startTimeStatus = statusState.statusTimestamp;
+				break;
+			case StatusType.BrainiacStatus:
+				this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus, statusState.statusTimestamp));
+				break;
+			case StatusType.NormalStatus:
+				this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
+				break;
+		}
+	}
+
 	public activateBananaStatus(): void {
-		this.context.setStatusTimeStamp(Date.now());
+		this.startTimeStatus = Date.now();
 	}
 
 	public activateBrainiacStatus(): void {
-		this.context.transitionTo(new BrainiacStatus());
+		this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus));
 	}
 
 	private setToNormalStatusIfCurrentStatusIsOver() {
-		if (Date.now() - this.context.getStatusTimeStamp() > this.DEFAULT_MAX_TIME_STATUS) {
-			this.context.transitionTo(new NormalStatus());
+		if (Date.now() - this.startTimeStatus > this.DEFAULT_MAX_TIME_STATUS) {
+			this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 		}
+	}
+
+	public getCurrentStatus(): StatusType {
+		return StatusType.BananaStatus;
 	}
 }

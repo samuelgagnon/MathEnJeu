@@ -1,12 +1,14 @@
 import Player from "../player/player";
-import Item from "./item";
+import Item, { ItemType } from "./item";
 
 export default class Banana implements Item {
-	readonly type: string = "Banana";
+	readonly type: ItemType = ItemType.Banana;
 	readonly isForAnsweringQuestion: boolean = false;
 	location: Point;
 
-	constructor(location: Point) {
+	//Position doesn't exist when on a player
+	//Must specify position when in RaceGrid
+	constructor(location?: Point) {
 		this.location = location;
 	}
 

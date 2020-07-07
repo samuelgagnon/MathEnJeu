@@ -1,4 +1,4 @@
-import Item from "./items/item";
+import Item, { ItemType } from "./items/item";
 import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
@@ -18,13 +18,26 @@ export default abstract class RaceGameController {
 		this.players = players;
 	}
 
+	public update(): void {
+		this.gameLogicUpdate();
+		this.playersUpdate();
+	}
+
 	protected gameLogicUpdate(): void {
 		this.timeRemaining = this.gameTime - (Date.now() - this.gameStartTimeStamp);
+		//TODO: Do we keep the game finished logic here or send an event to the clients to notify game ended.
+		if (this.timeRemaining < 0) this.gameFinished();
+	}
+
+	private playersUpdate() {
+		this.players.forEach((player) => player.update());
 	}
 
 	public addPlayer(player: Player): void {
 		this.players.push(player);
 	}
+
+	protected abstract gameFinished(): void;
 
 	public removePlayer(socketId: string) {
 		this.players = this.players.filter((player) => player.id !== socketId);
@@ -39,7 +52,7 @@ export default abstract class RaceGameController {
 		return this.players.find((player) => player.id == playerId);
 	}
 
-	protected itemUsed(itemType: string, targetPlayerId: string, fromPlayerId: string): void {
+	protected itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string): void {
 		const target: Player = this.findPlayer(targetPlayerId);
 		const from: Player = this.findPlayer(fromPlayerId);
 

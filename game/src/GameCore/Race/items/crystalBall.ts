@@ -1,12 +1,12 @@
 import Player from "../player/player";
-import Item from "./item";
+import Item, { ItemType } from "./item";
 
 export default class CrystalBall implements Item {
-	readonly type: string = "Banana";
+	readonly type: ItemType = ItemType.CrystalBall;
 	readonly isForAnsweringQuestion: boolean = true;
 	location: Point;
 
-	constructor(location: Point) {
+	constructor(location?: Point) {
 		this.location = location;
 	}
 

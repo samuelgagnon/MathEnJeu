@@ -1,5 +1,12 @@
+import { ItemType } from "../../GameCore/Race/items/item";
+
 export interface ItemUsedEvent {
-	itemType: string;
+	itemType: ItemType;
 	targetPlayerId: string;
-	fromPayerId?: string;
+	fromPlayerId?: string;
+}
+
+export interface MoveRequestEvent {
+	playerId: string;
+	targetLocation: Point;
 }

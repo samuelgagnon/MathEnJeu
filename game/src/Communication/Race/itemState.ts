@@ -1,4 +1,6 @@
+import { ItemType } from "../../GameCore/Race/items/item";
+
 export default interface ItemState {
-	name: string;
+	type: ItemType;
 	location: Point;
 }

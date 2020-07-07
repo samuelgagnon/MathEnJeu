@@ -1,9 +1,23 @@
-import ItemState from "./itemState";
+import { StatusType } from "../../GameCore/Race/player/playerStatus/statusType";
 import MoveState from "./moveState";
 
 export default interface PlayerState {
-	socketId: string;
+	id: string;
 	points: number;
 	move: MoveState;
-	items: ItemState[]; //A player doesn't need to know his enemies' items?
+	isAnsweringQuestion: boolean;
+	missedQuestionsCount: number;
+	statusState: StatusState;
+	inventoryState: InventoryState;
+}
+
+export interface StatusState {
+	statusType: StatusType;
+	statusTimestamp: number;
+}
+
+export interface InventoryState {
+	bananaCount: number;
+	crystalBallCount: number;
+	bookCount: number;
 }

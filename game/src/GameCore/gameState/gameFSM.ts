@@ -32,6 +32,10 @@ export default class GameFSM {
 		return this.roomString;
 	}
 
+	public getNamespace(): SocketIO.Namespace {
+		return this.nsp;
+	}
+
 	public transitionTo(nextState: State): void {
 		this.state = nextState;
 		this.state.setContext(this);
