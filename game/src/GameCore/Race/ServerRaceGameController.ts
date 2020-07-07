@@ -15,7 +15,6 @@ import RaceGrid from "./RaceGrid";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private context: GameFSM;
-	private tick: number;
 	private inputBuffer: BufferedInput[] = [];
 
 	constructor(gameTime: number, grid: RaceGrid, players: Player[]) {
@@ -61,7 +60,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		//TODO: generalise it so you can put it in the input buffer
 		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
 			const newInput: BufferedInput = { eventType: e.ITEM_USED, data: data };
 			this.inputBuffer.push(newInput);

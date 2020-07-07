@@ -22,7 +22,7 @@ export default class RaceScene extends Phaser.Scene {
 		//this.raceGame = new ClientRaceGameController();
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
-		this.gameState = { players: [], items: [] };
+		this.gameState = { players: [], itemsState: [] };
 		//this.initializeSocket();
 	}
 

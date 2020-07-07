@@ -9,6 +9,7 @@ import RaceGrid from "./RaceGrid";
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
 	private playerSocket: SocketIOClient.Socket;
+	private isGameFinished: boolean = false;
 
 	constructor(
 		gameTime: number,
@@ -30,6 +31,8 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 	protected gameFinished(): void {
 		//Client does something when game is over. Maybe put a flag up to so the interface can act.
+		this.removeSocketEvents();
+		this.isGameFinished = true;
 	}
 
 	public itemUsed(itemType: string, targetPlayerId: string, fromPlayerId: string) {
@@ -37,7 +40,8 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });
 	}
 
-	private setGameState(gameState: RaceGameState): void {
+	public setGameState(gameState: RaceGameState): void {
+		this.grid.updateFromItemStates(gameState.itemsState);
 		this.players.forEach((player: Player) => {
 			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
 		});
@@ -49,5 +53,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	private removeSocketEvents(): void {}
+	private removeSocketEvents(): void {
+		this.playerSocket.removeEventListener(e.GAME_UPDATE);
+	}
 }
