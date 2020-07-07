@@ -1,8 +1,6 @@
 import { InventoryState } from "../../../Communication/Race/playerState";
-import Banana from "../items/banana";
-import Book from "../items/book";
-import CrystalBall from "../items/crystalBall";
 import Item, { ItemType } from "../items/item";
+import ItemFactory from "../items/itemFactory";
 import Inventory from "./inventory";
 
 export default class InventoryObject implements Inventory {
@@ -49,11 +47,11 @@ export default class InventoryObject implements Inventory {
 	public getItem(itemType: string): Item {
 		switch (itemType) {
 			case ItemType.Banana:
-				if (this.bananaCount > 0) return new Banana();
+				if (this.bananaCount > 0) return ItemFactory.create(ItemType.Banana);
 			case ItemType.Book:
-				if (this.bookCount > 0) return new Book();
+				if (this.bookCount > 0) return ItemFactory.create(ItemType.Book);
 			case ItemType.CrystalBall:
-				if (this.crystalBallCount > 0) return new CrystalBall();
+				if (this.crystalBallCount > 0) return ItemFactory.create(ItemType.CrystalBall);
 			default:
 				return undefined;
 		}
