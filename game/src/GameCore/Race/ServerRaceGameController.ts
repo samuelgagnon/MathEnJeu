@@ -31,8 +31,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.context.getId();
 	}
 
-	public getGameState(): RaceGameState {
+	private getGameState(): RaceGameState {
 		let gameState: RaceGameState;
+		gameState.itemsState = this.grid.getItemsState();
 		this.players.forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());
 		});
@@ -43,6 +44,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	public update(): void {
 		this.resolveInputs();
 		super.update();
+		this.context.getNamespace().to(this.context.getRoomString()).emit(e.GAME_UPDATE, this.getGameState());
 	}
 
 	protected gameFinished(): void {

@@ -15,6 +15,10 @@ export default class RaceGrid {
 		this.items = items;
 	}
 
+	public getItemsState(): ItemState[] {
+		return this.items;
+	}
+
 	public updateFromItemStates(itemStates: ItemState[]): void {
 		//Checks the missing elements from the client items list that are in the server items list
 		let itemsToAdd: ItemState[] = itemStates.filter((x) => !this.items.includes(x));
