@@ -1,4 +1,4 @@
-import Item from "./items/item";
+import Item, { ItemType } from "./items/item";
 import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
@@ -52,7 +52,7 @@ export default abstract class RaceGameController {
 		return this.players.find((player) => player.id == playerId);
 	}
 
-	protected itemUsed(itemType: string, targetPlayerId: string, fromPlayerId: string): void {
+	protected itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string): void {
 		const target: Player = this.findPlayer(targetPlayerId);
 		const from: Player = this.findPlayer(fromPlayerId);
 

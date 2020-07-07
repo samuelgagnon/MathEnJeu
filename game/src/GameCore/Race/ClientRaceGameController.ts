@@ -1,7 +1,8 @@
-import { ItemUsedEvent } from "../../Communication/Race/dataInterfaces";
+import { ItemUsedEvent, MoveRequestEvent } from "../../Communication/Race/dataInterfaces";
 import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
 import RaceGameState from "../../Communication/Race/raceGameState";
 import { ClientGame } from "../game";
+import { ItemType } from "./items/item";
 import Player from "./player/player";
 import RaceGameController from "./RaceGameController";
 import RaceGrid from "./RaceGrid";
@@ -35,9 +36,13 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.isGameFinished = true;
 	}
 
-	public itemUsed(itemType: string, targetPlayerId: string, fromPlayerId: string) {
+	public itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string) {
 		super.itemUsed(itemType, targetPlayerId, fromPlayerId);
 		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });
+	}
+
+	public playerMoveRequest(targetLocation: Point): void {
+		this.playerSocket.emit(e.MOVE_REQUEST, <MoveRequestEvent>{ playerId: this.currentPlayerId, targetLocation: targetLocation });
 	}
 
 	public setGameState(gameState: RaceGameState): void {
