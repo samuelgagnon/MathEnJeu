@@ -1,5 +1,6 @@
 import { Socket } from "socket.io";
 import User from "../../server/data/user";
+import RaceGameFactory from "../Race/raceGameFactory";
 import GameFSM from "./gameFSM";
 import State from "./state";
 
@@ -23,10 +24,11 @@ export default class PreGame implements State {
 	}
 
 	private startRaceGame(): void {
-		// const raceGame = StateFactory.createRaceGame(this.context.getId());
-		// this.context.gameStarted(raceGame);
-		// this.context.transitionTo(raceGame);
-		// this.removeAllUsersSocketEvents();
+		const raceGame = RaceGameFactory.createServer(this.context.getUsers());
+		this.removeAllUsersSocketEvents();
+		console.log("Race game starts !");
+		this.context.gameStarted(raceGame);
+		this.context.transitionTo(raceGame);
 	}
 
 	private handleAllUsersSocketEvents(): void {
@@ -42,7 +44,13 @@ export default class PreGame implements State {
 		users.forEach((user) => this.removeSocketEvents(user.socket));
 	}
 
-	private handleSocketEvents(socket: Socket): void {}
+	private handleSocketEvents(socket: Socket): void {
+		socket.on("start-game", () => {
+			this.startRaceGame();
+		});
+	}
 
-	private removeSocketEvents(socket: Socket): void {}
+	private removeSocketEvents(socket: Socket): void {
+		socket.removeAllListeners("start-game");
+	}
 }

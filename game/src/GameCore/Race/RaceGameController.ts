@@ -3,9 +3,9 @@ import Player from "./player/player";
 import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
-	private readonly gameTime: number;
+	protected readonly gameTime: number;
 	protected timeRemaining: number;
-	private readonly gameStartTimeStamp: number;
+	protected readonly gameStartTimeStamp: number;
 	protected grid: RaceGrid;
 	protected players: Player[] = [];
 	protected items: Item[];

@@ -1,7 +1,7 @@
 import PlayerState from "../../../Communication/Race/playerState";
 import Item, { ItemType } from "../items/item";
 import Move from "../move";
-import Inventory, { startingInventory } from "./inventory";
+import Inventory from "./inventory";
 import Status from "./playerStatus/status";
 
 /**
@@ -20,12 +20,12 @@ export default class Player {
 	private move: Move;
 	private inventory: Inventory;
 
-	constructor(id: string, startLocation: Point, name: string, status: Status) {
+	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
 		this.position = startLocation;
 		this.move = new Move(Date.now(), startLocation, startLocation);
 		this.name = name;
-		this.inventory = startingInventory;
+		this.inventory = inventory;
 		this.transitionTo(status);
 	}
 

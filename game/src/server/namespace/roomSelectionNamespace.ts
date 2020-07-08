@@ -24,9 +24,9 @@ export default class RoomSelectionNamespace {
 				this.roomRepo.getAllRooms().map((room) => room.getRoomId())
 			);
 
-			// socket.on("disconnect", () => {
-			// 	console.log("room selection disconnection");
-			// });
+			socket.on("disconnect", () => {
+				console.log("room selection disconnection");
+			});
 
 			this.sendRoomsToClient(socket);
 		});
