@@ -13,9 +13,10 @@ import { Server } from "./server";
 const app = express();
 const httpServer = createServer(app);
 const io = socketIO(httpServer);
-const db = new DataBaseHandler();
 
 //test DB
+//const db = new DataBaseHandler("172.18.0.2", "root", "123", "mathamaze2", 3306);
+const db = new DataBaseHandler("127.0.0.1", "root", "123", "mathamaze2", 3306);
 db.getFirstQuestion();
 
 // /static is used to define the root folder when webpack bundles

@@ -2,13 +2,13 @@ import { Connection } from "mysql";
 
 export default class DataBaseHandler {
 	private mysql = require("mysql");
-	private host: string;
-	private user: string;
-	private password: string;
-	private database: string;
-	private port: number;
+	private host: string = "127.0.0.1";
+	private user: string = "root";
+	private password: string = "";
+	private database: string = "mathenjeudb";
+	private port: number = 3306;
 
-	DataBaseHandler(host = "127.0.0.1", user = "root", password = "123", database = "mathenjeudb", port = 3306) {
+	constructor(host: string, user: string, password: string, database: string, port: number) {
 		this.host = host;
 		this.user = user;
 		this.password = password;
