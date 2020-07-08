@@ -8,7 +8,8 @@ export default class RoomSelection extends Phaser.Scene {
 	private inputHtml: Phaser.GameObjects.DOMElement;
 	private roomsListHtml: Phaser.GameObjects.DOMElement;
 
-	private socket: SocketIOClient.Socket;
+	private roomSelectionSocket: SocketIOClient.Socket;
+	private gameSocket: SocketIOClient.Socket;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.ROOM_SELECTION };
@@ -16,9 +17,10 @@ export default class RoomSelection extends Phaser.Scene {
 	}
 
 	init() {
-		this.socket = connectToRoomSelectionNamespace();
+		this.roomSelectionSocket = connectToRoomSelectionNamespace();
+		this.gameSocket = connectToGameNamespace();
 		this.events.on("shutdown", () => {
-			this.socket.close();
+			this.roomSelectionSocket.close();
 		});
 	}
 
@@ -32,7 +34,7 @@ export default class RoomSelection extends Phaser.Scene {
 		this.inputHtml = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache("playerInput");
 		this.roomsListHtml = this.add.dom(1000, this.game.renderer.height * 0.3).createFromCache("roomsList");
 
-		this.socket.on("room-update", (rooms: []) => {
+		this.roomSelectionSocket.on("room-update", (rooms: []) => {
 			let roomList = <HTMLInputElement>this.roomsListHtml.getChildByID("roomList");
 
 			while (roomList.firstChild) {
@@ -44,6 +46,10 @@ export default class RoomSelection extends Phaser.Scene {
 				li.appendChild(document.createTextNode(room));
 				roomList.appendChild(li);
 			});
+		});
+
+		this.gameSocket.once("room-joined", () => {
+			this.scene.start(CST.SCENES.WAITING_ROOM);
 		});
 
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
@@ -90,10 +96,8 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-			const socket = connectToGameNamespace();
 
-			createRoom(socket);
-			// this.scene.start(CST.SCENES.WAITING_ROOM);
+			createRoom(this.gameSocket);
 		});
 
 		this.joinRoomButton.on("pointerover", () => {
@@ -111,7 +115,7 @@ export default class RoomSelection extends Phaser.Scene {
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
 			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
-			//this.scene.start(CST.SCENES.WAITING_ROOM);
+			this.gameSocket.emit("join-room", { roomId });
 		});
 
 		this.backButton.on("pointerover", () => {

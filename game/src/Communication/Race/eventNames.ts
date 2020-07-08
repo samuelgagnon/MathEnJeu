@@ -4,4 +4,8 @@ export const EVENT_NAMES = {
 	ITEM_USED: "item-used",
 };
 
+export const CLIENT_EVENT_NAMES = {
+	GAME_START: "game-start",
+};
+
 export default EVENT_NAMES;

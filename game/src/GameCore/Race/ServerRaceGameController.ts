@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../Communication/Race/bufferedInput";
-import { ItemUsedEvent, MoveRequestEvent } from "../../Communication/Race/dataInterfaces";
-import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
+import { GameStartEvent, ItemUsedEvent, MoveRequestEvent } from "../../Communication/Race/dataInterfaces";
+import { CLIENT_EVENT_NAMES, EVENT_NAMES as e } from "../../Communication/Race/eventNames";
 import RaceGameState from "../../Communication/Race/raceGameState";
 import User from "../../server/data/user";
 import { getObjectValues } from "../../utils/utils";
@@ -21,6 +21,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		//The server has the truth regarding the start timestamp.
 		super(gameTime, Date.now(), grid, players);
 		this.handleAllUsersSocketEvents();
+		this.emitStartGameEvent();
 	}
 
 	public setContext(context: GameFSM): void {
@@ -29,6 +30,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	public getGameId(): string {
 		return this.context.getId();
+	}
+
+	private emitStartGameEvent(): void {
+		this.context
+			.getNamespace()
+			.to(this.context.getRoomString())
+			.emit(CLIENT_EVENT_NAMES.GAME_START, <GameStartEvent>{
+				gameTime: this.gameTime,
+				gameStartTimeStamp: this.gameStartTimeStamp,
+				grid: this.grid,
+				players: this.players,
+			});
 	}
 
 	private getGameState(): RaceGameState {

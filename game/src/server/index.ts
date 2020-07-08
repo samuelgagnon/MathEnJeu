@@ -2,7 +2,6 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import socketIO from "socket.io";
-import DataBaseHandler from "../database/DataBaseHandler";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
 import GameManager from "./gameManager";
@@ -13,10 +12,6 @@ import { Server } from "./server";
 const app = express();
 const httpServer = createServer(app);
 const io = socketIO(httpServer);
-const db = new DataBaseHandler();
-
-//test DB
-db.getFirstQuestion();
 
 // /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));

@@ -19,7 +19,6 @@
     "@types/socket.io": "^2.1.4",
     "@types/socket.io-client": "^1.4.33",
     "@types/uuid": "^8.0.0",
-    "@types/mysql": "^2.15.14",
     "copy-webpack-plugin": "^6.0.1",
     "docker-compose": "^0.23.4",
     "html-webpack-plugin": "^4.3.0",
@@ -34,7 +33,6 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "mysql": "^2.18.1",
     "phaser": "^3.23.0",
     "phaser3-plugin-isometric": "0.0.7",
     "phaser3-rex-plugins": "^1.1.18",

@@ -23,12 +23,14 @@ export class Room {
 	public joinRoom(clientSocket: Socket): void {
 		const user: User = {
 			userId: clientSocket.id,
+			name: "test",
 			socket: clientSocket,
 		};
 		this.users.push(user);
 		clientSocket.join(this.roomString);
 		this.handleSocketEvents(clientSocket);
 		this.gameFSM.userJoined(user);
+		clientSocket.emit("room-joined");
 	}
 
 	public leaveRoom(clientSocket: Socket): void {

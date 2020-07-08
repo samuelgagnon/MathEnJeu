@@ -45,6 +45,7 @@ export default class RoomManager {
 			socket.on("join-room", (req) => {
 				try {
 					const roomId: string = req.roomId;
+					console.log(`joining room: ${roomId}`);
 					const currentRoom = this.roomRepo.getRoomById(roomId);
 					if (currentRoom == undefined) {
 						throw new RoomNotFoundError(`Room ${roomId} was not found`);

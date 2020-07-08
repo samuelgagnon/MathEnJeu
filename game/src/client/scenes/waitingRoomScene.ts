@@ -11,10 +11,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	init() {}
 
 	create() {
-		this.add
-			.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD)
-			.setOrigin(0)
-			.setDepth(0);
+		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
 		this.startButton = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
 			fontFamily: "Courier",
@@ -40,7 +37,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.startButton.on("pointerup", () => {
 			this.startButton.clearTint();
-			this.scene.start(CST.SCENES.MENU);
 		});
 	}
 }

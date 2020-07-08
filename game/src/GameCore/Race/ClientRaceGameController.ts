@@ -14,13 +14,13 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 	constructor(
 		gameTime: number,
-		gameTimeStamp: number,
+		gameStartTimeStamp: number,
 		grid: RaceGrid,
 		players: Player[],
 		currentPlayerId: string,
 		playerSocket: SocketIOClient.Socket
 	) {
-		super(gameTime, gameTimeStamp, grid, players);
+		super(gameTime, gameStartTimeStamp, grid, players);
 		this.currentPlayerId = currentPlayerId;
 		this.playerSocket = playerSocket;
 		this.handleSocketEvents();
