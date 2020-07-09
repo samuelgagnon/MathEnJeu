@@ -2,7 +2,6 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import socketIO from "socket.io";
-import DataBaseHandler from "../database/DataBaseHandler";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
 import GameManager from "./gameManager";
@@ -16,8 +15,26 @@ const io = socketIO(httpServer);
 
 //test DB
 //const db = new DataBaseHandler("172.18.0.2", "root", "123", "mathamaze2", 3306);
-const db = new DataBaseHandler("127.0.0.1", "root", "123", "mathamaze2", 3306);
-db.getFirstQuestion();
+//const db = new DataBaseHandler("127.0.0.1", "root", "123", "mathamaze2", 3306);
+//db.getFirstQuestion();
+
+var mysql = require("mysql");
+
+var con = mysql.createConnection({
+	host: "127.0.0.1",
+	user: "root",
+	password: "123",
+	database: "mathamaze2",
+	port: 3306,
+});
+
+con.connect(function (err) {
+	if (err) {
+		console.error("error connecting: " + err.stack);
+	} else {
+		console.log("Connected!");
+	}
+});
 
 // /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));

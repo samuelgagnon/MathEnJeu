@@ -31,7 +31,7 @@ export default class DataBaseHandler {
 				return;
 			}
 			console.log("connected as id " + connection.threadId);
-			connection.query("SELECT TOP 1 * FROM question", (err, result, fields) => {
+			connection.query("SELECT COUNT(*) FROM question;", (err, result, fields) => {
 				if (err) throw err;
 				console.log(result);
 			});
