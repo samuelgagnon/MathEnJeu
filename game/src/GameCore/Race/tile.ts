@@ -2,16 +2,16 @@ import Item from "./items/item";
 import Player from "./player/player";
 
 export default class Tile {
-	private item?: Item;
-	readonly isWakable: boolean;
+	private item: Item;
+	readonly isWalkable: boolean;
 	readonly isStartPosition: boolean;
 	readonly isFnishLine: boolean;
 
-	constructor(isWakable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item) {
-		this.item = item;
-		this.isWakable = isWakable;
+	constructor(isWalkable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item) {
+		this.isWalkable = isWalkable;
 		this.isStartPosition = startPosition;
 		this.isFnishLine = isFinishLine;
+		this.item = item;
 	}
 
 	public getItem(): Item {

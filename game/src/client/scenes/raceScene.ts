@@ -1,5 +1,5 @@
 import RaceGameState from "../../Communication/Race/raceGameState";
-import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameController";
+import ClientRaceGameController from "../../GameCore/Race/clientRaceGameController";
 import { CST } from "../CST";
 
 export default class RaceScene extends Phaser.Scene {
@@ -18,12 +18,11 @@ export default class RaceScene extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	init() {
-		//this.raceGame = new ClientRaceGameController();
+	init(data: any) {
+		this.raceGame = data.gameController;
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.gameState = { players: [], itemsState: [] };
-		//this.initializeSocket();
 	}
 
 	create() {
@@ -52,17 +51,4 @@ export default class RaceScene extends Phaser.Scene {
 		}
 		this.render();
 	}
-
-	//Socket initialization is temporarly here for loop tests.
-	/*
-	initializeSocket() {
-		this.socket = io();
-		this.socket.on("connect", () => {
-			this.loopTestGame.addPlayer(this.socket.id);
-		});
-		this.socket.on("clientUpdate", (serverState) => {
-			this.serverState = serverState;
-			//console.log(serverState);
-		});
-	}*/
 }

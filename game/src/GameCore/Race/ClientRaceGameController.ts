@@ -4,8 +4,8 @@ import RaceGameState from "../../Communication/Race/raceGameState";
 import { ClientGame } from "../game";
 import { ItemType } from "./items/item";
 import Player from "./player/player";
-import RaceGameController from "./RaceGameController";
-import RaceGrid from "./RaceGrid";
+import RaceGameController from "./raceGameController";
+import RaceGrid from "./raceGrid";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
@@ -46,10 +46,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public setGameState(gameState: RaceGameState): void {
-		this.grid.updateFromItemStates(gameState.itemsState);
 		this.players.forEach((player: Player) => {
 			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
 		});
+		this.grid.updateFromItemStates(gameState.itemsState);
 	}
 
 	private handleSocketEvents(): void {

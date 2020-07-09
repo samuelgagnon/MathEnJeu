@@ -3,6 +3,7 @@ import MoveState from "./moveState";
 
 export default interface PlayerState {
 	id: string;
+	name: string;
 	points: number;
 	move: MoveState;
 	isAnsweringQuestion: boolean;

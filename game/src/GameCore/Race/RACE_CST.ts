@@ -4,7 +4,7 @@ export const RACE_CST = {
 	},
 	CIRCUIT: {
 		GAME_MAX_LENGTH: 45 * 60 * 1000, //in milliseconds
-		GRID_WIDTH: 24,
-		GRID_HEIGTH: 24,
+		GRID_WIDTH: 6,
+		GRID_HEIGTH: 6,
 	},
 };

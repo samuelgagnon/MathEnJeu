@@ -1,6 +1,6 @@
 import Item, { ItemType } from "./items/item";
 import Player from "./player/player";
-import RaceGrid from "./RaceGrid";
+import RaceGrid from "./raceGrid";
 
 export default abstract class RaceGameController {
 	protected readonly gameTime: number;

@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { CLIENT_EVENT_NAMES } from "../../Communication/Race/eventNames";
 import User from "../../server/data/user";
 import RaceGameFactory from "../Race/raceGameFactory";
 import GameFSM from "./gameFSM";
@@ -24,7 +25,7 @@ export default class PreGame implements State {
 	}
 
 	private startRaceGame(): void {
-		const raceGame = RaceGameFactory.createServer(this.context.getUsers());
+		const raceGame = RaceGameFactory.createServer(this.context.getId(), this.context.getUsers());
 		this.removeAllUsersSocketEvents();
 		console.log("Race game starts !");
 		this.context.gameStarted(raceGame);
@@ -45,12 +46,12 @@ export default class PreGame implements State {
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		socket.on("start-game", () => {
+		socket.on(CLIENT_EVENT_NAMES.GAME_START, () => {
 			this.startRaceGame();
 		});
 	}
 
 	private removeSocketEvents(socket: Socket): void {
-		socket.removeAllListeners("start-game");
+		socket.removeAllListeners(CLIENT_EVENT_NAMES.GAME_START);
 	}
 }

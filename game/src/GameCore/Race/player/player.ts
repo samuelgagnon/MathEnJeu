@@ -35,6 +35,8 @@ export default class Player {
 	}
 
 	public updateFromPlayerState(playerState: PlayerState): void {
+		if (!playerState) return;
+
 		this.points = playerState.points;
 		this.isAnsweringQuestion = playerState.isAnsweringQuestion;
 		this.missedQuestionsCount = playerState.missedQuestionsCount;
@@ -46,6 +48,7 @@ export default class Player {
 	public getPlayerState(): PlayerState {
 		return <PlayerState>{
 			id: this.id,
+			name: this.name,
 			points: this.points,
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
