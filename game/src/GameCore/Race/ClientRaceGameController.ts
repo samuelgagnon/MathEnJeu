@@ -36,13 +36,27 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.isGameFinished = true;
 	}
 
+	public getPlayers(): Player[] {
+		return this.players;
+	}
+
+	public getGrid(): RaceGrid {
+		return this.grid;
+	}
+
 	public itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string) {
 		super.itemUsed(itemType, targetPlayerId, fromPlayerId);
 		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });
 	}
 
 	public playerMoveRequest(targetLocation: Point): void {
-		this.playerSocket.emit(e.MOVE_REQUEST, <MoveRequestEvent>{ playerId: this.currentPlayerId, targetLocation: targetLocation });
+		let now = Date.now();
+		super.movePlayerTo(this.currentPlayerId, now, targetLocation);
+		this.playerSocket.emit(e.MOVE_REQUEST, <MoveRequestEvent>{
+			playerId: this.currentPlayerId,
+			startTimestamp: now,
+			targetLocation: targetLocation,
+		});
 	}
 
 	public setGameState(gameState: RaceGameState): void {

@@ -43,9 +43,9 @@ export default abstract class RaceGameController {
 		this.players = this.players.filter((player) => player.id !== socketId);
 	}
 
-	public movePlayerTo(playerId: string, targetLocation: Point): void {
+	public movePlayerTo(playerId: string, startTimestamp: number, targetLocation: Point): void {
 		const movedPlayer = this.findPlayer(playerId);
-		movedPlayer.moveTo(targetLocation);
+		movedPlayer.moveTo(startTimestamp, targetLocation);
 	}
 
 	protected findPlayer(playerId: string): Player {

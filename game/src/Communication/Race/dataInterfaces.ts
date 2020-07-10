@@ -12,6 +12,7 @@ export interface ItemUsedEvent {
 
 export interface MoveRequestEvent {
 	playerId: string;
+	startTimestamp: number;
 	targetLocation: Point;
 }
 

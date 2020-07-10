@@ -17,12 +17,14 @@ export default class Player {
 	private name: string;
 	private points: number = 0;
 	private position: Point;
+	private gridPosition: Point;
 	private move: Move;
 	private inventory: Inventory;
 
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
 		this.position = startLocation;
+		this.gridPosition = this.gridPosition;
 		this.move = new Move(Date.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
@@ -69,12 +71,20 @@ export default class Player {
 		this.playerStatus.setContext(this);
 	}
 
+	public getGridPosition(): Point {
+		return this.gridPosition;
+	}
+
 	public getPosition(): Point {
 		return this.position;
 	}
 
-	public moveTo(targetLocation: Point): void {
-		this.move = new Move(Date.now(), this.getPosition(), targetLocation);
+	public getMove(): Move {
+		return this.move;
+	}
+
+	public moveTo(startTimestamp: number, targetLocation: Point): void {
+		this.move = new Move(startTimestamp, this.position, targetLocation);
 	}
 
 	public updatePosition(): void {

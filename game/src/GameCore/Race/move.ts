@@ -2,9 +2,9 @@ import MoveState from "../../Communication/Race/moveState";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {
-	startTimestamp: number;
-	startLocation: Point;
-	targetLocation: Point;
+	private startTimestamp: number;
+	private startLocation: Point;
+	private targetLocation: Point;
 	private readonly SPEED: number = RACE_CST.MOVE.SPEED;
 
 	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point) {

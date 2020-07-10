@@ -123,13 +123,20 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case e.MOVE_REQUEST:
-					this.movePlayerTo((<MoveRequestEvent>inputData).playerId, (<MoveRequestEvent>inputData).targetLocation);
+					console.log("move requested");
+					console.log(inputData);
+					this.movePlayerTo(
+						(<MoveRequestEvent>inputData).playerId,
+						(<MoveRequestEvent>inputData).startTimestamp,
+						(<MoveRequestEvent>inputData).targetLocation
+					);
 					break;
 
 				default:
 					break;
 			}
 		});
+		this.inputBuffer = [];
 	}
 
 	private getPlayersState(): PlayerState[] {
