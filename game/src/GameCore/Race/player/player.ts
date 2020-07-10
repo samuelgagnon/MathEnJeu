@@ -71,10 +71,6 @@ export default class Player {
 		this.playerStatus.setContext(this);
 	}
 
-	public getGridPosition(): Point {
-		return this.gridPosition;
-	}
-
 	public getPosition(): Point {
 		return this.position;
 	}
