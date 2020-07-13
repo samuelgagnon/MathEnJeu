@@ -1,5 +1,6 @@
 import RaceGameState from "../../Communication/Race/raceGameState";
 import ClientRaceGameController from "../../GameCore/Race/clientRaceGameController";
+import { ItemType } from "../../GameCore/Race/items/item";
 import Move from "../../GameCore/Race/move";
 import Player from "../../GameCore/Race/player/player";
 import { CST } from "../CST";
@@ -17,6 +18,19 @@ export default class RaceScene extends Phaser.Scene {
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
+	items: Phaser.GameObjects.Group;
+	playerStatusText: Phaser.GameObjects.Text;
+	playerStatusTime: Phaser.GameObjects.Text;
+
+	//playerItems
+	bananaText: Phaser.GameObjects.Text;
+	bananaCount: Phaser.GameObjects.Text;
+	brainiacText: Phaser.GameObjects.Text;
+	brainiacCount: Phaser.GameObjects.Text;
+	bookText: Phaser.GameObjects.Text;
+	bookCount: Phaser.GameObjects.Text;
+	crystalBallText: Phaser.GameObjects.Text;
+	crystalBallCount: Phaser.GameObjects.Text;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.RACEGAME };
@@ -38,32 +52,125 @@ export default class RaceScene extends Phaser.Scene {
 	create() {
 		let starfield = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
 
+		const currentPlayer = this.raceGame.getCurrentPlayer();
+		const playerItemState = currentPlayer.getInventory().getInventoryState();
+
+		this.playerStatusText = this.add.text(50, 100, currentPlayer.getCurrentStatus().toString(), {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.playerStatusTime = this.add.text(
+			this.playerStatusText.getTopRight().x - 60,
+			this.playerStatusText.getTopRight().y,
+			currentPlayer.getStatusRemainingTime(),
+			{
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			}
+		);
+
+		this.bananaText = this.add.text(50, 150, "Banana count:", {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.bananaCount = this.add.text(this.bananaText.getTopRight().x + 10, this.bananaText.getTopRight().y, playerItemState.bananaCount.toString(), {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.bookText = this.add.text(50, 200, "Book count:", {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.bookCount = this.add.text(this.bookText.getTopRight().x + 10, this.bookText.getTopRight().y, playerItemState.bookCount.toString(), {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.crystalBallText = this.add.text(50, 250, "Crystal ball count:", {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.crystalBallCount = this.add.text(
+			this.crystalBallText.getTopRight().x + 10,
+			this.crystalBallText.getTopRight().y,
+			playerItemState.crystalBallCount.toString(),
+			{
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			}
+		);
+
 		this.tiles = this.add.group();
+		this.items = this.add.group();
 
-		for (let y = 0; y < this.raceGame.getGrid().getHeight(); y++) {
-			for (let x = 0; x < this.raceGame.getGrid().getWidth(); x++) {
-				let sprite = this.tiles
-					.create(<number>this.game.config.width / 3.2 + 96 * x, <number>this.game.config.height / 7 + 96 * y, CST.IMAGES.ORANGE_SQUARE)
-					.setScale(0.3, 0.3);
-				// sprite.name = `tile-(${x},${y})`;
-				// sprite.position = <Point>{ x: x, y: y };
-				sprite.setData("name", `tile-(${x},${y})`);
-				sprite.setData("gridPosition", <Point>{ x: x, y: y });
-				sprite.setData("position", <Point>{ x: sprite.x, y: sprite.y });
+		const gameGrid = this.raceGame.getGrid();
 
-				sprite.setInteractive();
-				sprite.on("pointerover", () => {
-					sprite.setTint(0x86bfda);
+		for (let y = 0; y < gameGrid.getHeight(); y++) {
+			for (let x = 0; x < gameGrid.getWidth(); x++) {
+				const currentTile = gameGrid.getTile({ x, y });
+				let tileSprite: any;
+
+				const positionX = <number>this.game.config.width / 2.3 + 96 * x;
+				const positionY = <number>this.game.config.height / 7 + 96 * y;
+
+				if (currentTile.isFnishLine) {
+					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.FINISH_LINE).setScale(0.045, 0.045);
+				} else if (currentTile.isStartPosition) {
+					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.GREEN_SQUARE).setScale(0.1, 0.1);
+				} else {
+					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.ORANGE_SQUARE).setScale(0.3, 0.3);
+				}
+
+				tileSprite.setData("name", `tile-(${x},${y})`);
+				tileSprite.setData("gridPosition", <Point>{ x: x, y: y });
+				tileSprite.setData("position", <Point>{ x: tileSprite.x, y: tileSprite.y });
+
+				tileSprite.setInteractive();
+				tileSprite.on("pointerover", () => {
+					tileSprite.setTint(0x86bfda);
 				});
-				sprite.on("pointerout", () => {
-					sprite.clearTint();
+				tileSprite.on("pointerout", () => {
+					tileSprite.clearTint();
 				});
-				sprite.on("pointerdown", () => {
-					sprite.setTint(0xff0000);
+				tileSprite.on("pointerdown", () => {
+					tileSprite.setTint(0xff0000);
 				});
-				sprite.on("pointerup", () => {
-					sprite.clearTint();
-					this.raceGame.playerMoveRequest(<Point>{ x: x, y: y });
+				tileSprite.on("pointerup", () => {
+					tileSprite.clearTint();
+
+					//TODO verify if has arrived logic should be moved to player
+					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
+						this.raceGame.playerMoveRequest(<Point>{ x: x, y: y });
+					}
 				});
 			}
 		}
@@ -77,14 +184,12 @@ export default class RaceScene extends Phaser.Scene {
 		this.raceGame.getPlayers().forEach((player: Player) => {
 			let characterSpriteIndex: number = this.getCharacterSpriteIndex(player.id);
 			const playerMoveState = player.getMove().getMoveState();
-
 			const phaserStartPosition = this.getGamePositionFromLogicPosition({ x: playerMoveState.startLocation.x, y: playerMoveState.startLocation.y });
 			const phaserTargetPosition = this.getGamePositionFromLogicPosition({
 				x: playerMoveState.targetLocation.x,
 				y: playerMoveState.targetLocation.y,
 			});
 			const phaserStartTimestamp = playerMoveState.startTimestamp;
-
 			if (characterSpriteIndex != -1) {
 				this.characterSprites[characterSpriteIndex].move.updateFromMoveState({
 					startTimestamp: phaserStartTimestamp,
@@ -95,15 +200,68 @@ export default class RaceScene extends Phaser.Scene {
 				this.characterSprites[characterSpriteIndex].sprite.x = currentPosition.x;
 				this.characterSprites[characterSpriteIndex].sprite.y = currentPosition.y;
 			} else {
-				const phaserMove = new Move(phaserStartTimestamp, phaserStartPosition, phaserTargetPosition);
-
+				const phaserMove = new Move(phaserStartTimestamp, phaserStartPosition, phaserTargetPosition, 90);
 				let newCharacterSprite: Phaser.GameObjects.Sprite = this.add
 					.sprite(phaserMove.getCurrentPosition().x, phaserMove.getCurrentPosition().y, CST.IMAGES.STAR)
 					.setScale(0.08, 0.08);
-
 				this.characterSprites.push({ playerId: player.id, move: phaserMove, sprite: newCharacterSprite });
 			}
 		});
+
+		this.items.destroy(true);
+		this.items = this.add.group();
+		const gameGrid = this.raceGame.getGrid();
+		let totalItems = 0;
+		for (let y = 0; y < gameGrid.getHeight(); y++) {
+			for (let x = 0; x < gameGrid.getWidth(); x++) {
+				const currentTile = gameGrid.getTile({ x, y });
+				const positionX = <number>this.game.config.width / 2.3 + 96 * x;
+				const positionY = <number>this.game.config.height / 7 + 96 * y;
+
+				let itemSprite: any;
+
+				const currentItem = currentTile.getItem();
+
+				if (currentItem) {
+					totalItems += 1;
+					let itemType: ItemType;
+					switch (currentItem.type) {
+						case ItemType.Banana:
+							itemSprite = this.items.create(positionX, positionY, CST.IMAGES.BANANA).setScale(0.045, 0.045);
+							itemType = ItemType.Banana;
+							break;
+						case ItemType.Book:
+							itemSprite = this.items.create(positionX, positionY, CST.IMAGES.BOOK).setScale(0.045, 0.045);
+							itemType = ItemType.Book;
+							break;
+						case ItemType.Brainiac:
+							itemSprite = this.items.create(positionX, positionY, CST.IMAGES.BRAINIAC).setScale(0.045, 0.045);
+							itemType = ItemType.Brainiac;
+							break;
+						case ItemType.CrystalBall:
+							itemSprite = this.items.create(positionX, positionY, CST.IMAGES.CRYSTAL_BALL).setScale(0.045, 0.045);
+							itemType = ItemType.CrystalBall;
+							break;
+					}
+
+					itemSprite.setData("type", itemType);
+					itemSprite.setData("gridPosition", <Point>{ x: x, y: y });
+				}
+			}
+		}
+
+		const currentPlayer = this.raceGame.getCurrentPlayer();
+		const currentPlayerStatus = currentPlayer.getCurrentStatus().toString();
+
+		//setting player time status
+		this.playerStatusText.text = currentPlayerStatus.toString().substring(0, currentPlayerStatus.length - 6);
+		this.playerStatusTime.text = currentPlayer.getStatusRemainingTime();
+
+		//setting player item count
+		const playerItemState = currentPlayer.getInventory().getInventoryState();
+		this.bananaCount.text = playerItemState.bananaCount.toString();
+		this.bookCount.text = playerItemState.bookCount.toString();
+		this.crystalBallCount.text = playerItemState.crystalBallCount.toString();
 	}
 
 	update(timestamp: number, elapsed: number) {

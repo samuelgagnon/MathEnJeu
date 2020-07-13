@@ -44,6 +44,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		return this.grid;
 	}
 
+	public getCurrentPlayer(): Player {
+		return this.findPlayer(this.currentPlayerId);
+	}
+
 	public itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string) {
 		super.itemUsed(itemType, targetPlayerId, fromPlayerId);
 		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });

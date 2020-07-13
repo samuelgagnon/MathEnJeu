@@ -27,6 +27,9 @@ export default class Tile {
 	}
 
 	public playerPickUpItem(player: Player): void {
-		if (this.item) player.pickUpItem(this.item);
+		if (this.item) {
+			this.item.onPickUp(player);
+			this.item = undefined;
+		}
 	}
 }

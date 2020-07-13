@@ -11,6 +11,7 @@ export default class Brainiac implements Item {
 	}
 
 	public onPickUp(player: Player): void {
+		console.log("brainiac picked up");
 		this.use(player);
 	}
 

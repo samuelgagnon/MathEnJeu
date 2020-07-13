@@ -23,4 +23,6 @@ export default abstract class Status {
 	public abstract activateBananaStatus(): void;
 
 	public abstract activateBrainiacStatus(): void;
+
+	public abstract getRemainingTime(): string;
 }

@@ -3,6 +3,7 @@ import Item, { ItemType } from "../items/item";
 import Move from "../move";
 import Inventory from "./inventory";
 import Status from "./playerStatus/status";
+import { StatusType } from "./playerStatus/statusType";
 
 /**
  * Player is a class that implements a finite state machine. The state will changed depending on the action of the Player class and its
@@ -58,6 +59,14 @@ export default class Player {
 		};
 	}
 
+	public getCurrentStatus(): StatusType {
+		return this.playerStatus.getCurrentStatus();
+	}
+
+	public getStatusRemainingTime(): string {
+		return this.playerStatus.getRemainingTime();
+	}
+
 	public getInventory(): Inventory {
 		return this.inventory;
 	}
@@ -80,7 +89,9 @@ export default class Player {
 	}
 
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
-		this.move = new Move(startTimestamp, this.position, targetLocation);
+		if (this.move.getHasArrived()) {
+			this.move = new Move(startTimestamp, this.position, targetLocation);
+		}
 	}
 
 	public updatePosition(): void {

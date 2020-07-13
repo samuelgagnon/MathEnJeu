@@ -4,7 +4,7 @@ import StatusFactory from "./statusFactory";
 import { StatusType } from "./statusType";
 
 export default class BananaStatus extends Status {
-	private readonly DEFAULT_MAX_TIME_STATUS: Number = 90000; //milliseconds
+	private readonly DEFAULT_MAX_TIME_STATUS: number = 90000; //milliseconds
 
 	constructor(startTimestamp: number) {
 		super();
@@ -41,6 +41,10 @@ export default class BananaStatus extends Status {
 		if (Date.now() - this.startTimeStatus > this.DEFAULT_MAX_TIME_STATUS) {
 			this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 		}
+	}
+
+	public getRemainingTime(): string {
+		return Math.floor((this.DEFAULT_MAX_TIME_STATUS - (Date.now() - this.startTimeStatus)) / 1000).toString();
 	}
 
 	public getCurrentStatus(): StatusType {

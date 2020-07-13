@@ -21,6 +21,7 @@ export default abstract class RaceGameController {
 	public update(): void {
 		this.gameLogicUpdate();
 		this.playersUpdate();
+		this.handleItemCollisions();
 	}
 
 	protected gameLogicUpdate(): void {
@@ -57,5 +58,14 @@ export default abstract class RaceGameController {
 		const from: Player = this.findPlayer(fromPlayerId);
 
 		target.useItemType(itemType, from);
+	}
+
+	private handleItemCollisions(): void {
+		this.players.forEach((player) => {
+			//Fix issue where item is being picked up being arriving on the position
+			const position = player.getPosition();
+			console.log(`(x: ${Math.floor(position.x)}, y: ${Math.floor(position.y)})`);
+			this.grid.getTile({ x: Math.floor(position.x), y: Math.floor(position.y) }).playerPickUpItem(player);
+		});
 	}
 }

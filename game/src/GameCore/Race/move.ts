@@ -5,12 +5,15 @@ export default class Move {
 	private startTimestamp: number;
 	private startLocation: Point;
 	private targetLocation: Point;
-	private readonly SPEED: number = RACE_CST.MOVE.SPEED;
+	private hasArrived: boolean;
+	private SPEED: number = RACE_CST.MOVE.SPEED;
 
-	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point) {
+	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, clientAjustement: number = 1) {
 		this.startTimestamp = startTimestamp;
 		this.startLocation = startLocation;
 		this.targetLocation = targetLocation;
+		this.SPEED = RACE_CST.MOVE.SPEED * clientAjustement;
+		this.hasArrived = false;
 	}
 
 	public updateFromMoveState(moveState: MoveState): void {
@@ -21,6 +24,10 @@ export default class Move {
 
 	public getMoveState(): MoveState {
 		return { startTimestamp: this.startTimestamp, startLocation: this.startLocation, targetLocation: this.targetLocation };
+	}
+
+	public getHasArrived(): boolean {
+		return this.hasArrived;
 	}
 
 	private getTotalTime(): number {
@@ -46,6 +53,8 @@ export default class Move {
 			x: (1 - t) * this.startLocation.x + t * this.targetLocation.x,
 			y: (1 - t) * this.startLocation.y + t * this.targetLocation.y,
 		};
+
+		if (c.x == this.targetLocation.x && c.y == this.targetLocation.y) this.hasArrived = true;
 
 		return c;
 	}
