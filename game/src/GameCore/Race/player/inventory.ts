@@ -7,7 +7,7 @@ export default class Inventory {
 	private bookCount: number;
 	private crystalBallCount: number;
 
-	constructor(bananaCount: number, bookCount: number, crystalBall: number) {
+	constructor(bananaCount: number = 0, bookCount: number = 0, crystalBall: number = 0) {
 		this.bananaCount = bananaCount;
 		this.bookCount = bookCount;
 		this.crystalBallCount = crystalBall;
@@ -72,5 +72,3 @@ export default class Inventory {
 		}
 	}
 }
-
-export const startingInventory: Inventory = new Inventory(0, 0, 0);

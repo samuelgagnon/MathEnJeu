@@ -15,6 +15,7 @@ export default class RaceScene extends Phaser.Scene {
 	raceGame: ClientRaceGameController;
 	//Buffer
 	gameState: RaceGameState;
+	speedAjustment: number;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -174,6 +175,13 @@ export default class RaceScene extends Phaser.Scene {
 				});
 			}
 		}
+
+		const tiles = this.tiles.getChildren();
+		const tile1 = tiles[0];
+		const tile2 = tiles[1];
+		this.speedAjustment = Math.sqrt(
+			Math.pow(tile2.getData("position").x - tile1.getData("position").x, 2) + Math.pow(tile1.getData("position").y - tile2.getData("position").y, 2)
+		);
 	}
 
 	phys(currentframe: number) {
@@ -200,7 +208,7 @@ export default class RaceScene extends Phaser.Scene {
 				this.characterSprites[characterSpriteIndex].sprite.x = currentPosition.x;
 				this.characterSprites[characterSpriteIndex].sprite.y = currentPosition.y;
 			} else {
-				const phaserMove = new Move(phaserStartTimestamp, phaserStartPosition, phaserTargetPosition, 90);
+				const phaserMove = new Move(phaserStartTimestamp, phaserStartPosition, phaserTargetPosition, this.speedAjustment);
 				let newCharacterSprite: Phaser.GameObjects.Sprite = this.add
 					.sprite(phaserMove.getCurrentPosition().x, phaserMove.getCurrentPosition().y, CST.IMAGES.STAR)
 					.setScale(0.08, 0.08);

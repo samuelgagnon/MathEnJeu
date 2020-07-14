@@ -4,7 +4,7 @@ import User from "../../server/data/user";
 import ClientRaceGameController from "./clientRaceGameController";
 import Item, { ItemType } from "./items/item";
 import ItemFactory from "./items/itemFactory";
-import { startingInventory } from "./player/inventory";
+import Inventory from "./player/inventory";
 import Player from "./player/player";
 import StatusFactory from "./player/playerStatus/statusFactory";
 import { StatusType } from "./player/playerStatus/statusType";
@@ -29,7 +29,6 @@ export default class RaceGameFactory {
 
 	public static createServer(gameId: string, users: User[]): ServerRaceGameController {
 		const raceGrid = this.generateRaceGrid(RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID_WIDTH);
-		console.log(raceGrid);
 		const players = this.generatePlayers(users);
 		return new ServerRaceGameController(RACE_CST.CIRCUIT.GAME_MAX_LENGTH, raceGrid, players, users, gameId);
 	}
@@ -79,7 +78,7 @@ export default class RaceGameFactory {
 	public static generatePlayers(users: User[]): Player[] {
 		let players: Player[] = [];
 		users.forEach((user: User) => {
-			players.push(new Player(user.userId, { x: 0, y: 0 }, user.name, StatusFactory.create(StatusType.NormalStatus), startingInventory));
+			players.push(new Player(user.userId, { x: 0, y: 0 }, user.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
 		});
 
 		return players;
