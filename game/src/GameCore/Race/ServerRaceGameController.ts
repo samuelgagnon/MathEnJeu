@@ -123,8 +123,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case e.MOVE_REQUEST:
-					console.log("move requested");
-					console.log(inputData);
 					this.movePlayerTo(
 						(<MoveRequestEvent>inputData).playerId,
 						(<MoveRequestEvent>inputData).startTimestamp,
