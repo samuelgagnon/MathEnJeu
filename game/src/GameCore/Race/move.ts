@@ -8,11 +8,11 @@ export default class Move {
 	private hasArrived: boolean;
 	private SPEED: number = RACE_CST.MOVE.SPEED;
 
-	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, clientAjustement: number = 1) {
+	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, distanceBetweenTiles: number = 1) {
 		this.startTimestamp = startTimestamp;
 		this.startLocation = startLocation;
 		this.targetLocation = targetLocation;
-		this.SPEED = RACE_CST.MOVE.SPEED * clientAjustement;
+		this.SPEED = RACE_CST.MOVE.SPEED * distanceBetweenTiles;
 		this.hasArrived = false;
 	}
 
@@ -48,13 +48,13 @@ export default class Move {
 		t = t < 0 ? 0 : t;
 		t = t > 1 ? 1 : t;
 
+		if (t === 1) this.hasArrived = true;
+
 		//The current position c(t) is a R -> R^2 linear function for t in [0,1]
 		let c: Point = {
 			x: (1 - t) * this.startLocation.x + t * this.targetLocation.x,
 			y: (1 - t) * this.startLocation.y + t * this.targetLocation.y,
 		};
-
-		if (c.x == this.targetLocation.x && c.y == this.targetLocation.y) this.hasArrived = true;
 
 		return c;
 	}

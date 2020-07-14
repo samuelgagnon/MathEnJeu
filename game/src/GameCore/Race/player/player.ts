@@ -49,12 +49,14 @@ export default class Player {
 	}
 
 	public getPlayerState(): PlayerState {
-		return <PlayerState>{
+		return {
 			id: this.id,
 			name: this.name,
 			points: this.points,
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
+			isAnsweringQuestion: this.isAnsweringQuestion,
+			missedQuestionsCount: this.missedQuestionsCount,
 			inventoryState: this.inventory.getInventoryState(),
 		};
 	}
@@ -99,10 +101,8 @@ export default class Player {
 	}
 
 	public useItemType(itemType: ItemType, target: Player): void {
-		// const itemUsedIndex = this.items.findIndex((item) => item.type == itemType);
-		// if (itemUsedIndex == -1) return; //TODO: maybe return false if item is not found ?
-		// const usedItem = this.items[itemUsedIndex];
-
+		console.log(itemType);
+		console.log(target);
 		const usedItem = this.inventory.getItem(itemType);
 		if (!usedItem) return; //Manage error maybe
 
@@ -111,8 +111,6 @@ export default class Player {
 
 		usedItem.use(target, this);
 		this.inventory.removeItem(itemType);
-		//this.items.splice(itemUsedIndex, 1);
-		//this.removeItemFromInventory(usedItem);
 	}
 
 	public useItem(item: Item): void {

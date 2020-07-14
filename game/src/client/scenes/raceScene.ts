@@ -26,8 +26,6 @@ export default class RaceScene extends Phaser.Scene {
 	//playerItems
 	bananaText: Phaser.GameObjects.Text;
 	bananaCount: Phaser.GameObjects.Text;
-	brainiacText: Phaser.GameObjects.Text;
-	brainiacCount: Phaser.GameObjects.Text;
 	bookText: Phaser.GameObjects.Text;
 	bookCount: Phaser.GameObjects.Text;
 	crystalBallText: Phaser.GameObjects.Text;
@@ -129,6 +127,24 @@ export default class RaceScene extends Phaser.Scene {
 				fontStyle: "bold",
 			}
 		);
+
+		this.bananaText.setInteractive({
+			useHandCursor: true,
+		});
+		this.bookText.setInteractive({
+			useHandCursor: true,
+		});
+		this.crystalBallText.setInteractive({
+			useHandCursor: true,
+		});
+
+		this.bananaText.on("pointerup", () => {});
+		this.bookText.on("pointerup", () => {
+			this.useItem(ItemType.Book);
+		});
+		this.crystalBallText.on("pointerup", () => {
+			this.useItem(ItemType.CrystalBall);
+		});
 
 		this.tiles = this.add.group();
 		this.items = this.add.group();
@@ -291,6 +307,14 @@ export default class RaceScene extends Phaser.Scene {
 			.getChildren()
 			.find((tile) => tile.getData("gridPosition").x == position.x && tile.getData("gridPosition").y == position.y)
 			.getData("position");
+	}
+
+	private useItem(itemType: ItemType, targetPlayerId?: string): void {
+		try {
+			this.raceGame.itemUsed(itemType, targetPlayerId);
+		} catch (e) {
+			console.log(e);
+		}
 	}
 }
 

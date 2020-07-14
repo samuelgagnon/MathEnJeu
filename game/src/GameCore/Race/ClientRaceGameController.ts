@@ -48,9 +48,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		return this.findPlayer(this.currentPlayerId);
 	}
 
-	public itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string) {
-		super.itemUsed(itemType, targetPlayerId, fromPlayerId);
-		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId });
+	public itemUsed(itemType: ItemType, targetPlayerId?: string) {
+		if (!targetPlayerId) targetPlayerId = this.currentPlayerId;
+		super.itemUsed(itemType, targetPlayerId, this.currentPlayerId);
+		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
 	}
 
 	public playerMoveRequest(targetLocation: Point): void {
