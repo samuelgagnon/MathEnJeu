@@ -1,7 +1,8 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../Communication/Race/bufferedInput";
-import { GameStartEvent, ItemUsedEvent, MoveRequestEvent } from "../../Communication/Race/dataInterfaces";
+import { GameStartEvent, ItemUsedEvent, MoveRequestEvent, StartingRaceGridInfo } from "../../Communication/Race/dataInterfaces";
 import { CLIENT_EVENT_NAMES, EVENT_NAMES as e } from "../../Communication/Race/eventNames";
+import PlayerState from "../../Communication/Race/playerState";
 import RaceGameState from "../../Communication/Race/raceGameState";
 import User from "../../server/data/user";
 import { getObjectValues } from "../../utils/utils";
@@ -10,18 +11,19 @@ import GameFSM from "../gameState/gameFSM";
 import State from "../gameState/state";
 import PreGameFactory from "../gameState/stateFactory";
 import Player from "./player/player";
-import RaceGameController from "./RaceGameController";
-import RaceGrid from "./RaceGrid";
+import RaceGameController from "./raceGameController";
+import RaceGrid from "./raceGrid";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private context: GameFSM;
 	private inputBuffer: BufferedInput[] = [];
+	private isGameStarted: boolean = false;
+	private gameId: string;
 
-	constructor(gameTime: number, grid: RaceGrid, players: Player[]) {
+	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string) {
 		//The server has the truth regarding the start timestamp.
 		super(gameTime, Date.now(), grid, players);
-		this.handleAllUsersSocketEvents();
-		this.emitStartGameEvent();
+		this.handleAllUsersSocketEvents(users);
 	}
 
 	public setContext(context: GameFSM): void {
@@ -29,23 +31,30 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public getGameId(): string {
-		return this.context.getId();
+		return this.gameId;
 	}
 
 	private emitStartGameEvent(): void {
+		this.isGameStarted = true;
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
 			.emit(CLIENT_EVENT_NAMES.GAME_START, <GameStartEvent>{
 				gameTime: this.gameTime,
 				gameStartTimeStamp: this.gameStartTimeStamp,
-				grid: this.grid,
-				players: this.players,
+				grid: <StartingRaceGridInfo>{
+					width: this.grid.getWidth(),
+					height: this.grid.getHeight(),
+					startingPositions: this.grid.getStartingPositions(),
+					finishLinePositions: this.grid.getFinishLinePosition(),
+					itemStates: this.grid.getItemsState(),
+				},
+				players: this.getPlayersState(),
 			});
 	}
 
 	private getGameState(): RaceGameState {
-		let gameState: RaceGameState;
+		let gameState: RaceGameState = { itemsState: [], players: [] };
 		gameState.itemsState = this.grid.getItemsState();
 		this.players.forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());
@@ -55,6 +64,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public update(): void {
+		if (!this.isGameStarted) this.emitStartGameEvent();
 		this.resolveInputs();
 		super.update();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(e.GAME_UPDATE, this.getGameState());
@@ -95,8 +105,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		}
 	}
 
-	private handleAllUsersSocketEvents(): void {
-		const users = this.context.getUsers();
+	private handleAllUsersSocketEvents(users: User[]): void {
 		users.forEach((user) => this.handleSocketEvents(user.socket));
 	}
 
@@ -114,12 +123,25 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case e.MOVE_REQUEST:
-					this.movePlayerTo((<MoveRequestEvent>inputData).playerId, (<MoveRequestEvent>inputData).targetLocation);
+					this.movePlayerTo(
+						(<MoveRequestEvent>inputData).playerId,
+						(<MoveRequestEvent>inputData).startTimestamp,
+						(<MoveRequestEvent>inputData).targetLocation
+					);
 					break;
 
 				default:
 					break;
 			}
 		});
+		this.inputBuffer = [];
+	}
+
+	private getPlayersState(): PlayerState[] {
+		let playersState: PlayerState[] = [];
+		this.players.forEach((player: Player) => {
+			playersState.push(player.getPlayerState());
+		});
+		return playersState;
 	}
 }

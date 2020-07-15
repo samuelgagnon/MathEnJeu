@@ -1,6 +1,6 @@
 import Item, { ItemType } from "./items/item";
 import Player from "./player/player";
-import RaceGrid from "./RaceGrid";
+import RaceGrid from "./raceGrid";
 
 export default abstract class RaceGameController {
 	protected readonly gameTime: number;
@@ -21,6 +21,7 @@ export default abstract class RaceGameController {
 	public update(): void {
 		this.gameLogicUpdate();
 		this.playersUpdate();
+		this.handleItemCollisions();
 	}
 
 	protected gameLogicUpdate(): void {
@@ -43,9 +44,9 @@ export default abstract class RaceGameController {
 		this.players = this.players.filter((player) => player.id !== socketId);
 	}
 
-	public movePlayerTo(playerId: string, targetLocation: Point): void {
+	public movePlayerTo(playerId: string, startTimestamp: number, targetLocation: Point): void {
 		const movedPlayer = this.findPlayer(playerId);
-		movedPlayer.moveTo(targetLocation);
+		movedPlayer.moveTo(startTimestamp, targetLocation);
 	}
 
 	protected findPlayer(playerId: string): Player {
@@ -57,5 +58,19 @@ export default abstract class RaceGameController {
 		const from: Player = this.findPlayer(fromPlayerId);
 
 		target.useItemType(itemType, from);
+	}
+
+	private handleItemCollisions(): void {
+		this.players.forEach((player) => {
+			const targetLocation = player.getMove().getMoveState().targetLocation;
+			const startLocation = player.getMove().getMoveState().startLocation;
+			const position = player.getPosition();
+			if (targetLocation.x > startLocation.x || targetLocation.y > startLocation.y) {
+				this.grid.getTile({ x: Math.floor(position.x), y: Math.floor(position.y) }).playerPickUpItem(player);
+			} else {
+				this.grid.getTile({ x: Math.ceil(position.x), y: Math.ceil(position.y) }).playerPickUpItem(player);
+			}
+			// this.grid.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
+		});
 	}
 }

@@ -4,9 +4,9 @@ import Tile from "./tile";
 
 export default class RaceGrid {
 	private tiles: Tile[];
-	private items: ItemState[];
-	private startingPositions: Point[];
-	private finishLinePositions: Point[];
+	private items: ItemState[] = [];
+	private startingPositions: Point[] = [];
+	private finishLinePositions: Point[] = [];
 	private width: number;
 	private height: number;
 
@@ -22,18 +22,23 @@ export default class RaceGrid {
 	}
 
 	public updateFromItemStates(itemStates: ItemState[]): void {
-		//Checks the missing elements from the client items list that are in the server items list
-		let itemsToAdd: ItemState[] = itemStates.filter((x) => !this.items.includes(x));
-		//Checks the missing elements from the server items list that are in the client items list
-		let itemsToRemove: ItemState[] = this.items.filter((x) => !itemStates.includes(x));
+		if (!itemStates || JSON.stringify(itemStates) == JSON.stringify(this.items)) return;
 
-		itemsToAdd.forEach((item: ItemState) => {
-			this.getTile(item.location).setItem(ItemFactory.create(item.type));
+		this.items.forEach((itemState: ItemState) => {
+			this.getTile(itemState.location).removeItem();
 		});
 
-		itemsToRemove.forEach((item: ItemState) => {
-			this.getTile(item.location).removeItem();
+		itemStates.forEach((itemState: ItemState) => {
+			this.getTile(itemState.location).setItem(ItemFactory.create(itemState.type, itemState.location));
 		});
+	}
+
+	public getWidth(): number {
+		return this.width;
+	}
+
+	public getHeight(): number {
+		return this.height;
 	}
 
 	public getTile(point: Point): Tile {

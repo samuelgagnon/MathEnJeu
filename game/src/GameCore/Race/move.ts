@@ -2,15 +2,18 @@ import MoveState from "../../Communication/Race/moveState";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {
-	startTimestamp: number;
-	startLocation: Point;
-	targetLocation: Point;
-	private readonly SPEED: number = RACE_CST.MOVE.SPEED;
+	private startTimestamp: number;
+	private startLocation: Point;
+	private targetLocation: Point;
+	private hasArrived: boolean;
+	private SPEED: number = RACE_CST.MOVE.SPEED;
 
-	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point) {
+	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, distanceBetweenTiles: number = 1) {
 		this.startTimestamp = startTimestamp;
 		this.startLocation = startLocation;
 		this.targetLocation = targetLocation;
+		this.SPEED = RACE_CST.MOVE.SPEED * distanceBetweenTiles;
+		this.hasArrived = false;
 	}
 
 	public updateFromMoveState(moveState: MoveState): void {
@@ -21,6 +24,10 @@ export default class Move {
 
 	public getMoveState(): MoveState {
 		return { startTimestamp: this.startTimestamp, startLocation: this.startLocation, targetLocation: this.targetLocation };
+	}
+
+	public getHasArrived(): boolean {
+		return this.hasArrived;
 	}
 
 	private getTotalTime(): number {
@@ -40,6 +47,8 @@ export default class Move {
 		let t: number = (Date.now() - this.startTimestamp) / this.getTotalTime();
 		t = t < 0 ? 0 : t;
 		t = t > 1 ? 1 : t;
+
+		if (t === 1) this.hasArrived = true;
 
 		//The current position c(t) is a R -> R^2 linear function for t in [0,1]
 		let c: Point = {

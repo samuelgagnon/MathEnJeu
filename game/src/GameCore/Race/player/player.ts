@@ -3,6 +3,7 @@ import Item, { ItemType } from "../items/item";
 import Move from "../move";
 import Inventory from "./inventory";
 import Status from "./playerStatus/status";
+import { StatusType } from "./playerStatus/statusType";
 
 /**
  * Player is a class that implements a finite state machine. The state will changed depending on the action of the Player class and its
@@ -17,12 +18,14 @@ export default class Player {
 	private name: string;
 	private points: number = 0;
 	private position: Point;
+	private gridPosition: Point;
 	private move: Move;
 	private inventory: Inventory;
 
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
 		this.position = startLocation;
+		this.gridPosition = this.gridPosition;
 		this.move = new Move(Date.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
@@ -35,6 +38,8 @@ export default class Player {
 	}
 
 	public updateFromPlayerState(playerState: PlayerState): void {
+		if (!playerState) return;
+
 		this.points = playerState.points;
 		this.isAnsweringQuestion = playerState.isAnsweringQuestion;
 		this.missedQuestionsCount = playerState.missedQuestionsCount;
@@ -44,13 +49,24 @@ export default class Player {
 	}
 
 	public getPlayerState(): PlayerState {
-		return <PlayerState>{
+		return {
 			id: this.id,
+			name: this.name,
 			points: this.points,
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
+			isAnsweringQuestion: this.isAnsweringQuestion,
+			missedQuestionsCount: this.missedQuestionsCount,
 			inventoryState: this.inventory.getInventoryState(),
 		};
+	}
+
+	public getCurrentStatus(): StatusType {
+		return this.playerStatus.getCurrentStatus();
+	}
+
+	public getStatusRemainingTime(): string {
+		return this.playerStatus.getRemainingTime();
 	}
 
 	public getInventory(): Inventory {
@@ -70,8 +86,14 @@ export default class Player {
 		return this.position;
 	}
 
-	public moveTo(targetLocation: Point): void {
-		this.move = new Move(Date.now(), this.getPosition(), targetLocation);
+	public getMove(): Move {
+		return this.move;
+	}
+
+	public moveTo(startTimestamp: number, targetLocation: Point): void {
+		if (this.move.getHasArrived()) {
+			this.move = new Move(startTimestamp, this.position, targetLocation);
+		}
 	}
 
 	public updatePosition(): void {
@@ -79,10 +101,8 @@ export default class Player {
 	}
 
 	public useItemType(itemType: ItemType, target: Player): void {
-		// const itemUsedIndex = this.items.findIndex((item) => item.type == itemType);
-		// if (itemUsedIndex == -1) return; //TODO: maybe return false if item is not found ?
-		// const usedItem = this.items[itemUsedIndex];
-
+		console.log(itemType);
+		console.log(target);
 		const usedItem = this.inventory.getItem(itemType);
 		if (!usedItem) return; //Manage error maybe
 
@@ -91,8 +111,6 @@ export default class Player {
 
 		usedItem.use(target, this);
 		this.inventory.removeItem(itemType);
-		//this.items.splice(itemUsedIndex, 1);
-		//this.removeItemFromInventory(usedItem);
 	}
 
 	public useItem(item: Item): void {
