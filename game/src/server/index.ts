@@ -18,23 +18,39 @@ const io = socketIO(httpServer);
 //const db = new DataBaseHandler("127.0.0.1", "root", "123", "mathamaze2", 3306);
 //db.getFirstQuestion();
 
-var mysql = require("mysql");
+let mysql = require("mysql");
 
-var con = mysql.createConnection({
-	host: "127.0.0.1",
-	user: "root",
+let dbconfig = {
+	host: "db",
+	user: "user",
 	password: "123",
 	database: "mathamaze2",
-	port: 3306,
-});
+	port: "3306",
+};
 
-con.connect(function (err) {
-	if (err) {
-		console.error("error connecting: " + err.stack);
-	} else {
-		console.log("Connected!");
-	}
-});
+let con = mysql.createConnection(dbconfig);
+
+let nbTry = 0;
+dbconnect(con, dbconfig, nbTry);
+function dbconnect(con, dbconfig, nbTry): void {
+	con.connect(function (err) {
+		nbTry++;
+		console.log("DB_CONNECT:#" + nbTry);
+		if (err) {
+			console.error("Error connecting: " + err.stack);
+			if (nbTry < 20) {
+				con = mysql.createConnection(dbconfig);
+				setTimeout(function () {
+					dbconnect(con, dbconfig, nbTry);
+				}, 60000);
+			} else {
+				console.log("Max number of tries reached.");
+			}
+		} else {
+			console.log("Connected!");
+		}
+	});
+}
 
 // /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));
