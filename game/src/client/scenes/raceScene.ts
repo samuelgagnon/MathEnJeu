@@ -2,6 +2,7 @@ import ClientRaceGameController from "../../GameCore/Race/clientRaceGameControll
 import { ItemType } from "../../GameCore/Race/items/item";
 import Player from "../../GameCore/Race/player/player";
 import { CST } from "../CST";
+import QuestionScene from "./questionScene";
 
 export default class RaceScene extends Phaser.Scene {
 	//Loops
@@ -19,6 +20,7 @@ export default class RaceScene extends Phaser.Scene {
 	followPlayer: boolean;
 	followPlayerText: Phaser.GameObjects.Text;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
+	questionWindow: Phaser.GameObjects.Zone;
 
 	isThrowingBanana: boolean;
 
@@ -103,7 +105,7 @@ export default class RaceScene extends Phaser.Scene {
 
 					//TODO verify if has arrived logic should be moved to player
 					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
-						this.raceGame.playerMoveRequest(<Point>{ x: x, y: y });
+						this.createQuestionWindow(<Point>{ x: x, y: y });
 					}
 				});
 			}
@@ -372,6 +374,27 @@ export default class RaceScene extends Phaser.Scene {
 		} catch (e) {
 			console.log(e);
 		}
+	}
+
+	private createQuestionWindow(targetLocation: Point): void {
+		var x = Number(this.game.config.width) * 0.15;
+		var y = Number(this.game.config.height) * 0.15;
+
+		this.questionWindow = this.add
+			.zone(x, y, Number(this.game.config.width) * 0.7, Number(this.game.config.height) * 0.7)
+			.setInteractive()
+			.setOrigin(0)
+			.setScrollFactor(0);
+		let scene = new QuestionScene(this.questionWindow, targetLocation);
+
+		this.scene.add(CST.SCENES.QUESTION_WINDOW, scene, true);
+	}
+
+	answerQuestion(correctAnswer: boolean, position: Point) {
+		if (correctAnswer) {
+			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
+		}
+		this.questionWindow.destroy();
 	}
 }
 

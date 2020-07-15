@@ -5,6 +5,7 @@ export const CST = {
 		MAIN: "mainScene",
 		RACEGAME: "raceGameScene",
 		CREATE_ROOM: "createRoomScene",
+		QUESTION_WINDOW: "questionScene",
 		ROOM_SELECTION: "roomSelectionScene",
 		WAITING_ROOM: "waitingRoomScene",
 	},
