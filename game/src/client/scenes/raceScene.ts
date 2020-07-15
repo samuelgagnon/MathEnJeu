@@ -1,6 +1,5 @@
 import ClientRaceGameController from "../../GameCore/Race/clientRaceGameController";
 import { ItemType } from "../../GameCore/Race/items/item";
-import Move from "../../GameCore/Race/move";
 import Player from "../../GameCore/Race/player/player";
 import { CST } from "../CST";
 
@@ -13,11 +12,15 @@ export default class RaceScene extends Phaser.Scene {
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
-	speedAjustment: number;
+	distanceBetweenTwoTiles: number;
+	boardPosition: Point;
 	keyboardInputs;
+	background: Phaser.GameObjects.TileSprite;
 	followPlayer: boolean;
 	followPlayerText: Phaser.GameObjects.Text;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
+
+	isThrowingBanana: boolean;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -50,11 +53,12 @@ export default class RaceScene extends Phaser.Scene {
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.followPlayer = false;
+		this.isThrowingBanana = false;
 	}
 
 	create() {
-		let starfield = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
-		starfield.setScrollFactor(0);
+		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
+		this.background.setScrollFactor(0);
 
 		this.cameras.main.centerOn(0, 0);
 		this.keyboardInputs = this.input.keyboard.createCursorKeys();
@@ -108,9 +112,11 @@ export default class RaceScene extends Phaser.Scene {
 		const tiles = this.tiles.getChildren();
 		const tile1 = tiles[0];
 		const tile2 = tiles[1];
-		this.speedAjustment = Math.sqrt(
+		this.distanceBetweenTwoTiles = Math.sqrt(
 			Math.pow(tile2.getData("position").x - tile1.getData("position").x, 2) + Math.pow(tile1.getData("position").y - tile2.getData("position").y, 2)
 		);
+
+		this.boardPosition = tile1.getData("position");
 
 		const currentPlayer = this.raceGame.getCurrentPlayer();
 		const playerItemState = currentPlayer.getInventory().getInventoryState();
@@ -218,7 +224,9 @@ export default class RaceScene extends Phaser.Scene {
 			useHandCursor: true,
 		});
 
-		this.bananaText.on("pointerup", () => {});
+		this.bananaText.on("pointerup", () => {
+			this.isThrowingBanana = !this.isThrowingBanana;
+		});
 		this.bookText.on("pointerup", () => {
 			this.useItem(ItemType.Book);
 		});
@@ -244,6 +252,8 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	render() {
+		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
+
 		if (!this.followPlayer) {
 			if (this.keyboardInputs.left.isDown) {
 				this.cameras.main.scrollX -= 4;
@@ -260,37 +270,30 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.raceGame.getPlayers().forEach((player: Player) => {
 			let characterSpriteIndex: number = this.getCharacterSpriteIndex(player.id);
-			const playerMoveState = player.getMove().getMoveState();
-			const phaserStartPosition = this.getGamePositionFromLogicPosition({ x: playerMoveState.startLocation.x, y: playerMoveState.startLocation.y });
-			const phaserTargetPosition = this.getGamePositionFromLogicPosition({
-				x: playerMoveState.targetLocation.x,
-				y: playerMoveState.targetLocation.y,
-			});
-			const phaserStartTimestamp = playerMoveState.startTimestamp;
+			const currentPosition = this.transformToCanvasPosition(player.getPosition());
+
 			if (characterSpriteIndex != -1) {
-				this.characterSprites[characterSpriteIndex].move.updateFromMoveState({
-					startTimestamp: phaserStartTimestamp,
-					startLocation: phaserStartPosition,
-					targetLocation: phaserTargetPosition,
-				});
-				const currentPosition = this.characterSprites[characterSpriteIndex].move.getCurrentPosition();
-				this.characterSprites[characterSpriteIndex].sprite.x = currentPosition.x;
-				this.characterSprites[characterSpriteIndex].sprite.y = currentPosition.y;
+				const characterSprite = this.characterSprites[characterSpriteIndex];
+				if (this.isThrowingBanana && player.id !== this.raceGame.getCurrentPlayer().id) {
+					characterSprite.sprite.setTint(0xff0000);
+				} else {
+					characterSprite.sprite.clearTint();
+				}
+				characterSprite.sprite.x = currentPosition.x;
+				characterSprite.sprite.y = currentPosition.y;
 			} else {
-				const phaserMove = new Move(phaserStartTimestamp, phaserStartPosition, phaserTargetPosition, this.speedAjustment);
 				let newCharacterSprite: Phaser.GameObjects.Sprite = this.add
-					.sprite(phaserMove.getCurrentPosition().x, phaserMove.getCurrentPosition().y, CST.IMAGES.STAR)
+					.sprite(currentPosition.x, currentPosition.y, CST.IMAGES.STAR)
 					.setScale(0.08, 0.08);
 
 				if (player.id === this.raceGame.getCurrentPlayer().id) this.currentPlayerSprite = newCharacterSprite;
-				this.characterSprites.push({ playerId: player.id, move: phaserMove, sprite: newCharacterSprite });
+				this.characterSprites.push({ playerId: player.id, sprite: newCharacterSprite });
 			}
 		});
 
-		this.items.destroy(true);
-		this.items = this.add.group();
+		this.items.clear(true, true);
 		const gameGrid = this.raceGame.getGrid();
-		let totalItems = 0;
+
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
@@ -302,7 +305,6 @@ export default class RaceScene extends Phaser.Scene {
 				const currentItem = currentTile.getItem();
 
 				if (currentItem) {
-					totalItems += 1;
 					let itemType: ItemType;
 					switch (currentItem.type) {
 						case ItemType.Banana:
@@ -357,11 +359,11 @@ export default class RaceScene extends Phaser.Scene {
 		return this.characterSprites.findIndex((sprite: CharacterSprites) => sprite.playerId == playerId);
 	}
 
-	private getGamePositionFromLogicPosition(position: Point): Point {
-		return this.tiles
-			.getChildren()
-			.find((tile) => tile.getData("gridPosition").x == position.x && tile.getData("gridPosition").y == position.y)
-			.getData("position");
+	private transformToCanvasPosition(position: Point): Point {
+		return {
+			x: this.boardPosition.x + position.x * this.distanceBetweenTwoTiles,
+			y: this.boardPosition.y + position.y * this.distanceBetweenTwoTiles,
+		};
 	}
 
 	private useItem(itemType: ItemType, targetPlayerId?: string): void {
@@ -375,6 +377,5 @@ export default class RaceScene extends Phaser.Scene {
 
 interface CharacterSprites {
 	playerId: string;
-	move: Move;
 	sprite: Phaser.GameObjects.Sprite;
 }
