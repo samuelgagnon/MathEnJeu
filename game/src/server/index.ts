@@ -48,6 +48,10 @@ function dbconnect(con, dbconfig, nbTry): void {
 			}
 		} else {
 			console.log("Connected!");
+			con.query("SELECT COUNT(*) FROM question;", (err, result, fields) => {
+				if (err) throw err;
+				console.log(result);
+			});
 		}
 	});
 }
