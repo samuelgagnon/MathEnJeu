@@ -45,6 +45,7 @@ export default class DatabaseHandler {
 					.getOne()
 					.then((question) => {
 						console.log("ORM query status : OK. ");
+						console.log("query result : " + question.label);
 						firstQuestion = question;
 					})
 					.catch((error) => {

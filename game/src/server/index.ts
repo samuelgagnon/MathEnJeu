@@ -16,7 +16,6 @@ const httpServer = createServer(app);
 const io = socketIO(httpServer);
 
 const db = new DatabaseHandler("db", "user", "123", "mathamaze2", 3306);
-
 try {
 	let myQuestion = db.getFirstQuestion();
 	console.log("Index OK : " + myQuestion.label);
