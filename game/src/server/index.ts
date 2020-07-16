@@ -3,15 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import "reflect-metadata";
 import socketIO from "socket.io";
-import { createConnection, getRepository } from "typeorm";
-import { Answer } from "../orm/entities/Answer";
-import { AnswerInfo } from "../orm/entities/AnswerInfo";
-import { AnswerType } from "../orm/entities/AnswerType";
-import { AnswerTypeInfo } from "../orm/entities/AnswerTypeInfo";
-import { Language } from "../orm/entities/Language";
-import { LanguageInfo } from "../orm/entities/LanguageInfo";
-import { Question } from "../orm/entities/Question";
-import { QuestionInfo } from "../orm/entities/QuestionInfo";
+import DatabaseHandler from "../orm/DatabaseHandler";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
 import GameManager from "./gameManager";
@@ -23,25 +15,14 @@ const app = express();
 const httpServer = createServer(app);
 const io = socketIO(httpServer);
 
-createConnection({
-	type: "mysql",
-	host: "db",
-	port: 3306,
-	username: "user",
-	password: "123",
-	database: "mathamaze2",
-	entities: [Question, Answer, AnswerInfo, QuestionInfo, Language, LanguageInfo, AnswerType, AnswerTypeInfo],
-	synchronize: true,
-})
-	.then(async (connection) => {
-		// here you can start to work with your entities
-		console.log("ORM connection status : OK. ");
+const db = new DatabaseHandler("db", "user", "123", "mathamaze2", 3306);
 
-		const firstQuestion = await getRepository(Question).createQueryBuilder("question").where("question.question_id = :id", { id: 1 }).getOne();
-
-		console.log(firstQuestion.label);
-	})
-	.catch((error) => console.log("ORM connection status : ERROR. " + error));
+try {
+	let myQuestion = db.getFirstQuestion();
+	console.log("Index OK : " + myQuestion.label);
+} catch (error) {
+	console.log("Index ERROR : " + error);
+}
 
 // /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));
