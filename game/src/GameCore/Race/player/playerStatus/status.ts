@@ -24,5 +24,5 @@ export default abstract class Status {
 
 	public abstract activateBrainiacStatus(): void;
 
-	public abstract getRemainingTime(): string;
+	public abstract getRemainingTime(): number;
 }

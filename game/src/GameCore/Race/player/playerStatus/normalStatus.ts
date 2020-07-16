@@ -31,8 +31,8 @@ export default class NormalStatus extends Status {
 		this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus));
 	}
 
-	public getRemainingTime(): string {
-		return "";
+	public getRemainingTime(): number {
+		return 0;
 	}
 
 	public getCurrentStatus(): StatusType {

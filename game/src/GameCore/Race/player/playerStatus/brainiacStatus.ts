@@ -43,8 +43,8 @@ export default class BrainiacStatus extends Status {
 		}
 	}
 
-	public getRemainingTime(): string {
-		return Math.floor((this.DEFAULT_MAX_TIME_STATUS - (Date.now() - this.startTimeStatus)) / 1000).toString();
+	public getRemainingTime(): number {
+		return this.DEFAULT_MAX_TIME_STATUS - (Date.now() - this.startTimeStatus);
 	}
 
 	public getCurrentStatus(): StatusType {

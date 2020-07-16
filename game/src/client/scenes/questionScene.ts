@@ -1,6 +1,7 @@
 import { CST } from "./../CST";
+import RaceScene from "./raceScene";
 export default class QuestionScene extends Phaser.Scene {
-	parent: Phaser.GameObjects.Zone;
+	position: Point;
 	width: number;
 	height: number;
 	targetLocation: Point;
@@ -8,23 +9,24 @@ export default class QuestionScene extends Phaser.Scene {
 	yesText: Phaser.GameObjects.Text;
 	noText: Phaser.GameObjects.Text;
 
-	constructor(parent: Phaser.GameObjects.Zone, targetLocation: Point) {
+	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
 		super(sceneConfig);
-		this.parent = parent;
-		this.width = parent.width;
-		this.height = parent.height;
-		this.targetLocation = targetLocation;
 	}
 
-	preload() {}
+	init(data: any) {
+		this.targetLocation = data.targetLocation;
+		this.width = data.width;
+		this.height = data.height;
+		this.position = data.position;
+	}
 
 	create() {
-		this.cameras.main.setViewport(this.parent.x, this.parent.y, this.width, this.height);
+		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
 
 		this.yesText = this.add
-			.text(this.parent.width * 0.6, this.parent.height * 0.8, "yes", {
+			.text(this.width * 0.6, this.height * 0.8, "yes", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -34,7 +36,7 @@ export default class QuestionScene extends Phaser.Scene {
 			.setScrollFactor(0);
 
 		this.noText = this.add
-			.text(this.parent.width * 0.4, this.parent.height * 0.8, "no", {
+			.text(this.width * 0.4, this.height * 0.8, "no", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -58,17 +60,10 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 	}
 
-	refresh() {
-		this.cameras.main.setPosition(this.parent.x, this.parent.y);
-
-		this.scene.bringToTop();
-	}
-
 	update() {}
 
-	private answerQuestion(correctAnswer: boolean) {
-		//@ts-ignore
-		this.scene.get(CST.SCENES.RACEGAME).answerQuestion(correctAnswer, this.targetLocation);
-		this.scene.remove(CST.SCENES.QUESTION_WINDOW);
+	private answerQuestion(answer: boolean) {
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
+		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 	}
 }

@@ -41,8 +41,6 @@ export default class Player {
 		if (!playerState) return;
 
 		this.points = playerState.points;
-		this.isAnsweringQuestion = playerState.isAnsweringQuestion;
-		this.missedQuestionsCount = playerState.missedQuestionsCount;
 		this.inventory.updateInventoryFromState(playerState.inventoryState);
 		this.playerStatus.updateFromState(playerState.statusState);
 		this.move.updateFromMoveState(playerState.move);
@@ -65,16 +63,20 @@ export default class Player {
 		return this.playerStatus.getCurrentStatus();
 	}
 
-	public getStatusRemainingTime(): string {
+	public getStatusRemainingTime(): number {
 		return this.playerStatus.getRemainingTime();
-	}
-
-	public getInventory(): Inventory {
-		return this.inventory;
 	}
 
 	public getIsAnsweringQuestion(): boolean {
 		return this.isAnsweringQuestion;
+	}
+
+	public setIsAnsweringQuestion(value: boolean) {
+		this.isAnsweringQuestion = value;
+	}
+
+	public getInventory(): Inventory {
+		return this.inventory;
 	}
 
 	public transitionTo(status: Status) {
@@ -101,8 +103,6 @@ export default class Player {
 	}
 
 	public useItemType(itemType: ItemType, target: Player): void {
-		console.log(itemType);
-		console.log(target);
 		const usedItem = this.inventory.getItem(itemType);
 		if (!usedItem) return; //Manage error maybe
 
@@ -123,8 +123,6 @@ export default class Player {
 		if (item === null) return;
 
 		this.inventory.addItem(item);
-		//this.items.push(item);
-		//this.addItemToInventory(item);
 	}
 
 	public bananaReceivedFrom(from: Player): void {

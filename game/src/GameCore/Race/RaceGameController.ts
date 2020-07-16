@@ -30,6 +30,10 @@ export default abstract class RaceGameController {
 		if (this.timeRemaining < 0) this.gameFinished();
 	}
 
+	public getTimeRemaining(): number {
+		return this.timeRemaining;
+	}
+
 	private playersUpdate() {
 		this.players.forEach((player) => player.update());
 	}
@@ -57,7 +61,7 @@ export default abstract class RaceGameController {
 		const target: Player = this.findPlayer(targetPlayerId);
 		const from: Player = this.findPlayer(fromPlayerId);
 
-		target.useItemType(itemType, from);
+		from.useItemType(itemType, target);
 	}
 
 	private handleItemCollisions(): void {

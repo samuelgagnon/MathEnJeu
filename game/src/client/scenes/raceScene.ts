@@ -2,7 +2,6 @@ import ClientRaceGameController from "../../GameCore/Race/clientRaceGameControll
 import { ItemType } from "../../GameCore/Race/items/item";
 import Player from "../../GameCore/Race/player/player";
 import { CST } from "../CST";
-import QuestionScene from "./questionScene";
 
 export default class RaceScene extends Phaser.Scene {
 	//Loops
@@ -18,29 +17,17 @@ export default class RaceScene extends Phaser.Scene {
 	keyboardInputs;
 	background: Phaser.GameObjects.TileSprite;
 	followPlayer: boolean;
-	followPlayerText: Phaser.GameObjects.Text;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
-	questionWindow: Phaser.GameObjects.Zone;
 
 	isThrowingBanana: boolean;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
 	items: Phaser.GameObjects.Group;
-	playerStatusText: Phaser.GameObjects.Text;
-	playerStatusTime: Phaser.GameObjects.Text;
-
-	//playerItems
-	bananaText: Phaser.GameObjects.Text;
-	bananaCount: Phaser.GameObjects.Text;
-	bookText: Phaser.GameObjects.Text;
-	bookCount: Phaser.GameObjects.Text;
-	crystalBallText: Phaser.GameObjects.Text;
-	crystalBallCount: Phaser.GameObjects.Text;
 
 	constructor() {
 		const sceneConfig = {
-			key: CST.SCENES.RACEGAME,
+			key: CST.SCENES.RACE_GAME,
 		};
 		super(sceneConfig);
 	}
@@ -105,6 +92,7 @@ export default class RaceScene extends Phaser.Scene {
 
 					//TODO verify if has arrived logic should be moved to player
 					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
+						this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
 						this.createQuestionWindow(<Point>{ x: x, y: y });
 					}
 				});
@@ -120,133 +108,7 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.boardPosition = tile1.getData("position");
 
-		const currentPlayer = this.raceGame.getCurrentPlayer();
-		const playerItemState = currentPlayer.getInventory().getInventoryState();
-
-		this.playerStatusText = this.add
-			.text(50, 100, currentPlayer.getCurrentStatus().toString(), {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.playerStatusTime = this.add
-			.text(this.playerStatusText.getTopRight().x - 60, this.playerStatusText.getTopRight().y, currentPlayer.getStatusRemainingTime(), {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.bananaText = this.add
-			.text(50, 150, "Banana count:", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.bananaCount = this.add
-			.text(this.bananaText.getTopRight().x + 10, this.bananaText.getTopRight().y, playerItemState.bananaCount.toString(), {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.bookText = this.add
-			.text(50, 200, "Book count:", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.bookCount = this.add
-			.text(this.bookText.getTopRight().x + 10, this.bookText.getTopRight().y, playerItemState.bookCount.toString(), {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.crystalBallText = this.add
-			.text(50, 250, "Crystal ball count:", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.crystalBallCount = this.add
-			.text(this.crystalBallText.getTopRight().x + 10, this.crystalBallText.getTopRight().y, playerItemState.crystalBallCount.toString(), {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.followPlayerText = this.add
-			.text(50, 500, "Camera follow: Off", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.bananaText.setInteractive({
-			useHandCursor: true,
-		});
-		this.bookText.setInteractive({
-			useHandCursor: true,
-		});
-		this.crystalBallText.setInteractive({
-			useHandCursor: true,
-		});
-		this.followPlayerText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.bananaText.on("pointerup", () => {
-			this.isThrowingBanana = !this.isThrowingBanana;
-		});
-		this.bookText.on("pointerup", () => {
-			this.useItem(ItemType.Book);
-		});
-		this.crystalBallText.on("pointerup", () => {
-			this.useItem(ItemType.CrystalBall);
-		});
-
-		this.followPlayerText.on("pointerup", () => {
-			if (this.followPlayer) {
-				this.followPlayer = false;
-				this.followPlayerText.setText("Camera follow: Off");
-				this.cameras.main.stopFollow();
-			} else {
-				this.followPlayer = true;
-				this.followPlayerText.setText("Camera follow: On");
-				this.cameras.main.startFollow(this.currentPlayerSprite, true, 0.09, 0.09);
-			}
-		});
+		this.scene.launch(CST.SCENES.RACE_GAME_UI);
 	}
 
 	phys(currentframe: number) {
@@ -278,8 +140,10 @@ export default class RaceScene extends Phaser.Scene {
 				const characterSprite = this.characterSprites[characterSpriteIndex];
 				if (this.isThrowingBanana && player.id !== this.raceGame.getCurrentPlayer().id) {
 					characterSprite.sprite.setTint(0xff0000);
+					characterSprite.sprite.setInteractive();
 				} else {
 					characterSprite.sprite.clearTint();
+					characterSprite.sprite.disableInteractive();
 				}
 				characterSprite.sprite.x = currentPosition.x;
 				characterSprite.sprite.y = currentPosition.y;
@@ -290,6 +154,24 @@ export default class RaceScene extends Phaser.Scene {
 
 				if (player.id === this.raceGame.getCurrentPlayer().id) this.currentPlayerSprite = newCharacterSprite;
 				this.characterSprites.push({ playerId: player.id, sprite: newCharacterSprite });
+
+				newCharacterSprite.setInteractive();
+				newCharacterSprite.on("pointerover", () => {
+					newCharacterSprite.setTint(0x86bfda);
+				});
+				newCharacterSprite.on("pointerout", () => {
+					newCharacterSprite.clearTint();
+				});
+				newCharacterSprite.on("pointerdown", () => {
+					newCharacterSprite.setTint(0xff0000);
+				});
+				newCharacterSprite.on("pointerup", () => {
+					newCharacterSprite.clearTint();
+					this.isThrowingBanana = false;
+					this.useItem(ItemType.Banana, player.id);
+				});
+
+				newCharacterSprite.disableInteractive();
 			}
 		});
 
@@ -332,19 +214,6 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
-
-		const currentPlayer = this.raceGame.getCurrentPlayer();
-		const currentPlayerStatus = currentPlayer.getCurrentStatus().toString();
-
-		//setting player time status
-		this.playerStatusText.text = currentPlayerStatus.toString().substring(0, currentPlayerStatus.length - 6);
-		this.playerStatusTime.text = currentPlayer.getStatusRemainingTime();
-
-		//setting player item count
-		const playerItemState = currentPlayer.getInventory().getInventoryState();
-		this.bananaCount.text = playerItemState.bananaCount.toString();
-		this.bookCount.text = playerItemState.bookCount.toString();
-		this.crystalBallCount.text = playerItemState.crystalBallCount.toString();
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -368,7 +237,7 @@ export default class RaceScene extends Phaser.Scene {
 		};
 	}
 
-	private useItem(itemType: ItemType, targetPlayerId?: string): void {
+	useItem(itemType: ItemType, targetPlayerId?: string): void {
 		try {
 			this.raceGame.itemUsed(itemType, targetPlayerId);
 		} catch (e) {
@@ -380,21 +249,19 @@ export default class RaceScene extends Phaser.Scene {
 		var x = Number(this.game.config.width) * 0.15;
 		var y = Number(this.game.config.height) * 0.15;
 
-		this.questionWindow = this.add
-			.zone(x, y, Number(this.game.config.width) * 0.7, Number(this.game.config.height) * 0.7)
-			.setInteractive()
-			.setOrigin(0)
-			.setScrollFactor(0);
-		let scene = new QuestionScene(this.questionWindow, targetLocation);
-
-		this.scene.add(CST.SCENES.QUESTION_WINDOW, scene, true);
+		this.scene.launch(CST.SCENES.QUESTION_WINDOW, {
+			targetLocation: targetLocation,
+			width: Number(this.game.config.width) * 0.7,
+			height: Number(this.game.config.height) * 0.7,
+			position: { x: x, y: y },
+		});
 	}
 
 	answerQuestion(correctAnswer: boolean, position: Point) {
 		if (correctAnswer) {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
 		}
-		this.questionWindow.destroy();
+		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
 	}
 }
 

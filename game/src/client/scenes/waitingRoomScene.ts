@@ -30,7 +30,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				this.gameSocket
 			);
 
-			this.scene.start(CST.SCENES.RACEGAME, { gameController: raceGame });
+			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame });
 		});
 	}
 
