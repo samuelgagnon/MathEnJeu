@@ -1,7 +1,17 @@
 import express from "express";
 import { createServer } from "http";
 import path from "path";
+import "reflect-metadata";
 import socketIO from "socket.io";
+import { createConnection, getRepository } from "typeorm";
+import { Answer } from "../orm/entities/Answer";
+import { AnswerInfo } from "../orm/entities/AnswerInfo";
+import { AnswerType } from "../orm/entities/AnswerType";
+import { AnswerTypeInfo } from "../orm/entities/AnswerTypeInfo";
+import { Language } from "../orm/entities/Language";
+import { LanguageInfo } from "../orm/entities/LanguageInfo";
+import { Question } from "../orm/entities/Question";
+import { QuestionInfo } from "../orm/entities/QuestionInfo";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
 import GameManager from "./gameManager";
@@ -13,48 +23,25 @@ const app = express();
 const httpServer = createServer(app);
 const io = socketIO(httpServer);
 
-//test DB
-//const db = new DataBaseHandler("172.18.0.2", "root", "123", "mathamaze2", 3306);
-//const db = new DataBaseHandler("127.0.0.1", "root", "123", "mathamaze2", 3306);
-//db.getFirstQuestion();
-
-let mysql = require("mysql");
-
-let dbconfig = {
+createConnection({
+	type: "mysql",
 	host: "db",
-	user: "user",
+	port: 3306,
+	username: "user",
 	password: "123",
 	database: "mathamaze2",
-	port: "3306",
-};
+	entities: [Question, Answer, AnswerInfo, QuestionInfo, Language, LanguageInfo, AnswerType, AnswerTypeInfo],
+	synchronize: true,
+})
+	.then(async (connection) => {
+		// here you can start to work with your entities
+		console.log("ORM connection status : OK. ");
 
-let con = mysql.createConnection(dbconfig);
+		const firstQuestion = await getRepository(Question).createQueryBuilder("question").where("question.question_id = :id", { id: 1 }).getOne();
 
-let nbTry = 0;
-dbconnect(con, dbconfig, nbTry);
-function dbconnect(con, dbconfig, nbTry): void {
-	con.connect(function (err) {
-		nbTry++;
-		console.log("DB_CONNECT:#" + nbTry);
-		if (err) {
-			console.error("Error connecting: " + err.stack);
-			if (nbTry < 20) {
-				con = mysql.createConnection(dbconfig);
-				setTimeout(function () {
-					dbconnect(con, dbconfig, nbTry);
-				}, 60000);
-			} else {
-				console.log("Max number of tries reached.");
-			}
-		} else {
-			console.log("Connected!");
-			con.query("SELECT COUNT(*) FROM question;", (err, result, fields) => {
-				if (err) throw err;
-				console.log(result);
-			});
-		}
-	});
-}
+		console.log(firstQuestion.label);
+	})
+	.catch((error) => console.log("ORM connection status : ERROR. " + error));
 
 // /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));

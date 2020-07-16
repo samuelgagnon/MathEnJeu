@@ -1,6 +1,7 @@
 import { Application } from "express";
 import { Server as HTTPServer } from "http";
 import path from "path";
+import "reflect-metadata";
 
 export class Server {
 	private httpServer: HTTPServer;
