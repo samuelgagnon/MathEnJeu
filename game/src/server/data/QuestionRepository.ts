@@ -1,4 +1,4 @@
-import { Question } from "../../GameCore/Race/Question";
+import { Question } from "../../gameCore/race/Question";
 
 export default interface QuestionRepository {
 	getQuestionsForPlayer(playerLevel, difficulty): Promise<Question[]>;
