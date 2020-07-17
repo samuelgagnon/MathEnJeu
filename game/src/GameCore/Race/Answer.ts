@@ -1,9 +1,12 @@
-export default class Answer {
+export class Answer {
 	private label: string;
-	private right: boolean;
-	constructor() {}
+	private _isRight: boolean;
+	constructor(label: string, isRight: boolean) {
+		this.label = label;
+		this._isRight = isRight;
+	}
 	isRight(): boolean {
-		return this.right;
+		return this._isRight;
 	}
 	isEquivalentToAnswerString(answerString: string): boolean {
 		//TODO: update comparison to make it more flexible

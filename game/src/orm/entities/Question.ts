@@ -1,6 +1,7 @@
-import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Answer } from "./Answer";
 import { AnswerInfo } from "./AnswerInfo";
+import { QuestionInfo } from "./QuestionInfo";
 
 @Index("answer_type_id", ["answerTypeId"], {})
 @Index("source_id", ["sourceId"], {})
@@ -27,6 +28,9 @@ export class Question {
 
 	@OneToMany(() => Answer, (answer) => answer.question)
 	answers: Answer[];
+
+	@OneToOne(() => QuestionInfo, (questionInfo) => questionInfo.question)
+	questionInfo: QuestionInfo;
 
 	@OneToMany(() => AnswerInfo, (answerInfo) => answerInfo.question)
 	answerInfos: AnswerInfo[];
