@@ -4,7 +4,7 @@ import GameFSM from "../../gameCore/gameState/GameFSM";
 import PreGameFactory from "../../gameCore/gameState/StateFactory";
 import { serviceConstants } from "../context/CommonContext";
 import ServiceLocator from "../context/ServiceLocator";
-import { Room } from "./room";
+import { Room } from "./Room";
 
 export default class RoomFactory {
 	public static create(nsp: SocketIO.Namespace): Room {

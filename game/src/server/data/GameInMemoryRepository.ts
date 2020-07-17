@@ -1,5 +1,5 @@
 import { ServerGame } from "../../gameCore/Game";
-import GameRepository from "./gameRepository";
+import GameRepository from "./GameRepository";
 
 export default class GameInMemoryRepository implements GameRepository {
 	private games: Map<string, ServerGame> = new Map<string, ServerGame>();

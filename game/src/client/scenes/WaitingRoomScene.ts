@@ -1,4 +1,4 @@
-import { GameStartEvent } from "../../communication/race/dataInterfaces";
+import { GameStartEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
