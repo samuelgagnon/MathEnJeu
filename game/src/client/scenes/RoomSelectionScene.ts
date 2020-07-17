@@ -1,5 +1,5 @@
 import { CST } from "../CST";
-import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/roomService";
+import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/RoomService";
 
 export default class RoomSelection extends Phaser.Scene {
 	private createRoomButton: Phaser.GameObjects.Text;

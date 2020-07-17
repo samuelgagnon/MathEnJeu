@@ -1,4 +1,4 @@
-import ClientRaceGameController from "../../GameCore/Race/clientRaceGameController";
+import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameController";
 import { ItemType } from "../../GameCore/Race/items/item";
 import Player from "../../GameCore/Race/player/player";
 import { CST } from "../CST";
