@@ -3,7 +3,15 @@ import { createServer } from "http";
 import path from "path";
 import "reflect-metadata";
 import socketIO from "socket.io";
-import DatabaseHandler from "../orm/DatabaseHandler";
+import { createConnection } from "typeorm";
+import { Answer } from "../orm/entities/Answer";
+import { AnswerInfo } from "../orm/entities/AnswerInfo";
+import { AnswerType } from "../orm/entities/AnswerType";
+import { AnswerTypeInfo } from "../orm/entities/AnswerTypeInfo";
+import { Language } from "../orm/entities/Language";
+import { LanguageInfo } from "../orm/entities/LanguageInfo";
+import { Question } from "../orm/entities/Question";
+import { QuestionInfo } from "../orm/entities/QuestionInfo";
 import applyCommonContext, { serviceConstants } from "./context/commonContext";
 import ServiceLocator from "./context/serviceLocator";
 import GameManager from "./gameManager";
@@ -15,15 +23,18 @@ const app = express();
 const httpServer = createServer(app);
 const io = socketIO(httpServer);
 
-const db = new DatabaseHandler("db", "user", "123", "mathamaze2", 3306);
-try {
-	let myQuestion = db.getFirstQuestion();
-	console.log("Index OK : " + myQuestion.label);
-} catch (error) {
-	console.log("Index ERROR : " + error);
-}
+//Connection for typeORM. The database doesn't need to be online for this connection to work.
+createConnection({
+	type: "mysql",
+	host: "db",
+	port: 3306,
+	username: "user",
+	password: "123",
+	database: "mathamaze2",
+	entities: [Question, Answer, AnswerInfo, QuestionInfo, Language, LanguageInfo, AnswerType, AnswerTypeInfo],
+	synchronize: true,
+});
 
-// /static is used to define the root folder when webpack bundles
 app.use("/static", express.static(path.join(__dirname, "../")));
 
 //needed to intialize ServiceLocator
