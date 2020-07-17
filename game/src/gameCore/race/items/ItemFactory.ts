@@ -1,8 +1,8 @@
-import Banana from "./banana";
-import Book from "./book";
-import Brainiac from "./brainiac";
-import CrystalBall from "./crystalBall";
-import Item, { ItemType } from "./item";
+import Banana from "./Banana";
+import Book from "./Book";
+import Brainiac from "./Brainiac";
+import CrystalBall from "./CrystalBall";
+import Item, { ItemType } from "./Item";
 
 export default class ItemFactory {
 	public static create(itemType: ItemType, location?: Point): Item {

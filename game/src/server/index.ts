@@ -2,12 +2,12 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import socketIO from "socket.io";
-import applyCommonContext, { serviceConstants } from "./context/commonContext";
-import ServiceLocator from "./context/serviceLocator";
-import GameManager from "./gameManager";
-import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
-import RoomManager from "./rooms/roomManager";
-import { Server } from "./server";
+import applyCommonContext, { serviceConstants } from "./context/CommonContext";
+import ServiceLocator from "./context/ServiceLocator";
+import GameManager from "./GameManager";
+import RoomSelectionNamespace from "./namespace/RoomSelectionNamespace";
+import RoomManager from "./rooms/RoomManager";
+import { Server } from "./Server";
 
 const app = express();
 const httpServer = createServer(app);

@@ -1,5 +1,5 @@
-import RoomRepository from "./roomRepository";
-import { Room } from "../rooms/room";
+import { Room } from "../rooms/Room";
+import RoomRepository from "./RoomRepository";
 
 export default class RoomInMemoryRepository implements RoomRepository {
 	private rooms: Map<string, Room> = new Map<string, Room>();

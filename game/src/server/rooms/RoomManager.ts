@@ -1,6 +1,6 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
-import RoomRepository from "../data/roomRepository";
-import RoomFactory from "./roomFactory";
+import RoomRepository from "../data/RoomRepository";
+import RoomFactory from "./RoomFactory";
 
 export default class RoomManager {
 	private io: SocketIOServer;

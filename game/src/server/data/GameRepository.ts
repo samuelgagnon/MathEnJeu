@@ -1,4 +1,4 @@
-import { ServerGame } from "../../GameCore/game";
+import { ServerGame } from "../../gameCore/Game";
 
 export default interface GameRepository {
 	addGame(game: ServerGame): void;

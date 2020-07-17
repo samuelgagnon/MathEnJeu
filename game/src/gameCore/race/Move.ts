@@ -1,4 +1,4 @@
-import MoveState from "../../Communication/Race/moveState";
+import MoveState from "../../communication/race/MoveState";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {

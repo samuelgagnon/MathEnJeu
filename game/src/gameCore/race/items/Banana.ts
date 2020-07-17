@@ -1,5 +1,5 @@
-import Player from "../player/player";
-import Item, { ItemType } from "./item";
+import Player from "../player/Player";
+import Item, { ItemType } from "./Item";
 
 export default class Banana implements Item {
 	readonly type: ItemType = ItemType.Banana;

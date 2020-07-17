@@ -1,6 +1,6 @@
-import ItemState from "../../Communication/Race/itemState";
-import ItemFactory from "./items/itemFactory";
-import Tile from "./tile";
+import ItemState from "../../communication/race/ItemState";
+import ItemFactory from "./items/ItemFactory";
+import Tile from "./Tile";
 
 export default class RaceGrid {
 	private tiles: Tile[];

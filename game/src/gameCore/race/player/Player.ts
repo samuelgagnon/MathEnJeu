@@ -1,9 +1,9 @@
-import PlayerState from "../../../Communication/Race/playerState";
-import Item, { ItemType } from "../items/item";
-import Move from "../move";
-import Inventory from "./inventory";
-import Status from "./playerStatus/status";
-import { StatusType } from "./playerStatus/statusType";
+import PlayerState from "../../../communication/race/PlayerState";
+import Item, { ItemType } from "../items/Item";
+import Move from "../Move";
+import Inventory from "./Inventory";
+import Status from "./playerStatus/Status";
+import { StatusType } from "./playerStatus/StatusType";
 
 /**
  * Player is a class that implements a finite state machine. The state will changed depending on the action of the Player class and its

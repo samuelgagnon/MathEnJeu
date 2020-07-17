@@ -1,4 +1,4 @@
-import { ServerGame } from "../../GameCore/game";
+import { ServerGame } from "../../gameCore/Game";
 import GameRepository from "./gameRepository";
 
 export default class GameInMemoryRepository implements GameRepository {

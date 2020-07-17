@@ -1,11 +1,11 @@
-import { ItemUsedEvent, MoveRequestEvent } from "../../Communication/Race/dataInterfaces";
-import { EVENT_NAMES as e } from "../../Communication/Race/eventNames";
-import RaceGameState from "../../Communication/Race/raceGameState";
-import { ClientGame } from "../game";
-import { ItemType } from "./items/item";
-import Player from "./player/player";
-import RaceGameController from "./raceGameController";
-import RaceGrid from "./raceGrid";
+import { ItemUsedEvent, MoveRequestEvent } from "../../communication/race/DataInterfaces";
+import { EVENT_NAMES as e } from "../../communication/race/EventNames";
+import RaceGameState from "../../communication/race/RaceGameState";
+import { ClientGame } from "../Game";
+import { ItemType } from "./items/Item";
+import Player from "./player/Player";
+import RaceGameController from "./RaceGameController";
+import RaceGrid from "./RaceGrid";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;

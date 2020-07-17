@@ -1,6 +1,6 @@
-import { StatusState } from "../../../../Communication/Race/playerState";
-import Player from "../player";
-import { StatusType } from "./statusType";
+import { StatusState } from "../../../../communication/race/PlayerState";
+import Player from "../Player";
+import { StatusType } from "./StatusType";
 
 export default abstract class Status {
 	protected context: Player;

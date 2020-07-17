@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import GameFSM from "../../GameCore/gameState/gameFSM";
-import User from "../data/user";
+import GameFSM from "../../gameCore/gameState/GameFSM";
+import User from "../data/User";
 
 export class Room {
 	private id: string;

@@ -1,6 +1,6 @@
-import { InventoryState } from "../../../Communication/Race/playerState";
-import Item, { ItemType } from "../items/item";
-import ItemFactory from "../items/itemFactory";
+import { InventoryState } from "../../../communication/race/PlayerState";
+import Item, { ItemType } from "../items/Item";
+import ItemFactory from "../items/ItemFactory";
 
 export default class Inventory {
 	private bananaCount: number;

@@ -1,7 +1,7 @@
-import { StatusState } from "../../../../Communication/Race/playerState";
-import Status from "./status";
-import StatusFactory from "./statusFactory";
-import { StatusType } from "./statusType";
+import { StatusState } from "../../../../communication/race/PlayerState";
+import Status from "./Status";
+import StatusFactory from "./StatusFactory";
+import { StatusType } from "./StatusType";
 
 export default class BananaStatus extends Status {
 	private readonly DEFAULT_MAX_TIME_STATUS: number = 90000; //milliseconds

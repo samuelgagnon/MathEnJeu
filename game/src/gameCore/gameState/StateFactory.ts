@@ -1,4 +1,4 @@
-import PreGame from "./preGame";
+import PreGame from "./PreGame";
 
 export default class PreGameFactory {
 	public static createPreGame(): PreGame {

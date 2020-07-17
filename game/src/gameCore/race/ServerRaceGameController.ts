@@ -1,18 +1,18 @@
 import { Socket } from "socket.io";
-import BufferedInput from "../../Communication/Race/bufferedInput";
-import { GameStartEvent, ItemUsedEvent, MoveRequestEvent, StartingRaceGridInfo } from "../../Communication/Race/dataInterfaces";
-import { CLIENT_EVENT_NAMES, EVENT_NAMES as e } from "../../Communication/Race/eventNames";
-import PlayerState from "../../Communication/Race/playerState";
-import RaceGameState from "../../Communication/Race/raceGameState";
-import User from "../../server/data/user";
-import { getObjectValues } from "../../utils/utils";
-import { ServerGame } from "../game";
-import GameFSM from "../gameState/gameFSM";
-import State from "../gameState/state";
-import PreGameFactory from "../gameState/stateFactory";
-import Player from "./player/player";
-import RaceGameController from "./raceGameController";
-import RaceGrid from "./raceGrid";
+import BufferedInput from "../../communication/race/BufferedInput";
+import { GameStartEvent, ItemUsedEvent, MoveRequestEvent, StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES, EVENT_NAMES as e } from "../../communication/race/EventNames";
+import PlayerState from "../../communication/race/PlayerState";
+import RaceGameState from "../../communication/race/RaceGameState";
+import User from "../../server/data/User";
+import { getObjectValues } from "../../utils/Utils";
+import { ServerGame } from "../Game";
+import GameFSM from "../gameState/GameFSM";
+import State from "../gameState/State";
+import PreGameFactory from "../gameState/StateFactory";
+import Player from "./player/Player";
+import RaceGameController from "./RaceGameController";
+import RaceGrid from "./RaceGrid";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private context: GameFSM;

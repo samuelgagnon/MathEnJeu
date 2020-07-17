@@ -1,17 +1,17 @@
-import { StartingRaceGridInfo } from "../../Communication/Race/dataInterfaces";
-import ItemState from "../../Communication/Race/itemState";
-import User from "../../server/data/user";
-import ClientRaceGameController from "./clientRaceGameController";
-import Item, { ItemType } from "./items/item";
-import ItemFactory from "./items/itemFactory";
-import Inventory from "./player/inventory";
-import Player from "./player/player";
-import StatusFactory from "./player/playerStatus/statusFactory";
-import { StatusType } from "./player/playerStatus/statusType";
-import RaceGrid from "./raceGrid";
+import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
+import ItemState from "../../communication/race/ItemState";
+import User from "../../server/data/User";
+import ClientRaceGameController from "./ClientRaceGameController";
+import Item, { ItemType } from "./items/Item";
+import ItemFactory from "./items/ItemFactory";
+import Inventory from "./player/Inventory";
+import Player from "./player/Player";
+import StatusFactory from "./player/playerStatus/StatusFactory";
+import { StatusType } from "./player/playerStatus/StatusType";
+import RaceGrid from "./RaceGrid";
 import { RACE_CST } from "./RACE_CST";
-import ServerRaceGameController from "./serverRaceGameController";
-import Tile from "./tile";
+import ServerRaceGameController from "./ServerRaceGameController";
+import Tile from "./Tile";
 
 export default class RaceGameFactory {
 	public static createClient(

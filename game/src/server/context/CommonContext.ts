@@ -1,6 +1,6 @@
-import ServiceLocator from "./serviceLocator";
-import GameInMemoryRepository from "../data/gameInMemoryRepository";
-import RoomInMemoryRepository from "../data/roomsInMemoryRepository";
+import GameInMemoryRepository from "../data/GameInMemoryRepository";
+import RoomInMemoryRepository from "../data/RoomsInMemoryRepository";
+import ServiceLocator from "./ServiceLocator";
 
 export const applyCommonContext = (): void => {
 	ServiceLocator.register(serviceConstants.GAME_REPOSITORY_CLASS, new GameInMemoryRepository());

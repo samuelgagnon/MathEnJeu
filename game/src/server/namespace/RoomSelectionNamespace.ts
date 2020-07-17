@@ -1,5 +1,5 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
-import RoomRepository from "../data/roomRepository";
+import RoomRepository from "../data/RoomRepository";
 
 export default class RoomSelectionNamespace {
 	private io: SocketIOServer;

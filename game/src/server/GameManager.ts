@@ -1,5 +1,5 @@
-import { ServerGame } from "../GameCore/game";
-import GameRepository from "./data/gameRepository";
+import { ServerGame } from "../gameCore/Game";
+import GameRepository from "./data/GameRepository";
 
 export default class GameManager {
 	private gameRepo: GameRepository;

@@ -1,8 +1,8 @@
 import { Namespace } from "socket.io";
-import GameRepository from "../../server/data/gameRepository";
-import User from "../../server/data/user";
-import { ServerGame } from "../game";
-import State from "./state";
+import GameRepository from "../../server/data/GameRepository";
+import User from "../../server/data/User";
+import { ServerGame } from "../Game";
+import State from "./State";
 export default class GameFSM {
 	private readonly fsmId: string;
 	private state: State;

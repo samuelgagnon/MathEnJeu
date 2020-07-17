@@ -1,9 +1,9 @@
 import { Namespace } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
-import GameFSM from "../../GameCore/gameState/gameFSM";
-import PreGameFactory from "../../GameCore/gameState/stateFactory";
-import { serviceConstants } from "../context/commonContext";
-import ServiceLocator from "../context/serviceLocator";
+import GameFSM from "../../gameCore/gameState/GameFSM";
+import PreGameFactory from "../../gameCore/gameState/StateFactory";
+import { serviceConstants } from "../context/CommonContext";
+import ServiceLocator from "../context/ServiceLocator";
 import { Room } from "./room";
 
 export default class RoomFactory {

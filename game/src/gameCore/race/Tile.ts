@@ -1,5 +1,5 @@
-import Item from "./items/item";
-import Player from "./player/player";
+import Item from "./items/Item";
+import Player from "./player/Player";
 
 export default class Tile {
 	private item: Item;

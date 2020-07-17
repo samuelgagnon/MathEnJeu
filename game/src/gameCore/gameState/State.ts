@@ -1,5 +1,5 @@
-import User from "../../server/data/user";
-import gameFSM from "./gameFSM";
+import User from "../../server/data/User";
+import gameFSM from "./GameFSM";
 
 export default interface State {
 	setContext(context: gameFSM): void;

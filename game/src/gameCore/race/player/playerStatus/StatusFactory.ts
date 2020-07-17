@@ -1,8 +1,8 @@
-import BananaStatus from "./bananaStatus";
-import BrainiacStatus from "./brainiacStatus";
-import NormalStatus from "./normalStatus";
-import Status from "./status";
-import { StatusType } from "./statusType";
+import BananaStatus from "./BananaStatus";
+import BrainiacStatus from "./BrainiacStatus";
+import NormalStatus from "./NormalStatus";
+import Status from "./Status";
+import { StatusType } from "./StatusType";
 
 export default class StatusFactory {
 	public static create(type: StatusType, startTimestamp: number = Date.now()): Status {

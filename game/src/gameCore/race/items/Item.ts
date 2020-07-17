@@ -1,4 +1,4 @@
-import Player from "../player/player";
+import Player from "../player/Player";
 
 export default interface Item {
 	readonly type: ItemType;

@@ -1,9 +1,9 @@
 import { Socket } from "socket.io";
-import { CLIENT_EVENT_NAMES } from "../../Communication/Race/eventNames";
-import User from "../../server/data/user";
-import RaceGameFactory from "../Race/raceGameFactory";
-import GameFSM from "./gameFSM";
-import State from "./state";
+import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
+import User from "../../server/data/User";
+import RaceGameFactory from "../race/RaceGameFactory";
+import GameFSM from "./GameFSM";
+import State from "./State";
 
 export default class PreGame implements State {
 	private context: GameFSM;
