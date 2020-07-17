@@ -54,7 +54,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private getGameState(): RaceGameState {
-		let gameState: RaceGameState = { itemsState: [], players: [] };
+		let gameState: RaceGameState = { itemsState: [], players: [], remainingTime: this.timeRemaining };
 		gameState.itemsState = this.grid.getItemsState();
 		this.players.forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());

@@ -65,6 +65,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public setGameState(gameState: RaceGameState): void {
+		this.timeRemaining = gameState.remainingTime;
 		this.players.forEach((player: Player) => {
 			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
 		});
