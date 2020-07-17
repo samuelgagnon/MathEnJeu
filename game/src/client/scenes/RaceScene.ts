@@ -1,6 +1,6 @@
-import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameController";
-import { ItemType } from "../../GameCore/Race/items/item";
-import Player from "../../GameCore/Race/player/player";
+import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
+import { ItemType } from "../../gameCore/race/items/Item";
+import Player from "../../gameCore/race/player/Player";
 import { CST } from "../CST";
 
 export default class RaceScene extends Phaser.Scene {

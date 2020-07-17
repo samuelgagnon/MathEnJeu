@@ -1,10 +1,10 @@
-import { GameStartEvent } from "../../Communication/Race/dataInterfaces";
-import { CLIENT_EVENT_NAMES } from "../../Communication/Race/eventNames";
-import PlayerState from "../../Communication/Race/playerState";
-import ClientRaceGameController from "../../GameCore/Race/ClientRaceGameController";
-import Player from "../../GameCore/Race/player/player";
-import PlayerFactory from "../../GameCore/Race/player/playerFactory";
-import RaceGameFactory from "../../GameCore/Race/raceGameFactory";
+import { GameStartEvent } from "../../communication/race/dataInterfaces";
+import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
+import PlayerState from "../../communication/race/PlayerState";
+import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
+import Player from "../../gameCore/race/player/Player";
+import PlayerFactory from "../../gameCore/race/player/PlayerFactory";
+import RaceGameFactory from "../../gameCore/race/RaceGameFactory";
 import { CST } from "../CST";
 
 export default class WaitingRoomScene extends Phaser.Scene {

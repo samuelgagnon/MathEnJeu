@@ -1,8 +1,8 @@
-import { ItemType } from "../../GameCore/Race/items/item";
-import Inventory from "../../GameCore/Race/player/inventory";
-import { StatusType } from "../../GameCore/Race/player/playerStatus/statusType";
-import ItemState from "./itemState";
-import PlayerState from "./playerState";
+import { ItemType } from "../../gameCore/race/items/Item";
+import Inventory from "../../gameCore/race/player/Inventory";
+import { StatusType } from "../../gameCore/race/player/playerStatus/StatusType";
+import ItemState from "./ItemState";
+import PlayerState from "./PlayerState";
 
 export interface ItemUsedEvent {
 	itemType: ItemType;

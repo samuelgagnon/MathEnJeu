@@ -1,5 +1,5 @@
 import { CST } from "./../CST";
-import RaceScene from "./raceScene";
+import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {
 	position: Point;
 	width: number;

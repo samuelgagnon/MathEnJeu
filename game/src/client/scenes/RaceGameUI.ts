@@ -1,6 +1,6 @@
-import { ItemType } from "../../GameCore/Race/items/item";
+import { ItemType } from "../../gameCore/race/items/Item";
 import { CST } from "../CST";
-import RaceScene from "./raceScene";
+import RaceScene from "./RaceScene";
 
 export default class RaceGameUI extends Phaser.Scene {
 	disabledInteractionZone: Phaser.GameObjects.Zone;

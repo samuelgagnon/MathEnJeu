@@ -1,5 +1,5 @@
-import { StatusType } from "../../GameCore/Race/player/playerStatus/statusType";
-import MoveState from "./moveState";
+import { StatusType } from "../../gameCore/race/player/playerStatus/StatusType";
+import MoveState from "./MoveState";
 
 export default interface PlayerState {
 	id: string;
