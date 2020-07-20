@@ -1,5 +1,4 @@
-import { Column, Entity, Index, JoinColumn, OneToMany, OneToOne } from "typeorm";
-import { AnswerInfo } from "./AnswerInfo";
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { Question } from "./Question";
 
 @Index("user_id", ["userId"], {})
@@ -47,13 +46,11 @@ export class QuestionInfo {
 	@Column("tinyint", { name: "is_animated", width: 1 })
 	isAnimated: boolean;
 
-	@OneToOne(() => Question, (question) => question.questionInfo, {
-		onDelete: "CASCADE",
-		onUpdate: "CASCADE",
-	})
 	@JoinColumn([{ name: "question_id", referencedColumnName: "questionId" }])
 	question: Question;
 
-	@OneToMany(() => AnswerInfo, (answerInfo) => answerInfo.questionInfo)
-	answerInfos: AnswerInfo[];
+	@ManyToOne(() => Question, (question) => question.questionInfos, {
+		onDelete: "CASCADE",
+		onUpdate: "CASCADE",
+	})
 }
