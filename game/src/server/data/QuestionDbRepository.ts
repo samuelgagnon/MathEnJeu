@@ -1,6 +1,6 @@
 import { getConnection, getRepository } from "typeorm";
-import { Answer as GameAnswer } from "../../gameCore/race/Answer";
-import { Question as GameQuestion } from "../../gameCore/race/Question";
+import { Answer as GameAnswer } from "../../GameCore/Race/Answer";
+import { Question as GameQuestion } from "../../GameCore/Race/Question";
 import { Question as OrmQuestion } from "../../orm/entities/Question";
 import { Language } from "./../../orm/entities/Language";
 import QuestionRepository from "./QuestionRepository";
