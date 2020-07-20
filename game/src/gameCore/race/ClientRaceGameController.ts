@@ -1,6 +1,7 @@
-import { ItemUsedEvent, MoveRequestEvent } from "../../communication/race/DataInterfaces";
-import { EVENT_NAMES as e } from "../../communication/race/EventNames";
+import { ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent } from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
+import { getObjectValues } from "../../utils/Utils";
 import { ClientGame } from "../Game";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
@@ -10,7 +11,6 @@ import RaceGrid from "./RaceGrid";
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
 	private playerSocket: SocketIOClient.Socket;
-	private isGameFinished: boolean = false;
 
 	constructor(
 		gameTime: number,
@@ -30,10 +30,8 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		super.update();
 	}
 
-	protected gameFinished(): void {
-		//Client does something when game is over. Maybe put a flag up to so the interface can act.
+	public gameFinished(): void {
 		this.removeSocketEvents();
-		this.isGameFinished = true;
 	}
 
 	public getPlayers(): Player[] {
@@ -48,16 +46,20 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		return this.findPlayer(this.currentPlayerId);
 	}
 
+	public getCurrentPlayerSocket(): SocketIOClient.Socket {
+		return this.playerSocket;
+	}
+
 	public itemUsed(itemType: ItemType, targetPlayerId?: string) {
 		if (!targetPlayerId) targetPlayerId = this.currentPlayerId;
 		super.itemUsed(itemType, targetPlayerId, this.currentPlayerId);
-		this.playerSocket.emit(e.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
+		this.playerSocket.emit(SE.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
 	}
 
 	public playerMoveRequest(targetLocation: Point): void {
 		let now = Date.now();
 		super.movePlayerTo(this.currentPlayerId, now, targetLocation);
-		this.playerSocket.emit(e.MOVE_REQUEST, <MoveRequestEvent>{
+		this.playerSocket.emit(SE.MOVE_REQUEST, <MoveRequestEvent>{
 			playerId: this.currentPlayerId,
 			startTimestamp: now,
 			targetLocation: targetLocation,
@@ -73,12 +75,21 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	private handleSocketEvents(): void {
-		this.playerSocket.on(e.GAME_UPDATE, (gameState: RaceGameState) => {
+		this.playerSocket.on(CE.GAME_UPDATE, (gameState: RaceGameState) => {
 			this.setGameState(gameState);
+		});
+
+		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
+			this.removePlayer(data.playerId);
 		});
 	}
 
 	private removeSocketEvents(): void {
-		this.playerSocket.removeEventListener(e.GAME_UPDATE);
+		const events = getObjectValues(CE);
+		for (var key in events) {
+			if (events.hasOwnProperty(key)) {
+				this.playerSocket.removeEventListener(events[key]);
+			}
+		}
 	}
 }

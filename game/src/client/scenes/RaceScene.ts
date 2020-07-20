@@ -1,3 +1,5 @@
+import { GameEndEvent, PlayerLeftEvent } from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import { ItemType } from "../../gameCore/race/items/Item";
 import Player from "../../gameCore/race/player/Player";
@@ -7,8 +9,6 @@ export default class RaceScene extends Phaser.Scene {
 	//Loops
 	lag: number;
 	physTimestep: number;
-	//Sockets
-	socket: SocketIOClient.Socket;
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
@@ -43,6 +43,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.characterSprites = [];
 		this.followPlayer = false;
 		this.isThrowingBanana = false;
+		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
 	create() {
@@ -262,6 +263,21 @@ export default class RaceScene extends Phaser.Scene {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
 		}
 		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
+	}
+
+	private handleSocketEvents(socket: SocketIOClient.Socket): void {
+		socket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
+			this.characterSprites.find((sprite) => data.playerId === sprite.playerId).sprite.destroy();
+			this.characterSprites = this.characterSprites.filter((sprite) => data.playerId !== sprite.playerId);
+		});
+
+		socket.on(CE.GAME_END, (data: GameEndEvent) => {
+			console.log(data);
+			this.raceGame.gameFinished();
+			this.scene.stop(CST.SCENES.RACE_GAME_UI);
+			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.raceGame.getCurrentPlayerSocket() });
+		});
 	}
 }
 

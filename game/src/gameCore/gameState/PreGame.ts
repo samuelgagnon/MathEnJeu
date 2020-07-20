@@ -8,8 +8,8 @@ import State from "./State";
 export default class PreGame implements State {
 	private context: GameFSM;
 
-	constructor() {
-		this.handleAllUsersSocketEvents();
+	constructor(users: User[] = []) {
+		this.handleAllUsersSocketEvents(users);
 	}
 
 	public setContext(context: GameFSM): void {
@@ -27,17 +27,12 @@ export default class PreGame implements State {
 	private startRaceGame(): void {
 		const raceGame = RaceGameFactory.createServer(this.context.getId(), this.context.getUsers());
 		this.removeAllUsersSocketEvents();
-		console.log("Race game starts !");
 		this.context.gameStarted(raceGame);
 		this.context.transitionTo(raceGame);
 	}
 
-	private handleAllUsersSocketEvents(): void {
-		//When first initialized, the context doesn't exist yet so we don't need to initialize socketEvents
-		if (this.context !== undefined) {
-			const users = this.context.getUsers();
-			users.forEach((user) => this.handleSocketEvents(user.socket));
-		}
+	private handleAllUsersSocketEvents(users: User[]): void {
+		users.forEach((user) => this.handleSocketEvents(user.socket));
 	}
 
 	private removeAllUsersSocketEvents(): void {

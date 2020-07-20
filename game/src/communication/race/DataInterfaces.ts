@@ -23,6 +23,22 @@ export interface GameStartEvent {
 	players: PlayerState[];
 }
 
+export interface GameEndEvent {
+	playerEndStates: PlayerEndState[];
+}
+
+export interface PlayerLeftEvent {
+	playerId: string;
+}
+
+export interface PlayerEndState {
+	playerId: string;
+	points: number;
+	name: string;
+	//TODO: Maybe put the user information here
+	//to know what character model is used and possibly the grade the player is
+}
+
 export interface StartingRaceGridInfo {
 	width: number;
 	height: number;

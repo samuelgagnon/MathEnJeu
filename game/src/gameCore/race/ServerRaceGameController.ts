@@ -1,7 +1,15 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
-import { GameStartEvent, ItemUsedEvent, MoveRequestEvent, StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES, EVENT_NAMES as e } from "../../communication/race/EventNames";
+import {
+	GameEndEvent,
+	GameStartEvent,
+	ItemUsedEvent,
+	MoveRequestEvent,
+	PlayerEndState,
+	PlayerLeftEvent,
+	StartingRaceGridInfo,
+} from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
 import User from "../../server/data/User";
@@ -39,7 +47,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
-			.emit(CLIENT_EVENT_NAMES.GAME_START, <GameStartEvent>{
+			.emit(CE.GAME_START, <GameStartEvent>{
 				gameTime: this.gameTime,
 				gameStartTimeStamp: this.gameStartTimeStamp,
 				grid: <StartingRaceGridInfo>{
@@ -67,13 +75,21 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		if (!this.isGameStarted) this.emitStartGameEvent();
 		this.resolveInputs();
 		super.update();
-		this.context.getNamespace().to(this.context.getRoomString()).emit(e.GAME_UPDATE, this.getGameState());
+		if (this.timeRemaining < 0) this.gameFinished();
+		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}
 
 	protected gameFinished(): void {
+		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
+			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
+		});
+		this.context
+			.getNamespace()
+			.to(this.context.getRoomString())
+			.emit(CE.GAME_END, <GameEndEvent>{ playerEndStates: playerEndStates });
 		this.removeAllUsersSocketEvents();
 		this.context.gameFinished(this);
-		this.context.transitionTo(PreGameFactory.createPreGame());
+		this.context.transitionTo(PreGameFactory.createPreGame(this.context.getUsers()));
 	}
 
 	public userJoined(user: User): void {
@@ -81,23 +97,28 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public userLeft(user: User): void {
+		this.removePlayer(user.userId);
+		this.context
+			.getNamespace()
+			.to(this.context.getRoomString())
+			.emit(CE.PLAYER_LEFT, <PlayerLeftEvent>{ playerId: user.userId });
 		this.removeSocketEvents(user.socket);
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		socket.on(e.ITEM_USED, (data: ItemUsedEvent) => {
-			const newInput: BufferedInput = { eventType: e.ITEM_USED, data: data };
+		socket.on(SE.ITEM_USED, (data: ItemUsedEvent) => {
+			const newInput: BufferedInput = { eventType: SE.ITEM_USED, data: data };
 			this.inputBuffer.push(newInput);
 		});
 
-		socket.on(e.MOVE_REQUEST, (data: MoveRequestEvent) => {
-			const newInput: BufferedInput = { eventType: e.MOVE_REQUEST, data: data };
+		socket.on(SE.MOVE_REQUEST, (data: MoveRequestEvent) => {
+			const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
 			this.inputBuffer.push(newInput);
 		});
 	}
 
 	private removeSocketEvents(socket: Socket): void {
-		const events = getObjectValues(e);
+		const events = getObjectValues(SE);
 		for (var key in events) {
 			if (events.hasOwnProperty(key)) {
 				socket.removeAllListeners(events[key]);
@@ -118,11 +139,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.inputBuffer.forEach((input: BufferedInput) => {
 			let inputData: any = input.data;
 			switch (input.eventType) {
-				case e.ITEM_USED:
+				case SE.ITEM_USED:
 					this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
 					break;
 
-				case e.MOVE_REQUEST:
+				case SE.MOVE_REQUEST:
 					this.movePlayerTo(
 						(<MoveRequestEvent>inputData).playerId,
 						(<MoveRequestEvent>inputData).startTimestamp,

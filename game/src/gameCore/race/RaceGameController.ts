@@ -26,8 +26,6 @@ export default abstract class RaceGameController {
 
 	protected gameLogicUpdate(): void {
 		this.timeRemaining = this.gameTime - (Date.now() - this.gameStartTimeStamp);
-		//TODO: Do we keep the game finished logic here or send an event to the clients to notify game ended.
-		if (this.timeRemaining < 0) this.gameFinished();
 	}
 
 	public getTimeRemaining(): number {
