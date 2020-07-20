@@ -12,12 +12,12 @@ import { Language } from "../orm/entities/Language";
 import { LanguageInfo } from "../orm/entities/LanguageInfo";
 import { Question } from "../orm/entities/Question";
 import { QuestionInfo } from "../orm/entities/QuestionInfo";
-import applyCommonContext, { serviceConstants } from "./context/commonContext";
-import ServiceLocator from "./context/serviceLocator";
-import GameManager from "./gameManager";
-import RoomSelectionNamespace from "./namespace/roomSelectionNamespace";
-import RoomManager from "./rooms/roomManager";
-import { Server } from "./server";
+import applyCommonContext, { serviceConstants } from "./context/CommonContext";
+import ServiceLocator from "./context/ServiceLocator";
+import GameManager from "./GameManager";
+import RoomSelectionNamespace from "./namespace/RoomSelectionNamespace";
+import RoomManager from "./rooms/RoomManager";
+import { Server } from "./Server";
 
 const app = express();
 const httpServer = createServer(app);
