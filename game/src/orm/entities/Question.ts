@@ -1,4 +1,4 @@
-import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Answer } from "./Answer";
 import { AnswerInfo } from "./AnswerInfo";
 import { QuestionInfo } from "./QuestionInfo";
@@ -29,9 +29,9 @@ export class Question {
 	@OneToMany(() => Answer, (answer) => answer.question)
 	answers: Answer[];
 
-	@OneToOne(() => QuestionInfo, (questionInfo) => questionInfo.question)
-	questionInfo: QuestionInfo;
-
 	@OneToMany(() => AnswerInfo, (answerInfo) => answerInfo.question)
 	answerInfos: AnswerInfo[];
+
+	@OneToMany(() => QuestionInfo, (questionInfo) => questionInfo.question)
+	questionInfos: QuestionInfo[];
 }
