@@ -7,6 +7,9 @@ export default class QuestionScene extends Phaser.Scene {
 	height: number;
 	targetLocation: Point;
 
+	questionImage: Phaser.GameObjects.Image;
+	questionTexture: Phaser.Textures.Texture;
+
 	yesText: Phaser.GameObjects.Text;
 	noText: Phaser.GameObjects.Text;
 
@@ -28,8 +31,42 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.textures.once(
 			"addtexture",
-			function () {
-				this.add.image(this.width * 0.5, this.height * 0.3, "question").setScale(0.3);
+			() => {
+				this.questionImage = this.add.image(this.width * 0.5, this.height * 0.3, "question").setScale(0.3);
+
+				this.yesText = this.add
+					.text(this.width * 0.6, this.height * 0.8, "yes", {
+						fontFamily: "Courier",
+						fontSize: "32px",
+						align: "center",
+						color: "#000000",
+						fontStyle: "bold",
+					})
+					.setScrollFactor(0);
+
+				this.noText = this.add
+					.text(this.width * 0.4, this.height * 0.8, "no", {
+						fontFamily: "Courier",
+						fontSize: "32px",
+						align: "center",
+						color: "#000000",
+						fontStyle: "bold",
+					})
+					.setScrollFactor(0);
+
+				this.yesText.setInteractive({
+					useHandCursor: true,
+				});
+				this.noText.setInteractive({
+					useHandCursor: true,
+				});
+
+				this.yesText.on("pointerup", () => {
+					this.answerQuestion(true);
+				});
+				this.noText.on("pointerup", () => {
+					this.answerQuestion(false);
+				});
 			},
 			this
 		);
@@ -37,46 +74,14 @@ export default class QuestionScene extends Phaser.Scene {
 		getBase64ImageForQuestion("1", "fr").then((value) => {
 			this.textures.addBase64("question", value);
 		});
-
-		this.yesText = this.add
-			.text(this.width * 0.6, this.height * 0.8, "yes", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.noText = this.add
-			.text(this.width * 0.4, this.height * 0.8, "no", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.yesText.setInteractive({
-			useHandCursor: true,
-		});
-		this.noText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.yesText.on("pointerup", () => {
-			this.answerQuestion(true);
-		});
-		this.noText.on("pointerup", () => {
-			this.answerQuestion(false);
-		});
 	}
 
 	update() {}
 
 	private answerQuestion(answer: boolean) {
 		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
+		this.questionImage.destroy(true);
+		this.textures.remove("question");
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 	}
 }
