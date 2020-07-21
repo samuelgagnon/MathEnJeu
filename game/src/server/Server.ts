@@ -24,7 +24,7 @@ export class Server {
 			res.sendFile(path.join(__dirname, "../", "/client/index.html"));
 		});
 
-		this.app.get("/question", async (req, res) => {
+		this.app.get("/questionImage", async (req, res) => {
 			const questionId = req.query.id;
 			const languageShortName = req.query.languageShortName;
 			console.log(`id:${Number(questionId)} languageShortName:${languageShortName.toString()}`);
