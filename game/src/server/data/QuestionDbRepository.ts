@@ -43,33 +43,8 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		const rows = await getConnection().query(queryString);
 		const gameAnswers: GameAnswer[] = rows.map((row) => new GameAnswer(row.label, row.is_right));
-		const gameQuestion: GameQuestion = new GameQuestion(gameAnswers, rows[0].question_flash_file);
-
-		//TODO : Really use ORM instead of executing raw SQL as below.
-		/*
-		const ormQuestion = await getConnection()
-			.getRepository(OrmQuestion)
-			.createQueryBuilder("question")
-			.leftJoinAndSelect("question.answers", "answer")
-			.leftJoinAndSelect("question.questionInfo", "questioninfo")
-			.where("question.question_id = :id", { id: questionId })
-			.andWhere((qb) => {
-				const subQuery = qb
-					.subQuery()
-					.select("language.language_id")
-					.from(Language, "language")
-					.where("language.short_name LIKE :short_name", { short_name: language })
-					.getQuery();
-				return "questioninfo.language_id IN " + subQuery;
-			})
-			.getOne();
-
-		console.log(`ORM Query result: ${ormQuestion}`);
-
-		const gameAnswers: GameAnswer[] = ormQuestion.answers.map((ormAnswer) => new GameAnswer(ormAnswer.label, ormAnswer.isRight));
-
-		//questionInfos array contains only one element corresponding to the selected language
-		const gameQuestion = new GameQuestion(gameAnswers, ormQuestion.questionInfos[0].questionFlashFile);*/
+		//Information concerning the question can be fetched in any row. We take the first one (rows[0]).
+		const gameQuestion: GameQuestion = new GameQuestion(gameAnswers, rows[0].tag, rows[0].question_flash_file, rows[0].feedback_flash_file);
 
 		return gameQuestion;
 	}
