@@ -34,7 +34,7 @@ export class Server {
 				.then((question) => {
 					console.log("ORM query status : OK. ");
 					console.log("query result : " + question.getQuestionRelativePath());
-					res.send(question);
+					res.sendFile(path.join(__dirname, `assets/${question.getQuestionRelativePath()}`));
 				})
 				.catch((error) => {
 					console.log("ORM query status " + error);
