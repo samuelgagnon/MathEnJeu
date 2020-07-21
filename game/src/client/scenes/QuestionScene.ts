@@ -1,3 +1,4 @@
+import { getBase64ImageForQuestion } from "../services/QuestionsService";
 import { CST } from "./../CST";
 import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {
@@ -24,6 +25,18 @@ export default class QuestionScene extends Phaser.Scene {
 	create() {
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
+
+		this.textures.once(
+			"addtexture",
+			function () {
+				this.add.image(this.width * 0.5, this.height * 0.3, "question").setScale(0.3);
+			},
+			this
+		);
+
+		getBase64ImageForQuestion("1", "fr").then((value) => {
+			this.textures.addBase64("question", value);
+		});
 
 		this.yesText = this.add
 			.text(this.width * 0.6, this.height * 0.8, "yes", {
