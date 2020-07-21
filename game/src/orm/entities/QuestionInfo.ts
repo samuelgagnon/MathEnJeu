@@ -1,4 +1,5 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, OneToMany } from "typeorm";
+import { AnswerInfo } from "./AnswerInfo";
 import { Question } from "./Question";
 
 @Index("user_id", ["userId"], {})
@@ -49,8 +50,6 @@ export class QuestionInfo {
 	@JoinColumn([{ name: "question_id", referencedColumnName: "questionId" }])
 	question: Question;
 
-	@ManyToOne(() => Question, (question) => question.questionInfos, {
-		onDelete: "CASCADE",
-		onUpdate: "CASCADE",
-	})
+	@OneToMany(() => AnswerInfo, (answerInfo) => answerInfo.questionInfo)
+	answerInfos: AnswerInfo[];
 }
