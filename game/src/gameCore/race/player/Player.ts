@@ -21,6 +21,7 @@ export default class Player {
 	private gridPosition: Point;
 	private move: Move;
 	private inventory: Inventory;
+	private answeredQuestionsId: Number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
 
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
@@ -66,6 +67,8 @@ export default class Player {
 	public getStatusRemainingTime(): number {
 		return this.playerStatus.getRemainingTime();
 	}
+
+	public;
 
 	public getIsAnsweringQuestion(): boolean {
 		return this.isAnsweringQuestion;

@@ -1,6 +1,6 @@
 import { Question } from "../../gameCore/race/Question";
 
 export default interface QuestionRepository {
-	getQuestionsForPlayer(playerLevel, difficulty): Promise<Question[]>;
-	getQuestionById(questionId: number, language: string): Promise<Question>;
+	getQuestionsIdByDifficulty(language: string, levelId: number, difficulty: number): Promise<Number[]>;
+	getQuestionById(questionId: number, language: string, levelId: number): Promise<Question>;
 }

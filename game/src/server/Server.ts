@@ -27,10 +27,11 @@ export class Server {
 		this.app.get("/questionImage", async (req, res) => {
 			const questionId = req.query.id;
 			const languageShortName = req.query.languageShortName;
-			console.log(`id:${Number(questionId)} languageShortName:${languageShortName.toString()}`);
+			const levelId = req.query.levelId;
+			console.log(`id:${Number(questionId)} languageShortName:${languageShortName.toString()} levelId:${levelId.toString()}`);
 
 			this.questionRepo
-				.getQuestionById(Number(questionId), languageShortName.toString())
+				.getQuestionById(Number(questionId), languageShortName.toString(), Number(levelId))
 				.then((question) => {
 					console.log("ORM query status : OK. ");
 					console.log("query result : " + question.getQuestionRelativePath());
