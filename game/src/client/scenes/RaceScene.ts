@@ -247,13 +247,13 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private createQuestionWindow(targetLocation: Point): void {
-		var x = Number(this.game.config.width) * 0.15;
-		var y = Number(this.game.config.height) * 0.15;
+		var x = Number(this.game.config.width) * 0.05;
+		var y = Number(this.game.config.height) * 0.05;
 
 		this.scene.launch(CST.SCENES.QUESTION_WINDOW, {
 			targetLocation: targetLocation,
-			width: Number(this.game.config.width) * 0.7,
-			height: Number(this.game.config.height) * 0.7,
+			width: Number(this.game.config.width) * 0.9,
+			height: Number(this.game.config.height) * 0.9,
 			position: { x: x, y: y },
 		});
 	}
