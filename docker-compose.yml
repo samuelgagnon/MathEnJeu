@@ -1,10 +1,23 @@
-version: "2"
+version: "3"
 services:
   app:
-    build: .
-    #Doesn't seem to work with docker toolkit (legacy) for windows
-    #Would be implemented to rebuild on change for developpement
+    build: ./game
+    #Would be implemented to rebuild on change for developpement 
     #volumes:
     #  - .:/usr/src/MathEnJeu
+    container_name: app
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
+    build: ./database
+    container_name: db
+
+
+

@@ -1,0 +1,32 @@
+[
+  {
+    "resultsPath": "E:\\Travail\\Math en jeu\\MathEnJeu\\game\\output",
+    "pluralizeNames": true,
+    "noConfigs": false,
+    "convertCaseFile": "pascal",
+    "convertCaseEntity": "pascal",
+    "convertCaseProperty": "camel",
+    "convertEol": "CRLF",
+    "propertyVisibility": "none",
+    "lazy": false,
+    "activeRecord": false,
+    "generateConstructor": false,
+    "customNamingStrategyPath": "",
+    "relationIds": false,
+    "strictMode": "none",
+    "skipSchema": false,
+    "indexFile": false,
+    "exportType": "named"
+  },
+  {
+    "host": "db",
+    "port": 3306,
+    "databaseName": "mathamaze2",
+    "user": "user",
+    "password": "123",
+    "databaseType": "mysql",
+    "schemaName": "",
+    "ssl": true,
+    "skipTables": []
+  }
+]
