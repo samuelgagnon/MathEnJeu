@@ -71,7 +71,7 @@ export default class QuestionScene extends Phaser.Scene {
 			this
 		);
 
-		getBase64ImageForQuestion("1", "fr").then((value) => {
+		getBase64ImageForQuestion("1", "fr", "1").then((value) => {
 			this.textures.addBase64("question", value);
 		});
 	}

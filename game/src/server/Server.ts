@@ -27,15 +27,28 @@ export class Server {
 		this.app.get("/questionImage", async (req, res) => {
 			const questionId = req.query.id;
 			const languageShortName = req.query.languageShortName;
-			const levelId = req.query.levelId;
-			console.log(`id:${Number(questionId)} languageShortName:${languageShortName.toString()} levelId:${levelId.toString()}`);
+			const schoolGradeId = req.query.schoolGradeId;
 
 			this.questionRepo
-				.getQuestionById(Number(questionId), languageShortName.toString(), Number(levelId))
+				.getQuestionById(Number(questionId), languageShortName.toString(), Number(schoolGradeId))
 				.then((question) => {
-					console.log("ORM query status : OK. ");
-					console.log("query result : " + question.getQuestionRelativePath());
 					res.sendFile(path.join(__dirname, `assets/${question.getQuestionRelativePath()}`));
+				})
+				.catch((error) => {
+					console.log("Query status " + error);
+					res.send(error);
+				});
+		});
+
+		this.app.get("/questionFeedbackImage", async (req, res) => {
+			const questionId = req.query.id;
+			const languageShortName = req.query.languageShortName;
+			const schoolGradeId = req.query.schoolGradeId;
+
+			this.questionRepo
+				.getQuestionById(Number(questionId), languageShortName.toString(), Number(schoolGradeId))
+				.then((question) => {
+					res.sendFile(path.join(__dirname, `assets/${question.getFeedbackRelativePath()}`));
 				})
 				.catch((error) => {
 					console.log("ORM query status " + error);
