@@ -11,6 +11,7 @@ import RaceGrid from "./RaceGrid";
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
 	private playerSocket: SocketIOClient.Socket;
+	private readonly MAX_TIME_DIFFERENCE = 1500;
 
 	constructor(
 		gameTime: number,
@@ -67,7 +68,12 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public setGameState(gameState: RaceGameState): void {
-		this.timeRemaining = gameState.remainingTime;
+		//Ajusting client game time only if it has a difference of 1.5 seconds (1500 millisecondes)
+		if (
+			this.timeRemaining - gameState.remainingTime < -this.MAX_TIME_DIFFERENCE ||
+			this.timeRemaining - gameState.remainingTime > this.MAX_TIME_DIFFERENCE
+		)
+			this.timeRemaining = gameState.remainingTime;
 		this.players.forEach((player: Player) => {
 			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
 		});

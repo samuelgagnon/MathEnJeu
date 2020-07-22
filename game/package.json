@@ -1,16 +1,12 @@
 {
-  "name": "backend",
+  "name": "math-en-jeu",
   "version": "1.0.0",
   "description": "Math en jeu",
   "main": "index.js",
   "scripts": {
-    "start": "npm run dev",
-    "dev": "npm-run-all --parallel server client",
-    "build": "webpack --config webpack/webpack.client.js && webpack --config webpack/webpack.server.js && npm run server:nodemon",
-    "server": "npm-run-all --parallel server:*",
-    "server:webpack": "webpack --config webpack/webpack.server.js --watch",
-    "server:nodemon": "nodemon dist/server/server.js",
-    "client": "webpack --config webpack/webpack.client.js --watch"
+    "build:dev": "webpack --env.NODE_ENV=dev --config webpack/webpack.client.js && webpack --env.NODE_ENV=dev --config webpack/webpack.server.js && npm run server",
+    "build:prod": "webpack --env.NODE_ENV=prod --config webpack/webpack.client.js && webpack --env.NODE_ENV=prod --config webpack/webpack.server.js && npm run server",
+    "server": "nodemon dist/server/server.js"
   },
   "author": "",
   "license": "ISC",

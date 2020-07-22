@@ -3,7 +3,7 @@ import axios from "axios";
 export const getBase64ImageForQuestion = (questionId: string, languageShortName: string, schoolGradeId: string): Promise<string> => {
 	return axios({
 		method: "get",
-		url: "http://localhost:8080/questionImage",
+		url: `${process.env.SERVER_API_URL}/questionImage`,
 		responseType: "arraybuffer",
 		params: {
 			id: questionId,
@@ -24,7 +24,7 @@ export const getBase64ImageForQuestion = (questionId: string, languageShortName:
 export const getBase64ImageForQuestionFeedback = (questionId: string, languageShortName: string, schoolGradeId: string): Promise<string> => {
 	return axios({
 		method: "get",
-		url: "http://localhost:8080/questionFeedbackImage",
+		url: `${process.env.SERVER_API_URL}/questionFeedbackImage`,
 		responseType: "arraybuffer",
 		params: {
 			id: questionId,
