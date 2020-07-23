@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import UserInfo from "../../communication/userInfo";
 import GameFSM from "../../gameCore/gameState/GameFSM";
 import User from "../data/User";
 
@@ -20,10 +21,10 @@ export class Room {
 		return this.id;
 	}
 
-	public joinRoom(clientSocket: Socket): void {
+	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
 		const user: User = {
 			userId: clientSocket.id,
-			name: "test",
+			userInfo: userInfo,
 			socket: clientSocket,
 		};
 		this.users.push(user);

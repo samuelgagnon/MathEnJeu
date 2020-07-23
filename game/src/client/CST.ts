@@ -8,6 +8,7 @@ export const CST = {
 		CREATE_ROOM: "createRoomScene",
 		QUESTION_WINDOW: "questionScene",
 		ROOM_SELECTION: "roomSelectionScene",
+		USERS_SETTING: "userSettingsScene",
 		WAITING_ROOM: "waitingRoomScene",
 	},
 	IMAGES: {
@@ -28,5 +29,10 @@ export const CST = {
 		STAR: "star-158502_640.png",
 		TILE: "tileSprites/testTile.png",
 		TITLE: "mathamaze_logo5.png",
+	},
+	HTML: {
+		ROOM_INPUT: "roomInput.html",
+		ROOMS_LIST: "roomsList.html",
+		USER_SETTINGS: "userSettings.html",
 	},
 };

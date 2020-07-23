@@ -7,6 +7,7 @@ import QuestionScene from "./scenes/QuestionScene";
 import RaceGameUI from "./scenes/RaceGameUI";
 import RaceScene from "./scenes/RaceScene";
 import RoomSelection from "./scenes/RoomSelectionScene";
+import UsersSettingScene from "./scenes/UsersSettingScene";
 import WaitingRoomScene from "./scenes/WaitingRoomScene";
 
 const DEFAULT_WIDTH = 1600;
@@ -21,7 +22,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 	},
-	scene: [LoadScene, MenuScene, MainScene, RoomSelection, WaitingRoomScene, RaceScene, RaceGameUI, QuestionScene],
+	scene: [LoadScene, MenuScene, MainScene, RoomSelection, WaitingRoomScene, RaceScene, RaceGameUI, QuestionScene, UsersSettingScene],
 	plugins: {
 		scene: [
 			{

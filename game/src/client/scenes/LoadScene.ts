@@ -6,10 +6,18 @@ export default class LoadScene extends Phaser.Scene {
 		super(sceneConfig);
 	}
 	loadImages() {
-		this.load.setBaseURL("static/client/assets/images");
+		this.load.setPath("assets/images/");
 
 		for (let prop in CST.IMAGES) {
 			this.load.image(CST.IMAGES[prop], CST.IMAGES[prop]);
+		}
+	}
+
+	loadHTML() {
+		this.load.setPath("scenes/htmlElements/");
+
+		for (let prop in CST.HTML) {
+			this.load.html(CST.HTML[prop], CST.HTML[prop]);
 		}
 	}
 
@@ -26,7 +34,10 @@ export default class LoadScene extends Phaser.Scene {
 			loadingBar.fillRect(this.game.renderer.width / 2, 0, 50, this.game.renderer.height * percent);
 		});
 
+		this.load.setBaseURL("static/client/");
+
 		this.loadImages();
+		this.loadHTML();
 	}
 
 	create() {

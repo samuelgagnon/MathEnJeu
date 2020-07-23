@@ -1,4 +1,5 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
+import UserInfo from "../../communication/userInfo";
 import RoomRepository from "../data/RoomRepository";
 import RoomFactory from "./RoomFactory";
 
@@ -17,7 +18,15 @@ export default class RoomManager {
 
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
-			console.log("connection on game");
+			const { name, language, role, schoolGrade } = socket.handshake.query;
+			console.log(`name: ${name}, language: ${language}, role: ${role}, schoolgrade: ${schoolGrade}`);
+
+			const userInfo: UserInfo = {
+				name: name,
+				schoolGrade: language,
+				language: role,
+				role: schoolGrade,
+			};
 
 			socket.on("disconnect", () => {
 				console.log("disconnected");
@@ -27,7 +36,7 @@ export default class RoomManager {
 				console.log("create room");
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
-					newRoom.joinRoom(socket);
+					newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getRoomId();
@@ -51,7 +60,7 @@ export default class RoomManager {
 						throw new RoomNotFoundError(`Room ${roomId} was not found`);
 					}
 
-					currentRoom.joinRoom(socket);
+					currentRoom.joinRoom(socket, userInfo);
 					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {

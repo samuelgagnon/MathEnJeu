@@ -1,4 +1,5 @@
 import { CST } from "../CST";
+import { getUserInfo } from "../services/UserInformationService";
 import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/RoomService";
 
 export default class RoomSelection extends Phaser.Scene {
@@ -18,21 +19,15 @@ export default class RoomSelection extends Phaser.Scene {
 
 	init() {
 		this.roomSelectionSocket = connectToRoomSelectionNamespace();
-		this.gameSocket = connectToGameNamespace();
+		this.gameSocket = connectToGameNamespace(getUserInfo());
 		this.events.on("shutdown", () => {
 			this.roomSelectionSocket.close();
 		});
 	}
 
-	preload() {
-		this.load.setBaseURL("static/client/");
-		this.load.html("playerInput", "/scenes/htmlElements/playerInput.html");
-		this.load.html("roomsList", "/scenes/htmlElements/roomsList.html");
-	}
-
 	create() {
-		this.inputHtml = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache("playerInput");
-		this.roomsListHtml = this.add.dom(1000, this.game.renderer.height * 0.3).createFromCache("roomsList");
+		this.inputHtml = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache(CST.HTML.ROOM_INPUT);
+		this.roomsListHtml = this.add.dom(1000, this.game.renderer.height * 0.3).createFromCache(CST.HTML.ROOMS_LIST);
 
 		this.roomSelectionSocket.on("room-update", (rooms: []) => {
 			let roomList = <HTMLInputElement>this.roomsListHtml.getChildByID("roomList");
@@ -132,7 +127,7 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.backButton.on("pointerup", () => {
 			this.backButton.clearTint();
-			this.scene.start(CST.SCENES.MENU);
+			this.scene.start(CST.SCENES.USERS_SETTING);
 		});
 	}
 

@@ -78,7 +78,7 @@ export default class RaceGameFactory {
 	public static generatePlayers(users: User[]): Player[] {
 		let players: Player[] = [];
 		users.forEach((user: User) => {
-			players.push(new Player(user.userId, { x: 0, y: 0 }, user.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			players.push(new Player(user.userId, { x: 0, y: 0 }, user.userInfo.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
 		});
 
 		return players;
