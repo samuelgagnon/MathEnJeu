@@ -2,18 +2,6 @@
 
 Jeu multijoueur où on répond à des questions mathématiques pour progresser.
 
-## Project setup
-
-```
-npm install
-```
-
-### Compiles and hot-reloads for development (works on port 8080)
-
-```
-npm run dev
-```
-
 ### Database
 
 - questions storage : game/src/server/question_png/'question_file_name'/1.png
@@ -23,10 +11,32 @@ npm run dev
 ### Compiles and run for docker (app works on port 8080 and database on port 3306)
 
 ```
-- docker-compose build
+  For local development:
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
 
-- docker-compose up
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
+
+```
+  Prod environment:
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
+
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+We can also build the data base and the app separately (using dev mode as example):
+
+```
+  Prod environment:
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml build db
+
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml build app
+
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml up db
+
+- docker-compose -f docker-compose.yml -f docker-compose.dev.yml up app
+```
+
 
 ### ORM Model generator
 
