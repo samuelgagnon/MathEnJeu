@@ -19,13 +19,12 @@ export default class RoomManager {
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
 			const { name, language, role, schoolGrade } = socket.handshake.query;
-			console.log(`name: ${name}, language: ${language}, role: ${role}, schoolgrade: ${schoolGrade}`);
 
 			const userInfo: UserInfo = {
 				name: name,
-				schoolGrade: language,
-				language: role,
-				role: schoolGrade,
+				schoolGrade: schoolGrade,
+				language: language,
+				role: role,
 			};
 
 			socket.on("disconnect", () => {
