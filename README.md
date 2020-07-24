@@ -27,7 +27,6 @@ Jeu multijoueur où on répond à des questions mathématiques pour progresser.
 We can also build the data base and the app separately (using dev mode as example):
 
 ```
-  Prod environment:
 - docker-compose -f docker-compose.yml -f docker-compose.dev.yml build db
 
 - docker-compose -f docker-compose.yml -f docker-compose.dev.yml build app
