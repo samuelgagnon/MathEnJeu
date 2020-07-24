@@ -35,7 +35,7 @@ export default class Move {
 	}
 
 	private getDistance(): number {
-		return Math.abs(this.targetLocation.x - this.startLocation.x) + Math.abs(this.targetLocation.y - this.startLocation.y);
+		return Math.max(this.targetLocation.x - this.startLocation.x), Math.abs(this.targetLocation.y - this.startLocation.y);
 	}
 
 	public getCurrentPosition(nowTimestamp: number = Date.now()): Point {
