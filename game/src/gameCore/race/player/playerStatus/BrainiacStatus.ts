@@ -18,19 +18,19 @@ export default class BrainiacStatus extends Status {
 	public updateFromState(statusState: StatusState): void {
 		switch (statusState.statusType) {
 			case StatusType.BananaStatus:
-				this.context.transitionTo(StatusFactory.create(StatusType.BananaStatus, statusState.statusTimestamp));
+				this.transitionTo(StatusFactory.create(StatusType.BananaStatus, statusState.statusTimestamp));
 				break;
 			case StatusType.BrainiacStatus:
 				this.startTimeStatus = statusState.statusTimestamp;
 				break;
 			case StatusType.NormalStatus:
-				this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
+				this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 				break;
 		}
 	}
 
 	public activateBananaStatus(): void {
-		this.context.transitionTo(StatusFactory.create(StatusType.BananaStatus));
+		this.transitionTo(StatusFactory.create(StatusType.BananaStatus));
 	}
 
 	public activateBrainiacStatus(): void {
@@ -39,7 +39,7 @@ export default class BrainiacStatus extends Status {
 
 	private setToNormalStatusIfCurrentStatusIsOver() {
 		if (Date.now() - this.startTimeStatus > this.DEFAULT_MAX_TIME_STATUS) {
-			this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
+			this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 		}
 	}
 
@@ -49,5 +49,10 @@ export default class BrainiacStatus extends Status {
 
 	public getCurrentStatus(): StatusType {
 		return StatusType.BrainiacStatus;
+	}
+
+	protected transitionTo(status: Status): void {
+		this.context.maxPossibleMoveDistance -= this.BRAINIAC_MOVE_EFFECT;
+		super.transitionTo(status);
 	}
 }

@@ -15,20 +15,20 @@ export default class NormalStatus extends Status {
 			case StatusType.NormalStatus:
 				break;
 			case StatusType.BananaStatus:
-				this.context.transitionTo(StatusFactory.create(StatusType.BananaStatus, statusState.statusTimestamp));
+				this.transitionTo(StatusFactory.create(StatusType.BananaStatus, statusState.statusTimestamp));
 				break;
 			case StatusType.BrainiacStatus:
-				this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus, statusState.statusTimestamp));
+				this.transitionTo(StatusFactory.create(StatusType.BrainiacStatus, statusState.statusTimestamp));
 				break;
 		}
 	}
 
 	public activateBananaStatus(): void {
-		this.context.transitionTo(StatusFactory.create(StatusType.BananaStatus));
+		this.transitionTo(StatusFactory.create(StatusType.BananaStatus));
 	}
 
 	public activateBrainiacStatus(): void {
-		this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus));
+		this.transitionTo(StatusFactory.create(StatusType.BrainiacStatus));
 	}
 
 	public getRemainingTime(): number {
@@ -37,5 +37,9 @@ export default class NormalStatus extends Status {
 
 	public getCurrentStatus(): StatusType {
 		return StatusType.NormalStatus;
+	}
+
+	protected transitionTo(status: Status): void {
+		super.transitionTo(status);
 	}
 }

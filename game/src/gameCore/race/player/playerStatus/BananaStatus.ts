@@ -21,10 +21,10 @@ export default class BananaStatus extends Status {
 				this.startTimeStatus = statusState.statusTimestamp;
 				break;
 			case StatusType.BrainiacStatus:
-				this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus, statusState.statusTimestamp));
+				this.transitionTo(StatusFactory.create(StatusType.BrainiacStatus, statusState.statusTimestamp));
 				break;
 			case StatusType.NormalStatus:
-				this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
+				this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 				break;
 		}
 	}
@@ -34,12 +34,12 @@ export default class BananaStatus extends Status {
 	}
 
 	public activateBrainiacStatus(): void {
-		this.context.transitionTo(StatusFactory.create(StatusType.BrainiacStatus));
+		this.transitionTo(StatusFactory.create(StatusType.BrainiacStatus));
 	}
 
 	private setToNormalStatusIfCurrentStatusIsOver() {
 		if (Date.now() - this.startTimeStatus > this.DEFAULT_MAX_TIME_STATUS) {
-			this.context.transitionTo(StatusFactory.create(StatusType.NormalStatus));
+			this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 		}
 	}
 
@@ -49,5 +49,10 @@ export default class BananaStatus extends Status {
 
 	public getCurrentStatus(): StatusType {
 		return StatusType.BananaStatus;
+	}
+
+	protected transitionTo(status: Status): void {
+		this.context.maxPossibleMoveDistance -= this.BANANA_MOVE_EFFECT;
+		super.transitionTo(status);
 	}
 }

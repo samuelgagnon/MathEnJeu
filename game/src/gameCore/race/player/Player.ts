@@ -12,8 +12,6 @@ import { StatusType } from "./playerStatus/StatusType";
 
 export default class Player {
 	readonly id: string;
-	readonly MAX_MOVEMENT = 7;
-	readonly MIN_MOVEMENT = 1;
 	public maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
