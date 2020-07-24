@@ -75,7 +75,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		if (!this.isGameStarted) this.emitStartGameEvent();
 		this.resolveInputs();
 		super.update();
-		if (this.timeRemaining < 0) this.gameFinished();
+		if (this.timeRemaining <= 0) this.gameFinished();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}
 
@@ -132,7 +132,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private removeAllUsersSocketEvents(): void {
 		const users = this.context.getUsers();
-		users.forEach((user) => this.handleSocketEvents(user.socket));
+		users.forEach((user) => this.removeSocketEvents(user.socket));
 	}
 
 	public resolveInputs(): void {
