@@ -12,13 +12,15 @@ import { StatusType } from "./playerStatus/StatusType";
 
 export default class Player {
 	readonly id: string;
+	readonly MAX_MOVEMENT = 7;
+	readonly MIN_MOVEMENT = 1;
+	public maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
 	private isAnsweringQuestion: boolean = false;
 	private name: string;
 	private points: number = 0;
 	private position: Point;
-	private gridPosition: Point;
 	private move: Move;
 	private inventory: Inventory;
 	private answeredQuestionsId: Number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
@@ -26,7 +28,6 @@ export default class Player {
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
 		this.position = startLocation;
-		this.gridPosition = this.gridPosition;
 		this.move = new Move(Date.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
@@ -67,8 +68,6 @@ export default class Player {
 	public getStatusRemainingTime(): number {
 		return this.playerStatus.getRemainingTime();
 	}
-
-	public;
 
 	public getIsAnsweringQuestion(): boolean {
 		return this.isAnsweringQuestion;
