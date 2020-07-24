@@ -95,7 +95,8 @@ export default class Player {
 	}
 
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
-		if (this.move.getHasArrived()) {
+		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
+		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 		}
 	}
