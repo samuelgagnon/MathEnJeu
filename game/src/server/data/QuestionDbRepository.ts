@@ -6,7 +6,7 @@ import QuestionRepository from "./QuestionRepository";
 export default class QuestionDbRepository implements QuestionRepository {
 	constructor() {}
 
-	async getQuestionsIdByDifficulty(languageShortName: string, levelId: number, difficulty: number): Promise<Number[]> {
+	async getQuestionsIdByDifficulty(languageShortName: string, schoolGradeId: number, difficulty: number): Promise<Number[]> {
 		const queryString = `SELECT DISTINCT question.question_id as questionId
 		FROM question
 		INNER JOIN question_info
@@ -15,7 +15,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 			  ON question.question_id=question_level.question_id
 		WHERE question.answer_type_id IN (1,4)
 		AND question_info.is_valid = 1
-		AND question_level.level_id = ${levelId}
+		AND question_level.level_id = ${schoolGradeId}
 		AND question_level.\`value\` = ${difficulty}
 		AND question_info.language_id IN
 			(SELECT language_id
@@ -28,7 +28,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 		return questionsId;
 	}
 
-	async getQuestionById(questionId: number, languageShortName: string, levelId: number): Promise<GameQuestion> {
+	async getQuestionById(questionId: number, languageShortName: string, schoolGradeId: number): Promise<GameQuestion> {
 		const queryString = `SELECT answer.label as answerString, answer.is_right as answerIsRight, answer_type.tag as answerType,
 		question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName, 
 		question_level.value as difficulty
@@ -41,7 +41,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 			ON question.question_id=answer_type.answer_type_id
             INNER JOIN question_level
 			ON question.question_id=question_level.question_id
-			WHERE question_level.level_id = ${levelId}
+			WHERE question_level.level_id = ${schoolGradeId}
 			AND question_info.language_id IN
 				(SELECT language_id
 				FROM \`language\`
@@ -55,7 +55,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 				`No question matches the following parameters : 
 				questionId=${questionId}, 
 				languageShortName=${languageShortName}, 
-				levelId=${levelId}`
+				levelId=${schoolGradeId}`
 			);
 		}
 
@@ -65,7 +65,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 		const gameQuestion: GameQuestion = new GameQuestion(
 			gameAnswers,
 			rows[0].answerType,
-			levelId,
+			schoolGradeId,
 			rows[0].difficulty,
 			rows[0].questionFileName,
 			rows[0].feedbackFileName
