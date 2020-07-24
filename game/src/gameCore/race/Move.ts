@@ -44,7 +44,7 @@ export default class Move {
 		//t in [0,1] corresponds to the proportion of the move done.
 		//t=0 means the move isn't started yet. I.e. the current position corresponds to startLocation.
 		//t=1 means the move is over. I.e. the current position corresponds to targetLocation
-		let t: number = (Date.now() - this.startTimestamp) / this.getTotalTime();
+		let t: number = (nowTimestamp - this.startTimestamp) / this.getTotalTime();
 		t = t < 0 ? 0 : t;
 		t = t > 1 ? 1 : t;
 
