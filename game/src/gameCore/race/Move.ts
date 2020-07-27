@@ -6,13 +6,18 @@ export default class Move {
 	private startLocation: Point;
 	private targetLocation: Point;
 	private hasArrived: boolean;
-	private SPEED: number = RACE_CST.MOVE.SPEED;
+	private SPEED: Point = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
 
-	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, distanceBetweenTiles: number = 1) {
+	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, affineTransform?: AffineTransform) {
+		if (affineTransform === undefined || affineTransform === null) {
+			//if no affineTransform has been defined, we initialize it as the identity function.
+			//i.e., affineTransform.apply(x) returns x for any point x.
+			let affineTransform = new AffineTransform(1, 0, 1, 0, 0, 0);
+		}
 		this.startTimestamp = startTimestamp;
-		this.startLocation = startLocation;
-		this.targetLocation = targetLocation;
-		this.SPEED = RACE_CST.MOVE.SPEED * distanceBetweenTiles;
+		this.startLocation = affineTransform.apply(startLocation);
+		this.targetLocation = affineTransform.apply(targetLocation);
+		this.SPEED = affineTransform.apply({ x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED });
 		this.hasArrived = false;
 	}
 
@@ -31,7 +36,9 @@ export default class Move {
 	}
 
 	private getTotalTime(): number {
-		return this.getDistance() / this.SPEED;
+		return (
+			Math.abs(this.targetLocation.x - this.startLocation.x) / this.SPEED.x + Math.abs(this.targetLocation.y - this.startLocation.y) / this.SPEED.y
+		);
 	}
 
 	private getDistance(): number {
