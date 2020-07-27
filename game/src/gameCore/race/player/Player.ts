@@ -12,7 +12,10 @@ import { StatusType } from "./playerStatus/StatusType";
 
 export default class Player {
 	readonly id: string;
-	public maxPossibleMoveDistance: number = 3;
+	private readonly MAX_BRAINIAC_MOVEMENT = 7;
+	private readonly MAX_MOVEMENT = 6;
+	private readonly MIN_MOVEMENT = 1;
+	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
 	private isAnsweringQuestion: boolean = false;
@@ -96,6 +99,20 @@ export default class Player {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
+		}
+	}
+
+	//transitioningStatus parameter needs to be passed only when transitionning into another state.
+	//Otherwise, use this method without parameters
+	public addToMoveDistance(moveDistance: number, transitioningStatus: StatusType = this.getCurrentStatus()) {
+		this.maxPossibleMoveDistance += moveDistance;
+
+		if (this.maxPossibleMoveDistance > this.MAX_BRAINIAC_MOVEMENT && transitioningStatus === StatusType.BrainiacStatus) {
+			this.maxPossibleMoveDistance = this.MAX_BRAINIAC_MOVEMENT;
+		} else if (this.maxPossibleMoveDistance > this.MAX_MOVEMENT && transitioningStatus !== StatusType.BrainiacStatus) {
+			this.maxPossibleMoveDistance = this.MAX_MOVEMENT;
+		} else if (this.maxPossibleMoveDistance < this.MIN_MOVEMENT) {
+			this.maxPossibleMoveDistance = this.MIN_MOVEMENT;
 		}
 	}
 

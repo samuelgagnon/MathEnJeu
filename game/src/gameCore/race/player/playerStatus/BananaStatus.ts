@@ -52,7 +52,7 @@ export default class BananaStatus extends Status {
 	}
 
 	protected transitionTo(status: Status): void {
-		this.context.maxPossibleMoveDistance -= this.BANANA_MOVE_EFFECT;
+		this.context.addToMoveDistance(this.BANANA_MOVE_EFFECT);
 		super.transitionTo(status);
 	}
 }

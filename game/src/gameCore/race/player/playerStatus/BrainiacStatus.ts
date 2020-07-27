@@ -52,7 +52,7 @@ export default class BrainiacStatus extends Status {
 	}
 
 	protected transitionTo(status: Status): void {
-		this.context.maxPossibleMoveDistance -= this.BRAINIAC_MOVE_EFFECT;
+		this.context.addToMoveDistance(this.BRAINIAC_MOVE_EFFECT);
 		super.transitionTo(status);
 	}
 }
