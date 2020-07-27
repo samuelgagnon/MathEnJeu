@@ -49,13 +49,11 @@ module.exports = (env) => {
 				template: "src/client/index.html",
 			}),
 			new CopyWebpackPlugin({
-				patterns: [{ from: "src/client/assets", to: "assets" }],
-				options: {
-					concurrency: 100,
-				},
-			}),
-			new CopyWebpackPlugin({
-				patterns: [{ from: "src/client/scenes/htmlElements", to: "scenes/htmlElements" }],
+				patterns: [
+					{ from: "src/client/assets", to: "assets" },
+					{ from: "src/client/scenes/htmlElements", to: "scenes/htmlElements" },
+					{ from: "src/client/pages", to: "pages" },
+				],
 				options: {
 					concurrency: 100,
 				},
