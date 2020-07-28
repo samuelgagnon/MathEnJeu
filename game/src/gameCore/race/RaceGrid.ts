@@ -33,7 +33,7 @@ export default class RaceGrid {
 		});
 	}
 
-	public getPossibleMovementFrom(position: Point, moveDistance: number): { position: Point; distance: number }[] {
+	public getPossibleMovementFrom(position: Point, moveDistance: number): PossiblePositions[] {
 		let upDone = false;
 		let downDone = false;
 		let leftDone = false;
@@ -51,8 +51,6 @@ export default class RaceGrid {
 			const currentLeftPosition = { x: position.x - i, y: position.y };
 			const currentUpPosition = { x: position.x, y: position.y - i };
 			const currentDownPosition = { x: position.x, y: position.y + i };
-
-			console.log(i);
 
 			const currentRightTile = this.getTile(currentRightPosition);
 			const currentLeftTile = this.getTile(currentLeftPosition);
