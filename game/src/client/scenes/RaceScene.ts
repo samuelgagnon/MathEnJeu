@@ -1,5 +1,6 @@
 import { GameEndEvent, PlayerLeftEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
+import AffineTransform from "../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import { ItemType } from "../../gameCore/race/items/Item";
 import Player from "../../gameCore/race/player/Player";
@@ -135,7 +136,7 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.raceGame.getPlayers().forEach((player: Player) => {
 			let characterSpriteIndex: number = this.getCharacterSpriteIndex(player.id);
-			const currentPosition = this.transformToCanvasPosition(player.getPosition());
+			const currentPosition = player.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
 
 			if (characterSpriteIndex != -1) {
 				const characterSprite = this.characterSprites[characterSpriteIndex];
@@ -231,11 +232,8 @@ export default class RaceScene extends Phaser.Scene {
 		return this.characterSprites.findIndex((sprite: CharacterSprites) => sprite.playerId == playerId);
 	}
 
-	private transformToCanvasPosition(position: Point): Point {
-		return {
-			x: this.boardPosition.x + position.x * this.distanceBetweenTwoTiles,
-			y: this.boardPosition.y + position.y * this.distanceBetweenTwoTiles,
-		};
+	private getCoreGameToPhaserPositionRendering(): AffineTransform {
+		return new AffineTransform(this.distanceBetweenTwoTiles, 0, 0, this.distanceBetweenTwoTiles, this.boardPosition.x, this.boardPosition.y);
 	}
 
 	useItem(itemType: ItemType, targetPlayerId?: string): void {

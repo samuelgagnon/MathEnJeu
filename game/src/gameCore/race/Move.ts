@@ -1,4 +1,5 @@
 import MoveState from "../../communication/race/MoveState";
+import AffineTransform from "./AffineTransform";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {
@@ -6,25 +7,53 @@ export default class Move {
 	private startLocation: Point;
 	private targetLocation: Point;
 	private hasArrived: boolean;
-	private SPEED: Point = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
+	private readonly SPEED: Point = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
 
-	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, affineTransform?: AffineTransform) {
-		if (affineTransform === undefined || affineTransform === null) {
-			//if no affineTransform has been defined, we initialize it as the identity function.
-			//i.e., affineTransform.apply(x) returns x for any point x.
-			let affineTransform = new AffineTransform(1, 0, 1, 0, 0, 0);
-		}
+	private renderedMove?: Move;
+	private positionRendering?: AffineTransform;
+
+	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, SPEED?: Point, positionRendering?: AffineTransform) {
 		this.startTimestamp = startTimestamp;
-		this.startLocation = affineTransform.apply(startLocation);
-		this.targetLocation = affineTransform.apply(targetLocation);
-		this.SPEED = affineTransform.apply({ x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED });
+		this.startLocation = startLocation;
+		this.targetLocation = targetLocation;
 		this.hasArrived = false;
+
+		if (SPEED !== undefined && SPEED !== null) {
+			this.SPEED = SPEED;
+		} else {
+			this.SPEED = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
+		}
+
+		if (positionRendering !== undefined && positionRendering !== null) {
+			this.setRenderedMove(positionRendering);
+		}
+	}
+
+	private setRenderedMove(positionRendering) {
+		this.positionRendering = positionRendering;
+		this.renderedMove = new Move(
+			this.startTimestamp,
+			positionRendering.apply(this.startLocation),
+			positionRendering.apply(this.targetLocation),
+			positionRendering.applyLinearTransform({ x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED })
+		);
+	}
+
+	private isMoveRendered(): boolean {
+		return this.renderedMove !== undefined && this.renderedMove !== null;
 	}
 
 	public updateFromMoveState(moveState: MoveState): void {
 		this.startTimestamp = moveState.startTimestamp;
 		this.startLocation = moveState.startLocation;
 		this.targetLocation = moveState.targetLocation;
+		if (this.isMoveRendered()) {
+			this.renderedMove.updateFromMoveState({
+				startTimestamp: moveState.startTimestamp,
+				startLocation: this.positionRendering.apply(moveState.startLocation),
+				targetLocation: this.positionRendering.apply(moveState.targetLocation),
+			});
+		}
 	}
 
 	public getMoveState(): MoveState {
@@ -41,6 +70,7 @@ export default class Move {
 		);
 	}
 
+	//Returns taxicab distance (norm 1).
 	private getDistance(): number {
 		return Math.abs(this.targetLocation.x - this.startLocation.x) + Math.abs(this.targetLocation.y - this.startLocation.y);
 	}
@@ -64,5 +94,16 @@ export default class Move {
 		};
 
 		return c;
+	}
+
+	public getCurrentRenderedPosition(positionRendering?: AffineTransform): Point {
+		if (this.isMoveRendered) {
+			if (positionRendering !== undefined && positionRendering !== null && positionRendering !== this.positionRendering) {
+				this.setRenderedMove(positionRendering);
+			}
+			return this.renderedMove.getCurrentPosition();
+		} else {
+			return this.getCurrentPosition();
+		}
 	}
 }
