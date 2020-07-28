@@ -102,6 +102,10 @@ export default class Player {
 		}
 	}
 
+	public getMaxMovementDistance(): number {
+		return this.maxPossibleMoveDistance;
+	}
+
 	//transitioningStatus parameter needs to be passed only when transitionning into another state.
 	//Otherwise, use this method without parameters
 	public addToMoveDistance(moveDistance: number, transitioningStatus: StatusType = this.getCurrentStatus()) {

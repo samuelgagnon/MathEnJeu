@@ -6,7 +6,7 @@ import { ClientGame } from "../Game";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
 import RaceGameController from "./RaceGameController";
-import RaceGrid from "./RaceGrid";
+import RaceGrid, { PossiblePositions } from "./RaceGrid";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
@@ -74,6 +74,11 @@ export default class ClientRaceGameController extends RaceGameController impleme
 			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
 		});
 		this.grid.updateFromItemStates(gameState.itemsState);
+	}
+
+	public getPossiblePlayerMovement(): PossiblePositions[] {
+		const currentPlayer = this.getCurrentPlayer();
+		return this.grid.getPossibleMovementFrom(currentPlayer.getPosition(), currentPlayer.getMaxMovementDistance());
 	}
 
 	private handleSocketEvents(): void {

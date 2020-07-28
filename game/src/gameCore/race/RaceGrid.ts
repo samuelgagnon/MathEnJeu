@@ -33,6 +33,60 @@ export default class RaceGrid {
 		});
 	}
 
+	public getPossibleMovementFrom(position: Point, moveDistance: number): { position: Point; distance: number }[] {
+		let upDone = false;
+		let downDone = false;
+		let leftDone = false;
+		let rightDone = false;
+
+		let possiblePositions: PossiblePositions[] = [];
+
+		for (let i = 1; i <= moveDistance; i++) {
+			if (position.x - i < 0) leftDone = true;
+			if (position.x + i >= this.width) rightDone = true;
+			if (position.y - i < 0) upDone = true;
+			if (position.y + i >= this.height) downDone = true;
+
+			const currentRightPosition = { x: position.x + i, y: position.y };
+			const currentLeftPosition = { x: position.x - i, y: position.y };
+			const currentUpPosition = { x: position.x, y: position.y - i };
+			const currentDownPosition = { x: position.x, y: position.y + i };
+
+			console.log(i);
+
+			const currentRightTile = this.getTile(currentRightPosition);
+			const currentLeftTile = this.getTile(currentLeftPosition);
+			const currentUpTile = this.getTile(currentUpPosition);
+			const currentDownTile = this.getTile(currentDownPosition);
+
+			if (!rightDone && currentRightTile.isWalkable) {
+				possiblePositions.push({ position: currentRightPosition, distance: i });
+			} else {
+				rightDone = true;
+			}
+
+			if (!leftDone && currentLeftTile.isWalkable) {
+				possiblePositions.push({ position: currentLeftPosition, distance: i });
+			} else {
+				leftDone = true;
+			}
+
+			if (!upDone && currentUpTile.isWalkable) {
+				possiblePositions.push({ position: currentUpPosition, distance: i });
+			} else {
+				upDone = true;
+			}
+
+			if (!downDone && currentDownTile.isWalkable) {
+				possiblePositions.push({ position: currentDownPosition, distance: i });
+			} else {
+				downDone = true;
+			}
+		}
+
+		return possiblePositions;
+	}
+
 	public getWidth(): number {
 		return this.width;
 	}
@@ -79,4 +133,9 @@ export default class RaceGrid {
 			if (!item) this.items.push({ type: item.type, location: item.location });
 		});
 	}
+}
+
+export interface PossiblePositions {
+	position: Point;
+	distance: number;
 }

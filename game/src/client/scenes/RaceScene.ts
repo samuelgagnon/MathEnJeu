@@ -3,6 +3,7 @@ import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import { ItemType } from "../../gameCore/race/items/Item";
 import Player from "../../gameCore/race/player/Player";
+import { PossiblePositions } from "../../gameCore/race/RaceGrid";
 import { CST } from "../CST";
 
 export default class RaceScene extends Phaser.Scene {
@@ -14,12 +15,15 @@ export default class RaceScene extends Phaser.Scene {
 	//Buffer
 	distanceBetweenTwoTiles: number;
 	boardPosition: Point;
-	keyboardInputs;
+	keyboardInputs: any;
 	background: Phaser.GameObjects.TileSprite;
 	followPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 
+	isReadyToGetPossiblePositions: boolean;
 	isThrowingBanana: boolean;
+
+	activeTileColor: number;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -43,6 +47,8 @@ export default class RaceScene extends Phaser.Scene {
 		this.characterSprites = [];
 		this.followPlayer = false;
 		this.isThrowingBanana = false;
+		this.isReadyToGetPossiblePositions = false;
+		this.activeTileColor = 0xadff2f;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
@@ -83,13 +89,13 @@ export default class RaceScene extends Phaser.Scene {
 					tileSprite.setTint(0x86bfda);
 				});
 				tileSprite.on("pointerout", () => {
-					tileSprite.clearTint();
+					tileSprite.setTint(this.activeTileColor);
 				});
 				tileSprite.on("pointerdown", () => {
 					tileSprite.setTint(0xff0000);
 				});
 				tileSprite.on("pointerup", () => {
-					tileSprite.clearTint();
+					tileSprite.setTint(this.activeTileColor);
 
 					//TODO verify if has arrived logic should be moved to player
 					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
@@ -108,6 +114,8 @@ export default class RaceScene extends Phaser.Scene {
 		);
 
 		this.boardPosition = tile1.getData("position");
+		this.clearTileInteractions();
+		this.activateAccessiblePositions();
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
 	}
@@ -215,6 +223,8 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
+
+		if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && this.isReadyToGetPossiblePositions) this.activateAccessiblePositions();
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -261,6 +271,8 @@ export default class RaceScene extends Phaser.Scene {
 	answerQuestion(correctAnswer: boolean, position: Point) {
 		if (correctAnswer) {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
+			this.isReadyToGetPossiblePositions = true;
+			this.clearTileInteractions();
 		}
 		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
 	}
@@ -277,6 +289,27 @@ export default class RaceScene extends Phaser.Scene {
 			this.scene.stop(CST.SCENES.RACE_GAME_UI);
 			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.raceGame.getCurrentPlayerSocket() });
+		});
+	}
+
+	private activateAccessiblePositions(): void {
+		const possiblePositions = this.raceGame.getPossiblePlayerMovement();
+
+		possiblePositions.forEach((pos: PossiblePositions) => {
+			const tile = this.tiles
+				.getChildren()
+				.find((tile) => tile.getData("gridPosition").x === pos.position.x && tile.getData("gridPosition").y === pos.position.y);
+			tile.setInteractive();
+			(<Phaser.GameObjects.Sprite>tile).setTint(this.activeTileColor);
+		});
+
+		this.isReadyToGetPossiblePositions = false;
+	}
+
+	private clearTileInteractions(): void {
+		this.tiles.getChildren().forEach((tile) => {
+			tile.disableInteractive();
+			(<Phaser.GameObjects.Sprite>tile).clearTint();
 		});
 	}
 }
