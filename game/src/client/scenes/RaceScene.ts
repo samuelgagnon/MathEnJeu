@@ -24,6 +24,8 @@ export default class RaceScene extends Phaser.Scene {
 	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible positions
 	isThrowingBanana: boolean;
 
+	tileActiveState: number;
+	tileInactiveState: number;
 	activeTileColor: number;
 
 	characterSprites: CharacterSprites[];
@@ -51,6 +53,8 @@ export default class RaceScene extends Phaser.Scene {
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
 		this.isReadyToGetPossiblePositions = false;
 		this.activeTileColor = 0xadff2f;
+		this.tileInactiveState = 0;
+		this.tileActiveState = 1;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
@@ -88,22 +92,25 @@ export default class RaceScene extends Phaser.Scene {
 
 				tileSprite.setInteractive();
 				tileSprite.on("pointerover", () => {
-					tileSprite.setTint(0x86bfda);
+					console.log(tileSprite.state);
+					if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0x86bfda);
 				});
 				tileSprite.on("pointerout", () => {
 					//Problem when moving mouse after clicking and correctly answering question
-					tileSprite.setTint(this.activeTileColor);
+					if (tileSprite.state === this.tileActiveState) tileSprite.setTint(this.activeTileColor);
 				});
 				tileSprite.on("pointerdown", () => {
-					tileSprite.setTint(0xff0000);
+					if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0xff0000);
 				});
 				tileSprite.on("pointerup", () => {
-					tileSprite.setTint(this.activeTileColor);
+					if (tileSprite.state === this.tileActiveState) {
+						tileSprite.setTint(this.activeTileColor);
 
-					//TODO verify if has arrived logic should be moved to player
-					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
-						this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
-						this.createQuestionWindow(<Point>{ x: x, y: y });
+						//TODO verify if has arrived logic should be moved to player
+						if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
+							this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
+							this.createQuestionWindow(<Point>{ x: x, y: y });
+						}
 					}
 				});
 			}
@@ -117,7 +124,6 @@ export default class RaceScene extends Phaser.Scene {
 		);
 
 		this.boardPosition = tile1.getData("position");
-		this.clearTileInteractions();
 		this.activateAccessiblePositions();
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
@@ -237,7 +243,6 @@ export default class RaceScene extends Phaser.Scene {
 			!currentPlayer.getIsAnsweringQuestion()
 		) {
 			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
-			this.clearTileInteractions();
 			this.activateAccessiblePositions();
 		}
 	}
@@ -287,6 +292,9 @@ export default class RaceScene extends Phaser.Scene {
 		this.clearTileInteractions();
 		if (correctAnswer) {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
+			// (<Phaser.GameObjects.Sprite>(
+			// 	this.tiles.getChildren().find((tile) => tile.getData("gridPosition").x == position.x && tile.getData("gridPosition").y == position.y)
+			// )).setTint(this.activeTileColor);  Set a color to targetLocation tile ?
 		}
 		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
 
@@ -311,13 +319,13 @@ export default class RaceScene extends Phaser.Scene {
 	private activateAccessiblePositions(): void {
 		const possiblePositions = this.raceGame.getPossiblePlayerMovement();
 
-		console.log(possiblePositions);
+		this.clearTileInteractions();
 
 		possiblePositions.forEach((pos: PossiblePositions) => {
 			const tile = this.tiles
 				.getChildren()
 				.find((tile) => tile.getData("gridPosition").x === pos.position.x && tile.getData("gridPosition").y === pos.position.y);
-			tile.setInteractive();
+			tile.setState(this.tileActiveState);
 			(<Phaser.GameObjects.Sprite>tile).setTint(this.activeTileColor);
 		});
 
@@ -326,8 +334,8 @@ export default class RaceScene extends Phaser.Scene {
 
 	private clearTileInteractions(): void {
 		this.tiles.getChildren().forEach((tile) => {
-			tile.disableInteractive();
 			(<Phaser.GameObjects.Sprite>tile).clearTint();
+			(<Phaser.GameObjects.Sprite>tile).setState(this.tileInactiveState);
 		});
 	}
 }
