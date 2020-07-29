@@ -232,6 +232,8 @@ export default class RaceScene extends Phaser.Scene {
 		return this.characterSprites.findIndex((sprite: CharacterSprites) => sprite.playerId == playerId);
 	}
 
+	//The affine transformation needed to render positions might change if there's a resolution change during the game
+	//Ex.: Someone playing on mobile changes the mobile orientation from "Portrait" to "Landscape".
 	private getCoreGameToPhaserPositionRendering(): AffineTransform {
 		return new AffineTransform(this.distanceBetweenTwoTiles, 0, 0, this.distanceBetweenTwoTiles, this.boardPosition.x, this.boardPosition.y);
 	}
