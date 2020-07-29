@@ -62,15 +62,17 @@ export default class RaceScene extends Phaser.Scene {
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
+
 				let tileSprite: any;
 
 				const positionX = <number>this.game.config.width / 2.3 + 96 * x;
 				const positionY = <number>this.game.config.height / 7 + 96 * y;
 
-				if (currentTile.isFnishLine) {
+				if (!currentTile.isWalkable) {
+					tileSprite = this.tiles.create(positionX, positionY);
+				} else if (currentTile.isFinishLine) {
+					console.log("IS FINISH LINE:(" + x + "," + y + ")");
 					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.FINISH_LINE).setScale(0.045, 0.045);
-				} else if (currentTile.isStartPosition) {
-					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.GREEN_SQUARE).setScale(0.1, 0.1);
 				} else {
 					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.ORANGE_SQUARE).setScale(0.3, 0.3);
 				}
@@ -79,25 +81,27 @@ export default class RaceScene extends Phaser.Scene {
 				tileSprite.setData("gridPosition", <Point>{ x: x, y: y });
 				tileSprite.setData("position", <Point>{ x: tileSprite.x, y: tileSprite.y });
 
-				tileSprite.setInteractive();
-				tileSprite.on("pointerover", () => {
-					tileSprite.setTint(0x86bfda);
-				});
-				tileSprite.on("pointerout", () => {
-					tileSprite.clearTint();
-				});
-				tileSprite.on("pointerdown", () => {
-					tileSprite.setTint(0xff0000);
-				});
-				tileSprite.on("pointerup", () => {
-					tileSprite.clearTint();
+				if (currentTile.isWalkable) {
+					tileSprite.setInteractive();
+					tileSprite.on("pointerover", () => {
+						tileSprite.setTint(0x86bfda);
+					});
+					tileSprite.on("pointerout", () => {
+						tileSprite.clearTint();
+					});
+					tileSprite.on("pointerdown", () => {
+						tileSprite.setTint(0xff0000);
+					});
+					tileSprite.on("pointerup", () => {
+						tileSprite.clearTint();
 
-					//TODO verify if has arrived logic should be moved to player
-					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
-						this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
-						this.createQuestionWindow(<Point>{ x: x, y: y });
-					}
-				});
+						//TODO verify if has arrived logic should be moved to player
+						if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
+							this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
+							this.createQuestionWindow(<Point>{ x: x, y: y });
+						}
+					});
+				}
 			}
 		}
 

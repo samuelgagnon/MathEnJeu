@@ -1,5 +1,5 @@
-import ItemState from "../../communication/race/ItemState";
-import ItemFactory from "./items/ItemFactory";
+import ItemState from "../../../communication/race/ItemState";
+import ItemFactory from "../items/ItemFactory";
 import Tile from "./Tile";
 
 export default class RaceGrid {
@@ -7,6 +7,7 @@ export default class RaceGrid {
 	private items: ItemState[] = [];
 	private startingPositions: Point[] = [];
 	private finishLinePositions: Point[] = [];
+	private nonWalkablePositions: Point[] = [];
 	private width: number;
 	private height: number;
 
@@ -65,12 +66,24 @@ export default class RaceGrid {
 		if (this.finishLinePositions.length == 0) {
 			for (let y = 0; y < this.height; y++) {
 				for (let x = 0; x < this.width; x++) {
-					if (this.getTile({ x, y }).isFnishLine) this.finishLinePositions.push({ x, y });
+					if (this.getTile({ x, y }).isFinishLine) this.finishLinePositions.push({ x, y });
 				}
 			}
 		}
 
 		return this.finishLinePositions;
+	}
+
+	public getNonWalkablePosition(): Point[] {
+		if (this.nonWalkablePositions.length == 0) {
+			for (let y = 0; y < this.height; y++) {
+				for (let x = 0; x < this.width; x++) {
+					if (!this.getTile({ x, y }).isWalkable) this.nonWalkablePositions.push({ x, y });
+				}
+			}
+		}
+
+		return this.nonWalkablePositions;
 	}
 
 	private createItemsStateList(): void {
