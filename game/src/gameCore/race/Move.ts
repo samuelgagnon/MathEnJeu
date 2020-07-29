@@ -29,7 +29,7 @@ export default class Move {
 		}
 	}
 
-	private setRenderedMove(positionRendering) {
+	private setRenderedMove(positionRendering: AffineTransform): void {
 		this.positionRendering = positionRendering;
 		this.renderedMove = new Move(
 			this.startTimestamp,
