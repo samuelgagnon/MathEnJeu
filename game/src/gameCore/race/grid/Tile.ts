@@ -6,14 +6,14 @@ export default class Tile {
 	readonly isWalkable: boolean;
 	readonly isStartPosition: boolean;
 	readonly isFinishLine: boolean;
-	readonly checkPointGroup?: number;
+	readonly checkpointGroup?: number;
 
-	constructor(isWalkable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item, checkPointGroup?: number) {
+	constructor(isWalkable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item, checkpointGroup?: number) {
 		this.isWalkable = isWalkable;
 		this.isStartPosition = startPosition;
 		this.isFinishLine = isFinishLine;
 		this.item = item;
-		this.checkPointGroup = checkPointGroup;
+		this.checkpointGroup = checkpointGroup;
 	}
 
 	public getItem(): Item {

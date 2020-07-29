@@ -53,9 +53,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				grid: <StartingRaceGridInfo>{
 					width: this.grid.getWidth(),
 					height: this.grid.getHeight(),
-					nonWalkablePositions: this.grid.getNonWalkablePosition(),
+					nonWalkablePositions: this.grid.getNonWalkablePositions(),
 					startingPositions: this.grid.getStartingPositions(),
-					finishLinePositions: this.grid.getFinishLinePosition(),
+					finishLinePositions: this.grid.getFinishLinePositions(),
 					itemStates: this.grid.getItemsState(),
 				},
 				players: this.getPlayersState(),

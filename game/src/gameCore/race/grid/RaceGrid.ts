@@ -43,7 +43,7 @@ export default class RaceGrid {
 	}
 
 	public getTile(point: Point): Tile {
-		return this.tiles[point.x + point.y * this.width];
+		return this.tiles[Math.round(point.x) + Math.round(point.y) * this.width];
 	}
 
 	public getTiles(): Tile[] {
@@ -62,7 +62,7 @@ export default class RaceGrid {
 		return this.startingPositions;
 	}
 
-	public getFinishLinePosition(): Point[] {
+	public getFinishLinePositions(): Point[] {
 		if (this.finishLinePositions.length == 0) {
 			for (let y = 0; y < this.height; y++) {
 				for (let x = 0; x < this.width; x++) {
@@ -74,7 +74,7 @@ export default class RaceGrid {
 		return this.finishLinePositions;
 	}
 
-	public getNonWalkablePosition(): Point[] {
+	public getNonWalkablePositions(): Point[] {
 		if (this.nonWalkablePositions.length == 0) {
 			for (let y = 0; y < this.height; y++) {
 				for (let x = 0; x < this.width; x++) {

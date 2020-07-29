@@ -59,7 +59,8 @@ export default class RaceScene extends Phaser.Scene {
 
 		const gameGrid = this.raceGame.getGrid();
 
-		this.distanceBetweenTwoTiles = 96;
+		//TODO : Find a way to store those "Magic Numbers"
+		this.distanceBetweenTwoTiles = 66;
 		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
 
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
@@ -179,8 +180,8 @@ export default class RaceScene extends Phaser.Scene {
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
-				const positionX = <number>this.game.config.width / 2.3 + 96 * x;
-				const positionY = <number>this.game.config.height / 7 + 96 * y;
+				const positionX = this.boardPosition.x + this.distanceBetweenTwoTiles * x;
+				const positionY = this.boardPosition.y + this.distanceBetweenTwoTiles * y;
 
 				let itemSprite: any;
 

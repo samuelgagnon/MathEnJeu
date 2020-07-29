@@ -79,10 +79,17 @@ export default class RaceGameFactory {
 						tiles.push(new Tile(true, false, false, item));
 
 						//Tile is Checkpoint
-					} else if (tileSymbol == "0" || tileSymbol == "1" || tileSymbol == "2" || tileSymbol == "3" || tileSymbol == "4") {
-						tiles.push(new Tile(true, false, false, item, Number(tileSymbol)));
 					} else {
-						throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
+						let checkpointGroup = Number(tileSymbol);
+						if (checkpointGroup == NaN) {
+							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
+						} else {
+							if (checkpointGroup >= 1 && checkpointGroup <= RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+								tiles.push(new Tile(true, false, false, item, Number(tileSymbol)));
+							} else {
+								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
+							}
+						}
 					}
 				}
 			}
