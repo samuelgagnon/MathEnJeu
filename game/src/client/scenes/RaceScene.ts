@@ -20,7 +20,8 @@ export default class RaceScene extends Phaser.Scene {
 	followPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 
-	isReadyToGetPossiblePositions: boolean;
+	currentPlayerMovement: number;
+	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible positions
 	isThrowingBanana: boolean;
 
 	activeTileColor: number;
@@ -47,6 +48,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.characterSprites = [];
 		this.followPlayer = false;
 		this.isThrowingBanana = false;
+		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
 		this.isReadyToGetPossiblePositions = false;
 		this.activeTileColor = 0xadff2f;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
@@ -89,6 +91,7 @@ export default class RaceScene extends Phaser.Scene {
 					tileSprite.setTint(0x86bfda);
 				});
 				tileSprite.on("pointerout", () => {
+					//Problem when moving mouse after clicking and correctly answering question
 					tileSprite.setTint(this.activeTileColor);
 				});
 				tileSprite.on("pointerdown", () => {
@@ -224,7 +227,19 @@ export default class RaceScene extends Phaser.Scene {
 			}
 		}
 
-		if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && this.isReadyToGetPossiblePositions) this.activateAccessiblePositions();
+		const currentPlayer = this.raceGame.getCurrentPlayer();
+		if (currentPlayer.getMove().getHasArrived() && this.isReadyToGetPossiblePositions) {
+			this.activateAccessiblePositions();
+		} else if (
+			//If a player gets affected by a banana or any other state change without moving
+			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
+			currentPlayer.getMove().getHasArrived() &&
+			!currentPlayer.getIsAnsweringQuestion()
+		) {
+			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
+			this.clearTileInteractions();
+			this.activateAccessiblePositions();
+		}
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -269,12 +284,13 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	answerQuestion(correctAnswer: boolean, position: Point) {
+		this.clearTileInteractions();
 		if (correctAnswer) {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
-			this.isReadyToGetPossiblePositions = true;
-			this.clearTileInteractions();
 		}
 		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
+
+		this.isReadyToGetPossiblePositions = true;
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
@@ -294,6 +310,8 @@ export default class RaceScene extends Phaser.Scene {
 
 	private activateAccessiblePositions(): void {
 		const possiblePositions = this.raceGame.getPossiblePlayerMovement();
+
+		console.log(possiblePositions);
 
 		possiblePositions.forEach((pos: PossiblePositions) => {
 			const tile = this.tiles
