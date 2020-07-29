@@ -106,8 +106,7 @@ export default class RaceScene extends Phaser.Scene {
 					if (tileSprite.state === this.tileActiveState) {
 						tileSprite.setTint(this.activeTileColor);
 
-						//TODO verify if has arrived logic should be moved to player
-						if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
+						if (this.raceGame.getCurrentPlayer().hasArrived()) {
 							this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
 							this.createQuestionWindow(<Point>{ x: x, y: y });
 						}
@@ -234,12 +233,12 @@ export default class RaceScene extends Phaser.Scene {
 		}
 
 		const currentPlayer = this.raceGame.getCurrentPlayer();
-		if (currentPlayer.getMove().getHasArrived() && this.isReadyToGetPossiblePositions) {
+		if (currentPlayer.hasArrived() && this.isReadyToGetPossiblePositions) {
 			this.activateAccessiblePositions();
 		} else if (
 			//If a player gets affected by a banana or any other state change without moving
 			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
-			currentPlayer.getMove().getHasArrived() &&
+			currentPlayer.hasArrived() &&
 			!currentPlayer.getIsAnsweringQuestion()
 		) {
 			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
