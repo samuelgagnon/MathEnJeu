@@ -29,7 +29,7 @@ export default class RaceGameFactory {
 
 	public static createServer(gameId: string, users: User[]): ServerRaceGameController {
 		const raceGrid = this.generateRaceGrid(RACE_CST.CIRCUIT.GRID_WIDTH, RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID);
-		const players = this.generatePlayers(users);
+		const players = this.generatePlayers(users, raceGrid.getStartingPositions());
 		return new ServerRaceGameController(RACE_CST.CIRCUIT.GAME_MAX_LENGTH, raceGrid, players, users, gameId);
 	}
 
@@ -91,10 +91,12 @@ export default class RaceGameFactory {
 		return new RaceGrid(tiles, gridWidth, gridHeight, itemsState);
 	}
 
-	public static generatePlayers(users: User[]): Player[] {
+	public static generatePlayers(users: User[], startingPositions: Point[]): Player[] {
 		let players: Player[] = [];
+		let i: number = 0;
 		users.forEach((user: User) => {
-			players.push(new Player(user.userId, { x: 0, y: 0 }, user.userInfo.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			players.push(new Player(user.userId, startingPositions[i], user.userInfo.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			i++;
 		});
 
 		return players;
@@ -104,15 +106,13 @@ export default class RaceGameFactory {
 		let tiles: Tile[] = [];
 		for (let y = 0; y < startingRaceGridInfo.height; y++) {
 			for (let x = 0; x < startingRaceGridInfo.width; x++) {
-				if (startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y)) {
-					tiles.push(new Tile(true, true, false));
-				} else if (startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y)) {
-					tiles.push(new Tile(true, false, true));
-				} else if (startingRaceGridInfo.nonWalkablePositions.find((position: Point) => position.x == x && position.y == y)) {
-					tiles.push(new Tile(false, false, false));
-				} else {
-					tiles.push(new Tile(true, false, false));
-				}
+				let isWalkable: boolean =
+					startingRaceGridInfo.nonWalkablePositions.find((position: Point) => position.x == x && position.y == y) === undefined;
+				let isStartPosition: boolean =
+					startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
+				let isFinishLine: boolean =
+					startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
+				tiles.push(new Tile(isWalkable, isStartPosition, isFinishLine));
 			}
 		}
 
