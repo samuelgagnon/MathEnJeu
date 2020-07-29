@@ -194,7 +194,7 @@ export default class RaceGameUI extends Phaser.Scene {
 			} else {
 				raceScene.followPlayer = true;
 				this.followPlayerText.setText("Camera follow: On");
-				raceScene.cameras.main.startFollow(raceScene.currentPlayerSprite, true, 0.09, 0.09);
+				raceScene.cameras.main.startFollow(raceScene.currentPlayerSprite, false, 0.09, 0.09);
 			}
 		});
 
