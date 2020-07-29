@@ -13,7 +13,6 @@ export const getBase64ImageForQuestion = (questionId: string, languageShortName:
 	})
 		.then((response) => {
 			const base64String = Buffer.from(response.data, "binary").toString("base64");
-			console.log(base64String);
 			return `data:image/png;base64,${base64String}`;
 		})
 		.catch((e) => {
