@@ -79,9 +79,9 @@ export default class QuestionScene extends Phaser.Scene {
 	update() {}
 
 	private answerQuestion(answer: boolean) {
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
 		this.questionImage.destroy(true);
 		this.textures.remove("question");
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
 	}
 }

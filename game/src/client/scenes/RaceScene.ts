@@ -51,7 +51,6 @@ export default class RaceScene extends Phaser.Scene {
 		this.followPlayer = false;
 		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
-		this.isReadyToGetPossiblePositions = false;
 		this.activeTileColor = 0xadff2f;
 		this.tileInactiveState = 0;
 		this.tileActiveState = 1;
@@ -92,7 +91,6 @@ export default class RaceScene extends Phaser.Scene {
 
 				tileSprite.setInteractive();
 				tileSprite.on("pointerover", () => {
-					console.log(tileSprite.state);
 					if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0x86bfda);
 				});
 				tileSprite.on("pointerout", () => {
@@ -122,10 +120,14 @@ export default class RaceScene extends Phaser.Scene {
 			Math.pow(tile2.getData("position").x - tile1.getData("position").x, 2) + Math.pow(tile1.getData("position").y - tile2.getData("position").y, 2)
 		);
 
+		this.isReadyToGetPossiblePositions = false;
 		this.boardPosition = tile1.getData("position");
 		this.activateAccessiblePositions();
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//@ts-ignore
+		window.myScene = this;
 	}
 
 	phys(currentframe: number) {
@@ -316,6 +318,7 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private activateAccessiblePositions(): void {
+		console.log(this.raceGame.getCurrentPlayer());
 		const possiblePositions = this.raceGame.getPossiblePlayerMovement();
 
 		this.clearTileInteractions();
@@ -328,7 +331,10 @@ export default class RaceScene extends Phaser.Scene {
 			(<Phaser.GameObjects.Sprite>tile).setTint(this.activeTileColor);
 		});
 
+		console.log(this.raceGame.getCurrentPlayer());
+		console.log(`activated 1 ? Ready: ${this.isReadyToGetPossiblePositions}`);
 		this.isReadyToGetPossiblePositions = false;
+		console.log(`activated 2 ? Ready: ${this.isReadyToGetPossiblePositions}`);
 	}
 
 	private clearTileInteractions(): void {
