@@ -59,56 +59,53 @@ export default class RaceScene extends Phaser.Scene {
 
 		const gameGrid = this.raceGame.getGrid();
 
+		//TODO : Find a way to store those "Magic Numbers"
+		this.distanceBetweenTwoTiles = 66;
+		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
+
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
-				let tileSprite: any;
+				if (currentTile.isWalkable) {
+					let tileSprite: any;
 
-				const positionX = <number>this.game.config.width / 2.3 + 96 * x;
-				const positionY = <number>this.game.config.height / 7 + 96 * y;
+					const positionX = this.boardPosition.x + this.distanceBetweenTwoTiles * x;
+					const positionY = this.boardPosition.y + this.distanceBetweenTwoTiles * y;
 
-				if (currentTile.isFnishLine) {
-					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.FINISH_LINE).setScale(0.045, 0.045);
-				} else if (currentTile.isStartPosition) {
-					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.GREEN_SQUARE).setScale(0.1, 0.1);
-				} else {
-					tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.ORANGE_SQUARE).setScale(0.3, 0.3);
-				}
-
-				tileSprite.setData("name", `tile-(${x},${y})`);
-				tileSprite.setData("gridPosition", <Point>{ x: x, y: y });
-				tileSprite.setData("position", <Point>{ x: tileSprite.x, y: tileSprite.y });
-
-				tileSprite.setInteractive();
-				tileSprite.on("pointerover", () => {
-					tileSprite.setTint(0x86bfda);
-				});
-				tileSprite.on("pointerout", () => {
-					tileSprite.clearTint();
-				});
-				tileSprite.on("pointerdown", () => {
-					tileSprite.setTint(0xff0000);
-				});
-				tileSprite.on("pointerup", () => {
-					tileSprite.clearTint();
-
-					//TODO verify if has arrived logic should be moved to player
-					if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
-						this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
-						this.createQuestionWindow(<Point>{ x: x, y: y });
+					if (currentTile.isFinishLine) {
+						tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.FINISH_LINE).setScale(0.045, 0.045);
+					} else {
+						tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.ORANGE_SQUARE).setScale(0.3, 0.3);
 					}
-				});
+
+					tileSprite.setData("name", `tile-(${x},${y})`);
+					tileSprite.setData("gridPosition", <Point>{ x: x, y: y });
+					tileSprite.setData("position", <Point>{ x: tileSprite.x, y: tileSprite.y });
+
+					if (currentTile.isWalkable) {
+						tileSprite.setInteractive();
+						tileSprite.on("pointerover", () => {
+							tileSprite.setTint(0x86bfda);
+						});
+						tileSprite.on("pointerout", () => {
+							tileSprite.clearTint();
+						});
+						tileSprite.on("pointerdown", () => {
+							tileSprite.setTint(0xff0000);
+						});
+						tileSprite.on("pointerup", () => {
+							tileSprite.clearTint();
+
+							//TODO verify if has arrived logic should be moved to player
+							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
+								this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
+								this.createQuestionWindow(<Point>{ x: x, y: y });
+							}
+						});
+					}
+				}
 			}
 		}
-
-		const tiles = this.tiles.getChildren();
-		const tile1 = tiles[0];
-		const tile2 = tiles[1];
-		this.distanceBetweenTwoTiles = Math.sqrt(
-			Math.pow(tile2.getData("position").x - tile1.getData("position").x, 2) + Math.pow(tile1.getData("position").y - tile2.getData("position").y, 2)
-		);
-
-		this.boardPosition = tile1.getData("position");
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
 	}
@@ -183,8 +180,8 @@ export default class RaceScene extends Phaser.Scene {
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
-				const positionX = <number>this.game.config.width / 2.3 + 96 * x;
-				const positionY = <number>this.game.config.height / 7 + 96 * y;
+				const positionX = this.boardPosition.x + this.distanceBetweenTwoTiles * x;
+				const positionY = this.boardPosition.y + this.distanceBetweenTwoTiles * y;
 
 				let itemSprite: any;
 

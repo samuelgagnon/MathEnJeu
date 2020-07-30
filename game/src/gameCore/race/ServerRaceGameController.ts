@@ -18,9 +18,9 @@ import { ServerGame } from "../Game";
 import GameFSM from "../gameState/GameFSM";
 import State from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
+import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
 import RaceGameController from "./RaceGameController";
-import RaceGrid from "./RaceGrid";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private context: GameFSM;
@@ -53,8 +53,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				grid: <StartingRaceGridInfo>{
 					width: this.grid.getWidth(),
 					height: this.grid.getHeight(),
+					nonWalkablePositions: this.grid.getNonWalkablePositions(),
 					startingPositions: this.grid.getStartingPositions(),
-					finishLinePositions: this.grid.getFinishLinePosition(),
+					finishLinePositions: this.grid.getFinishLinePositions(),
 					itemStates: this.grid.getItemsState(),
 				},
 				players: this.getPlayersState(),

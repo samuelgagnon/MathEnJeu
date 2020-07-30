@@ -1,17 +1,19 @@
-import Item from "./items/Item";
-import Player from "./player/Player";
+import Item from "../items/Item";
+import Player from "../player/Player";
 
 export default class Tile {
 	private item: Item;
 	readonly isWalkable: boolean;
 	readonly isStartPosition: boolean;
-	readonly isFnishLine: boolean;
+	readonly isFinishLine: boolean;
+	readonly checkpointGroup?: number;
 
-	constructor(isWalkable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item) {
+	constructor(isWalkable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item, checkpointGroup?: number) {
 		this.isWalkable = isWalkable;
 		this.isStartPosition = startPosition;
-		this.isFnishLine = isFinishLine;
+		this.isFinishLine = isFinishLine;
 		this.item = item;
+		this.checkpointGroup = checkpointGroup;
 	}
 
 	public getItem(): Item {

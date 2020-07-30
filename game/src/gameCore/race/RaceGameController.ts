@@ -1,6 +1,7 @@
+import RaceGrid from "./grid/RaceGrid";
+import Tile from "./grid/Tile";
 import Item, { ItemType } from "./items/Item";
 import Player from "./player/Player";
-import RaceGrid from "./RaceGrid";
 
 export default abstract class RaceGameController {
 	protected readonly gameTime: number;
@@ -21,6 +22,7 @@ export default abstract class RaceGameController {
 	public update(): void {
 		this.gameLogicUpdate();
 		this.playersUpdate();
+		this.handleTileCollisions();
 		this.handleItemCollisions();
 	}
 
@@ -73,6 +75,17 @@ export default abstract class RaceGameController {
 				this.grid.getTile({ x: Math.ceil(position.x), y: Math.ceil(position.y) }).playerPickUpItem(player);
 			}
 			// this.grid.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
+		});
+	}
+
+	private handleTileCollisions(): void {
+		this.players.forEach((player) => {
+			const playerTile: Tile = this.grid.getTile(player.getPosition());
+			if (playerTile.checkpointGroup !== undefined) {
+				player.passingByCheckpoint(playerTile.checkpointGroup);
+			} else if (playerTile.isFinishLine) {
+				player.passingByFinishLine();
+			}
 		});
 	}
 }

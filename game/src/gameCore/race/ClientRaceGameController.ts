@@ -3,10 +3,10 @@ import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../commun
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
 import { ClientGame } from "../Game";
+import RaceGrid from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
 import RaceGameController from "./RaceGameController";
-import RaceGrid from "./RaceGrid";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;

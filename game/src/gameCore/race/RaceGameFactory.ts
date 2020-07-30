@@ -2,16 +2,16 @@ import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
 import User from "../../server/data/User";
 import ClientRaceGameController from "./ClientRaceGameController";
+import RaceGrid from "./grid/RaceGrid";
+import Tile from "./grid/Tile";
 import Item, { ItemType } from "./items/Item";
 import ItemFactory from "./items/ItemFactory";
 import Inventory from "./player/Inventory";
 import Player from "./player/Player";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
-import RaceGrid from "./RaceGrid";
 import { RACE_CST } from "./RACE_CST";
 import ServerRaceGameController from "./ServerRaceGameController";
-import Tile from "./Tile";
 
 export default class RaceGameFactory {
 	public static createClient(
@@ -28,21 +28,28 @@ export default class RaceGameFactory {
 	}
 
 	public static createServer(gameId: string, users: User[]): ServerRaceGameController {
-		const raceGrid = this.generateRaceGrid(RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID_WIDTH);
-		const players = this.generatePlayers(users);
+		const raceGrid = this.generateRaceGrid(RACE_CST.CIRCUIT.GRID_WIDTH, RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID);
+		const players = this.generatePlayers(users, raceGrid.getStartingPositions());
 		return new ServerRaceGameController(RACE_CST.CIRCUIT.GAME_MAX_LENGTH, raceGrid, players, users, gameId);
 	}
 
-	private static generateRaceGrid(gridWidth: number, gridHeight: number): RaceGrid {
+	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
+	private static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string): RaceGrid {
 		let tiles: Tile[] = [];
 		let itemsState: ItemState[] = [];
 		for (let y = 0; y < gridHeight; y++) {
 			for (let x = 0; x < gridWidth; x++) {
-				if (x == 0) {
-					tiles.push(new Tile(true, true, false));
-				} else if (x == gridWidth - 1) {
-					tiles.push(new Tile(true, false, true));
+				const tileSymbol = grid.charAt(gridWidth * y + x);
+
+				//Tile is Non walkable
+				if (tileSymbol === "x") {
+					tiles.push(new Tile(false, false, false));
+
+					//Tile is Startposition & Finishline
+				} else if (tileSymbol === "|") {
+					tiles.push(new Tile(true, true, true));
 				} else {
+					let item: Item = undefined;
 					if ((gridWidth * y + x) % 4 == 0) {
 						const rng = Math.floor(Math.random() * 4) + 1;
 						let itemType: ItemType;
@@ -61,12 +68,28 @@ export default class RaceGameFactory {
 								break;
 						}
 
-						const item: Item = ItemFactory.create(itemType, <Point>{ x, y });
 						const itemState: ItemState = { type: itemType, location: <Point>{ x, y } };
-						tiles.push(new Tile(true, false, false, item));
 						itemsState.push(itemState);
+
+						item = ItemFactory.create(itemType, <Point>{ x, y });
+					}
+
+					//Tile is Walkable
+					if (tileSymbol == ".") {
+						tiles.push(new Tile(true, false, false, item));
+
+						//Tile is Checkpoint
 					} else {
-						tiles.push(new Tile(true, false, false));
+						let checkpointGroup = Number(tileSymbol);
+						if (checkpointGroup == NaN) {
+							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
+						} else {
+							if (checkpointGroup >= 1 && checkpointGroup <= RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+								tiles.push(new Tile(true, false, false, item, Number(tileSymbol)));
+							} else {
+								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
+							}
+						}
 					}
 				}
 			}
@@ -75,10 +98,12 @@ export default class RaceGameFactory {
 		return new RaceGrid(tiles, gridWidth, gridHeight, itemsState);
 	}
 
-	public static generatePlayers(users: User[]): Player[] {
+	public static generatePlayers(users: User[], startingPositions: Point[]): Player[] {
 		let players: Player[] = [];
+		let i: number = 0;
 		users.forEach((user: User) => {
-			players.push(new Player(user.userId, { x: 0, y: 0 }, user.userInfo.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			players.push(new Player(user.userId, startingPositions[i], user.userInfo.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			i++;
 		});
 
 		return players;
@@ -88,13 +113,13 @@ export default class RaceGameFactory {
 		let tiles: Tile[] = [];
 		for (let y = 0; y < startingRaceGridInfo.height; y++) {
 			for (let x = 0; x < startingRaceGridInfo.width; x++) {
-				if (startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y)) {
-					tiles.push(new Tile(true, true, false));
-				} else if (startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y)) {
-					tiles.push(new Tile(true, false, true));
-				} else {
-					tiles.push(new Tile(true, false, false));
-				}
+				const isWalkable: boolean =
+					startingRaceGridInfo.nonWalkablePositions.find((position: Point) => position.x == x && position.y == y) === undefined;
+				const isStartPosition: boolean =
+					startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
+				const isFinishLine: boolean =
+					startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
+				tiles.push(new Tile(isWalkable, isStartPosition, isFinishLine));
 			}
 		}
 
