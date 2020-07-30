@@ -80,7 +80,7 @@ export default abstract class RaceGameController {
 
 	private handleTileCollisions(): void {
 		this.players.forEach((player) => {
-			let playerTile: Tile = this.grid.getTile(player.getPosition());
+			const playerTile: Tile = this.grid.getTile(player.getPosition());
 			if (playerTile.checkpointGroup !== undefined) {
 				player.passingByCheckpoint(playerTile.checkpointGroup);
 			} else if (playerTile.isFinishLine) {

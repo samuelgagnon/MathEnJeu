@@ -39,7 +39,7 @@ export default class RaceGameFactory {
 		let itemsState: ItemState[] = [];
 		for (let y = 0; y < gridHeight; y++) {
 			for (let x = 0; x < gridWidth; x++) {
-				let tileSymbol = grid.charAt(gridWidth * y + x);
+				const tileSymbol = grid.charAt(gridWidth * y + x);
 
 				//Tile is Non walkable
 				if (tileSymbol === "x") {
@@ -113,11 +113,11 @@ export default class RaceGameFactory {
 		let tiles: Tile[] = [];
 		for (let y = 0; y < startingRaceGridInfo.height; y++) {
 			for (let x = 0; x < startingRaceGridInfo.width; x++) {
-				let isWalkable: boolean =
+				const isWalkable: boolean =
 					startingRaceGridInfo.nonWalkablePositions.find((position: Point) => position.x == x && position.y == y) === undefined;
-				let isStartPosition: boolean =
+				const isStartPosition: boolean =
 					startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
-				let isFinishLine: boolean =
+				const isFinishLine: boolean =
 					startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
 				tiles.push(new Tile(isWalkable, isStartPosition, isFinishLine));
 			}
