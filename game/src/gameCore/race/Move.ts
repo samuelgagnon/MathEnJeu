@@ -1,4 +1,5 @@
 import MoveState from "../../communication/race/MoveState";
+import AffineTransform from "./AffineTransform";
 import { RACE_CST } from "./RACE_CST";
 
 export default class Move {
@@ -6,20 +7,53 @@ export default class Move {
 	private startLocation: Point;
 	private targetLocation: Point;
 	private hasArrived: boolean;
-	private SPEED: number = RACE_CST.MOVE.SPEED;
+	private readonly SPEED: Point = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
 
-	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, distanceBetweenTiles: number = 1) {
+	private renderedMove?: Move;
+	private positionRendering?: AffineTransform;
+
+	constructor(startTimestamp: number, startLocation: Point, targetLocation: Point, SPEED?: Point, positionRendering?: AffineTransform) {
 		this.startTimestamp = startTimestamp;
 		this.startLocation = startLocation;
 		this.targetLocation = targetLocation;
-		this.SPEED = RACE_CST.MOVE.SPEED * distanceBetweenTiles;
 		this.hasArrived = false;
+
+		if (SPEED !== undefined && SPEED !== null) {
+			this.SPEED = SPEED;
+		} else {
+			this.SPEED = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
+		}
+
+		if (positionRendering !== undefined && positionRendering !== null) {
+			this.setRenderedMove(positionRendering);
+		}
+	}
+
+	private setRenderedMove(positionRendering: AffineTransform): void {
+		this.positionRendering = positionRendering;
+		this.renderedMove = new Move(
+			this.startTimestamp,
+			positionRendering.apply(this.startLocation),
+			positionRendering.apply(this.targetLocation),
+			positionRendering.applyLinearTransform({ x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED })
+		);
+	}
+
+	private isMoveRendered(): boolean {
+		return this.renderedMove !== undefined && this.renderedMove !== null;
 	}
 
 	public updateFromMoveState(moveState: MoveState): void {
 		this.startTimestamp = moveState.startTimestamp;
 		this.startLocation = moveState.startLocation;
 		this.targetLocation = moveState.targetLocation;
+		if (this.isMoveRendered()) {
+			this.renderedMove.updateFromMoveState({
+				startTimestamp: moveState.startTimestamp,
+				startLocation: this.positionRendering.apply(moveState.startLocation),
+				targetLocation: this.positionRendering.apply(moveState.targetLocation),
+			});
+		}
 	}
 
 	public getMoveState(): MoveState {
@@ -31,9 +65,12 @@ export default class Move {
 	}
 
 	private getTotalTime(): number {
-		return this.getDistance() / this.SPEED;
+		return (
+			Math.abs(this.targetLocation.x - this.startLocation.x) / this.SPEED.x + Math.abs(this.targetLocation.y - this.startLocation.y) / this.SPEED.y
+		);
 	}
 
+	//Returns taxicab distance (norm 1).
 	private getDistance(): number {
 		return Math.abs(this.targetLocation.x - this.startLocation.x) + Math.abs(this.targetLocation.y - this.startLocation.y);
 	}
@@ -57,5 +94,16 @@ export default class Move {
 		};
 
 		return c;
+	}
+
+	public getCurrentRenderedPosition(positionRendering?: AffineTransform): Point {
+		if (this.isMoveRendered) {
+			if (positionRendering !== undefined && positionRendering !== null && positionRendering !== this.positionRendering) {
+				this.setRenderedMove(positionRendering);
+			}
+			return this.renderedMove.getCurrentPosition();
+		} else {
+			return this.getCurrentPosition();
+		}
 	}
 }

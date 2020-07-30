@@ -1,6 +1,7 @@
 import PlayerState from "../../../communication/race/PlayerState";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
+import { RACE_CST } from "../RACE_CST";
 import Inventory from "./Inventory";
 import Status from "./playerStatus/Status";
 import { StatusType } from "./playerStatus/StatusType";
@@ -25,6 +26,7 @@ export default class Player {
 	private move: Move;
 	private inventory: Inventory;
 	private answeredQuestionsId: Number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
+	private lastValidCheckpoint: number = 0;
 
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
@@ -108,6 +110,18 @@ export default class Player {
 
 	public getMaxMovementDistance(): number {
 		return this.maxPossibleMoveDistance;
+	}
+
+	public passingByCheckpoint(checkpointGroup: number): void {
+		if (Math.abs(checkpointGroup - this.lastValidCheckpoint) == 1) this.lastValidCheckpoint = checkpointGroup;
+	}
+
+	public passingByFinishLine(): void {
+		if (this.lastValidCheckpoint == RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+			//TODO : Add point when finished line is properly passed.
+			console.log("debug: player " + this.id + " passed the finish line");
+		}
+		this.lastValidCheckpoint = 0;
 	}
 
 	//transitioningStatus parameter needs to be passed only when transitionning into another state.
