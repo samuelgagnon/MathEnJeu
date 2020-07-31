@@ -89,7 +89,6 @@ export default class RaceScene extends Phaser.Scene {
 						tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.ORANGE_SQUARE).setScale(0.3, 0.3);
 					}
 
-					tileSprite.setData("name", `tile-(${x},${y})`);
 					tileSprite.setData("gridPosition", <Point>{ x: x, y: y });
 					tileSprite.setData("position", <Point>{ x: tileSprite.x, y: tileSprite.y });
 
@@ -98,7 +97,7 @@ export default class RaceScene extends Phaser.Scene {
 						if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0x86bfda);
 					});
 					tileSprite.on("pointerout", () => {
-						if (tileSprite.state === this.tileActiveState) tileSprite.clearTint();
+						if (tileSprite.state === this.tileActiveState) tileSprite.setTint(this.activeTileColor);
 					});
 					tileSprite.on("pointerdown", () => {
 						if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0xff0000);
