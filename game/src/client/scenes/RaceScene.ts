@@ -21,6 +21,8 @@ export default class RaceScene extends Phaser.Scene {
 	followPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 
+	targetLocation: Point;
+
 	currentPlayerMovement: number;
 	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible position
 	isThrowingBanana: boolean;
@@ -55,6 +57,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.activeTileColor = 0xadff2f;
 		this.tileInactiveState = 0;
 		this.tileActiveState = 1;
+		this.targetLocation = this.raceGame.getCurrentPlayer().getPosition();
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
@@ -288,9 +291,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.clearTileInteractions();
 		if (correctAnswer) {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
-			// (<Phaser.GameObjects.Sprite>(
-			// 	this.tiles.getChildren().find((tile) => tile.getData("gridPosition").x == position.x && tile.getData("gridPosition").y == position.y)
-			// )).setTint(this.activeTileColor);  Set a color to targetLocation tile ?
+			this.targetLocation = position;
 		}
 		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
 
@@ -313,7 +314,7 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private activateAccessiblePositions(): void {
-		const possiblePositions = this.raceGame.getPossiblePlayerMovement();
+		const possiblePositions = this.raceGame.getPossiblePlayerMovement(this.targetLocation);
 
 		console.log("outside method");
 		console.log(this.raceGame.getCurrentPlayer());
