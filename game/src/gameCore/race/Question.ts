@@ -24,7 +24,7 @@ export class Question {
 		this.feedbackRelativePath = feedbackFolderName + "/1.png";
 	}
 
-	public IsAnswerRight(answerString: string) {
+	public IsAnswerRight(answerString: string): boolean {
 		this.answers.forEach((answer) => {
 			if (answer.isEquivalentToAnswerString(answerString)) {
 				return true;

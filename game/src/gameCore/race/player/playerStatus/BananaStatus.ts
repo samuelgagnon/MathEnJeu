@@ -52,7 +52,8 @@ export default class BananaStatus extends Status {
 	}
 
 	protected transitionTo(status: Status): void {
-		this.context.addToMoveDistance(this.BANANA_MOVE_EFFECT);
+		//removing the banana movement decrease
+		this.context.addToMoveDistance(-this.BANANA_MOVE_EFFECT);
 		super.transitionTo(status);
 	}
 }

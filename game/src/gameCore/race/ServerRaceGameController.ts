@@ -63,12 +63,13 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private getGameState(): RaceGameState {
-		let gameState: RaceGameState = { itemsState: [], players: [], remainingTime: this.timeRemaining };
+		let gameState: RaceGameState = { timeStamp: 0, itemsState: [], players: [], remainingTime: this.timeRemaining };
 		gameState.itemsState = this.grid.getItemsState();
 		this.players.forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());
 		});
 
+		gameState.timeStamp = Date.now();
 		return gameState;
 	}
 

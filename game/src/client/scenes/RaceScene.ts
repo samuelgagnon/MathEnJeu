@@ -2,6 +2,7 @@ import { GameEndEvent, PlayerLeftEvent } from "../../communication/race/DataInte
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import AffineTransform from "../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
+import { PossiblePositions } from "../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../gameCore/race/items/Item";
 import Player from "../../gameCore/race/player/Player";
 import { CST } from "../CST";
@@ -20,7 +21,15 @@ export default class RaceScene extends Phaser.Scene {
 	followPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 
+	targetLocation: Point;
+
+	currentPlayerMovement: number;
+	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible position
 	isThrowingBanana: boolean;
+
+	tileActiveState: number;
+	tileInactiveState: number;
+	activeTileColor: number;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -44,6 +53,11 @@ export default class RaceScene extends Phaser.Scene {
 		this.characterSprites = [];
 		this.followPlayer = false;
 		this.isThrowingBanana = false;
+		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
+		this.activeTileColor = 0xadff2f;
+		this.tileInactiveState = 0;
+		this.tileActiveState = 1;
+		this.targetLocation = this.raceGame.getCurrentPlayer().getPosition();
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
@@ -78,36 +92,41 @@ export default class RaceScene extends Phaser.Scene {
 						tileSprite = this.tiles.create(positionX, positionY, CST.IMAGES.ORANGE_SQUARE).setScale(0.3, 0.3);
 					}
 
-					tileSprite.setData("name", `tile-(${x},${y})`);
 					tileSprite.setData("gridPosition", <Point>{ x: x, y: y });
 					tileSprite.setData("position", <Point>{ x: tileSprite.x, y: tileSprite.y });
 
-					if (currentTile.isWalkable) {
-						tileSprite.setInteractive();
-						tileSprite.on("pointerover", () => {
-							tileSprite.setTint(0x86bfda);
-						});
-						tileSprite.on("pointerout", () => {
-							tileSprite.clearTint();
-						});
-						tileSprite.on("pointerdown", () => {
-							tileSprite.setTint(0xff0000);
-						});
-						tileSprite.on("pointerup", () => {
-							tileSprite.clearTint();
+					tileSprite.setInteractive();
+					tileSprite.on("pointerover", () => {
+						if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0x86bfda);
+					});
+					tileSprite.on("pointerout", () => {
+						if (tileSprite.state === this.tileActiveState) tileSprite.setTint(this.activeTileColor);
+					});
+					tileSprite.on("pointerdown", () => {
+						if (tileSprite.state === this.tileActiveState) tileSprite.setTint(0xff0000);
+					});
+					tileSprite.on("pointerup", () => {
+						if (tileSprite.state === this.tileActiveState) {
+							tileSprite.setTint(this.activeTileColor);
 
 							//TODO verify if has arrived logic should be moved to player
 							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
 								this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
 								this.createQuestionWindow(<Point>{ x: x, y: y });
 							}
-						});
-					}
+						}
+					});
 				}
 			}
 		}
 
+		this.isReadyToGetPossiblePositions = false;
+		this.activateAccessiblePositions();
+
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//@ts-ignore
+		window.myScene = this;
 	}
 
 	phys(currentframe: number) {
@@ -213,6 +232,19 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
+
+		const currentPlayer = this.raceGame.getCurrentPlayer();
+		if (currentPlayer.hasArrived() && this.isReadyToGetPossiblePositions) {
+			this.activateAccessiblePositions();
+		} else if (
+			//If a player gets affected by a banana or any other state change without moving
+			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
+			currentPlayer.hasArrived() &&
+			!currentPlayer.getIsAnsweringQuestion()
+		) {
+			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
+			this.activateAccessiblePositions();
+		}
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -256,10 +288,14 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	answerQuestion(correctAnswer: boolean, position: Point) {
+		this.clearTileInteractions();
 		if (correctAnswer) {
 			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
+			this.targetLocation = position;
 		}
 		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
+
+		this.isReadyToGetPossiblePositions = true;
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
@@ -275,6 +311,34 @@ export default class RaceScene extends Phaser.Scene {
 			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.raceGame.getCurrentPlayerSocket() });
 		});
+	}
+
+	private activateAccessiblePositions(): void {
+		const possiblePositions = this.raceGame.getPossiblePlayerMovement(this.targetLocation);
+
+		console.log("outside method");
+		console.log(this.raceGame.getCurrentPlayer());
+
+		this.clearTileInteractions();
+
+		possiblePositions.forEach((pos: PossiblePositions) => {
+			const tile = this.getTile(pos.position.x, pos.position.y);
+			tile.setState(this.tileActiveState);
+			(<Phaser.GameObjects.Sprite>tile).setTint(this.activeTileColor);
+		});
+
+		this.isReadyToGetPossiblePositions = false;
+	}
+
+	private clearTileInteractions(): void {
+		this.tiles.getChildren().forEach((tile) => {
+			(<Phaser.GameObjects.Sprite>tile).clearTint();
+			(<Phaser.GameObjects.Sprite>tile).setState(this.tileInactiveState);
+		});
+	}
+
+	private getTile(x: number, y: number): Phaser.GameObjects.GameObject {
+		return this.tiles.getChildren().find((tile) => tile.getData("gridPosition").x === x && tile.getData("gridPosition").y === y);
 	}
 }
 

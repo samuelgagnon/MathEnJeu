@@ -3,7 +3,7 @@ import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../commun
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
 import { ClientGame } from "../Game";
-import RaceGrid from "./grid/RaceGrid";
+import RaceGrid, { PossiblePositions } from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
 import RaceGameController from "./RaceGameController";
@@ -68,12 +68,18 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public setGameState(gameState: RaceGameState): void {
+		const lag = gameState.timeStamp - Date.now();
 		//Ajusting client game time only if it has a difference of 1.5 seconds (1500 millisecondes)
-		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime;
+		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime + lag;
 		this.players.forEach((player: Player) => {
 			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
 		});
-		this.grid.updateFromItemStates(gameState.itemsState);
+		this.grid.updateFromItemStates(gameState.itemsState, lag);
+	}
+
+	public getPossiblePlayerMovement(position: Point): PossiblePositions[] {
+		const currentPlayer = this.getCurrentPlayer();
+		return this.grid.getPossibleMovementFrom(position, currentPlayer.getMaxMovementDistance());
 	}
 
 	private handleSocketEvents(): void {

@@ -97,11 +97,19 @@ export default class Player {
 		return this.move;
 	}
 
+	public hasArrived(): boolean {
+		return this.move.getHasArrived();
+	}
+
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 		}
+	}
+
+	public getMaxMovementDistance(): number {
+		return this.maxPossibleMoveDistance;
 	}
 
 	public passingByCheckpoint(checkpointGroup: number): void {
