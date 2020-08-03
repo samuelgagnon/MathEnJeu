@@ -22,7 +22,8 @@ export default class RaceGrid {
 		return this.items;
 	}
 
-	public updateFromItemStates(itemStates: ItemState[]): void {
+	//TODO: implement lag
+	public updateFromItemStates(itemStates: ItemState[], lag: number): void {
 		if (!itemStates || JSON.stringify(itemStates) == JSON.stringify(this.items)) return;
 
 		this.items.forEach((itemState: ItemState) => {
