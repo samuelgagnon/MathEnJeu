@@ -1,27 +1,35 @@
+import { QuestionDTO } from "../../../communication/race/DataInterfaces";
 import { Answer } from "./Answer";
 
 export class Question {
+	private id: number;
 	private answers: Answer[]; //Contains the possible answers including at least one right answer.
 	private answerType: string;
 	private schoolGradeId: number; //The school level this question is aimed for
 	private difficulty: number; //The difficulty of this question depending on the level
-	private questionRelativePath: string;
-	private feedbackRelativePath: string;
+	private questionRelativePath?: string;
+	private feedbackRelativePath?: string;
 
 	constructor(
+		id: number,
 		answers: Answer[],
 		answerType: string,
 		schoolGradeId: number,
 		difficulty: number,
-		questionFolderName: string,
-		feedbackFolderName: string
+		questionFolderName?: string,
+		feedbackFolderName?: string
 	) {
+		this.id = id;
 		this.answers = answers;
 		this.answerType = answerType;
 		this.schoolGradeId = schoolGradeId;
 		this.difficulty = difficulty;
 		this.questionRelativePath = questionFolderName + "/1.png";
 		this.feedbackRelativePath = feedbackFolderName + "/1.png";
+	}
+
+	public getId(): number {
+		return this.id;
 	}
 
 	public IsAnswerRight(answerString: string): boolean {
@@ -43,5 +51,17 @@ export class Question {
 
 	public getFeedbackRelativePath(): string {
 		return this.feedbackRelativePath;
+	}
+
+	public getDTO(): QuestionDTO {
+		return {
+			id: this.id,
+			answers: this.answers.map((answer) => answer.getDTO()),
+			answerType: this.answerType,
+			schoolGradeId: this.schoolGradeId,
+			difficulty: this.difficulty,
+			questionRelativePath: this.questionRelativePath,
+			feedbackRelativePath: this.feedbackRelativePath,
+		};
 	}
 }

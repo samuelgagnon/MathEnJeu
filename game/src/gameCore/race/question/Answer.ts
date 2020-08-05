@@ -1,3 +1,5 @@
+import { AnswerDTO } from "../../../communication/race/DataInterfaces";
+
 export class Answer {
 	private label: string;
 	private _isRight: boolean;
@@ -5,12 +7,25 @@ export class Answer {
 		this.label = label;
 		this._isRight = isRight;
 	}
-	isRight(): boolean {
+
+	public isRight(): boolean {
 		return this._isRight;
 	}
-	isEquivalentToAnswerString(answerString: string): boolean {
+
+	public getLabel(): string {
+		return this.label;
+	}
+
+	public isEquivalentToAnswerString(answerString: string): boolean {
 		//TODO: update comparison to make it more flexible
 		//(ex.: " BaNana" and "banana" should be equivalent)
 		return answerString == this.label;
+	}
+
+	public getDTO(): AnswerDTO {
+		return {
+			label: this.label,
+			isRight: this._isRight,
+		};
 	}
 }
