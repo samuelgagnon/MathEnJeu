@@ -1,5 +1,5 @@
 import { Question } from "../../gameCore/race/question/Question";
-import { getBase64ImageForQuestion } from "../services/QuestionsService";
+import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
 import { getUserInfo } from "../services/UserInformationService";
 import { CST } from "./../CST";
 import RaceScene from "./RaceScene";
@@ -10,6 +10,7 @@ export default class QuestionScene extends Phaser.Scene {
 	targetLocation: Point;
 	question: Question;
 
+	feedbackImage: Phaser.GameObjects.Image;
 	questionImage: Phaser.GameObjects.Image;
 	questionTexture: Phaser.Textures.Texture;
 
@@ -33,7 +34,7 @@ export default class QuestionScene extends Phaser.Scene {
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
 
-		this.textures.once(
+		this.textures.on(
 			"addtexture",
 			(textureId: string) => {
 				if (textureId === "question") {
@@ -60,6 +61,13 @@ export default class QuestionScene extends Phaser.Scene {
 					this.enterButton.on("pointerup", () => {
 						this.answerQuestion();
 					});
+				} else if (textureId === "feedback") {
+					this.feedbackImage = this.add
+						.image(this.width * 0.5, this.height * 0.35, "feedback")
+						.setScale(0.3)
+						.setAlpha(0);
+					if (this.feedbackImage.displayHeight > 500 && this.questionImage.displayHeight < 800) this.questionImage.setScale(0.2);
+					if (this.feedbackImage.displayHeight >= 800) this.questionImage.setScale(0.15);
 				}
 			},
 			this
@@ -69,16 +77,35 @@ export default class QuestionScene extends Phaser.Scene {
 		getBase64ImageForQuestion(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
 			this.textures.addBase64("question", value);
 		});
+
+		getBase64ImageForQuestionFeedback(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
+			this.textures.addBase64("feedback", value);
+		});
 	}
 
 	update() {}
 
-	private answerQuestion() {
-		const answer = this.question.IsAnswerRight((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+	private answerQuestion(): void {
+		const isAnswerCorrect = this.question.IsAnswerRight((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+		if (!isAnswerCorrect) {
+			this.inputHtml.destroy();
+			this.enterButton.destroy();
+
+			this.feedbackImage.setAlpha(1);
+			setTimeout(() => {
+				this.destroyScene(isAnswerCorrect);
+			}, 3000);
+		} else {
+			this.destroyScene(isAnswerCorrect);
+		}
+	}
+
+	private destroyScene(isAnswerCorrect: boolean): void {
 		this.questionImage.destroy();
 		this.textures.remove("question");
+		this.textures.remove("feedback");
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(isAnswerCorrect, this.targetLocation);
 	}
 }
 
