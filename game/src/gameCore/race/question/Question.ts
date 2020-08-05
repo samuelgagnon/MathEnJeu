@@ -33,12 +33,8 @@ export class Question {
 	}
 
 	public IsAnswerRight(answerString: string): boolean {
-		this.answers.forEach((answer) => {
-			if (answer.isEquivalentToAnswerString(answerString)) {
-				return true;
-			}
-		});
-		return false;
+		const correctAnswer = this.answers.find((answer) => answer.isRight());
+		return correctAnswer.isEquivalentToAnswerString(answerString);
 	}
 
 	public getAnswerType(): string {

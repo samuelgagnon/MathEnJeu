@@ -19,6 +19,7 @@ export class Answer {
 	public isEquivalentToAnswerString(answerString: string): boolean {
 		//TODO: update comparison to make it more flexible
 		//(ex.: " BaNana" and "banana" should be equivalent)
+		answerString = answerString.trim().toLowerCase();
 		return answerString == this.label;
 	}
 

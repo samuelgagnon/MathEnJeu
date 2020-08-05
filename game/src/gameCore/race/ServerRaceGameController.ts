@@ -164,7 +164,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					this.questionRepo
 						.getQuestionsIdByDifficulty(language, schoolGrade, currentPlayer.getMaxMovementDistance())
 						.then((questionIdArray) => {
-							const randomPosition = Math.floor(Math.random() * questionIdArray.length) - 1;
+							const newArray = questionIdArray.filter((id) => id < 1000);
+							const randomPosition = Math.floor(Math.random() * newArray.length) - 1;
+							console.log(newArray);
 							this.questionRepo
 								.getQuestionById(questionIdArray[randomPosition], language, schoolGrade)
 								.then((question) => {

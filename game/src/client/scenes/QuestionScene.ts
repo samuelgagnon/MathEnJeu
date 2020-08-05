@@ -13,8 +13,8 @@ export default class QuestionScene extends Phaser.Scene {
 	questionImage: Phaser.GameObjects.Image;
 	questionTexture: Phaser.Textures.Texture;
 
-	yesText: Phaser.GameObjects.Text;
-	noText: Phaser.GameObjects.Text;
+	enterButton: Phaser.GameObjects.Text;
+	inputHtml: Phaser.GameObjects.DOMElement;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
@@ -35,42 +35,32 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.textures.once(
 			"addtexture",
-			() => {
-				this.questionImage = this.add.image(this.width * 0.5, this.height * 0.3, "question").setScale(0.3);
+			(textureId: string) => {
+				if (textureId === "question") {
+					this.questionImage = this.add.image(this.width * 0.5, this.height * 0.35, "question").setScale(0.3);
+					console.log(`width: ${this.questionImage.displayWidth},  height: ${this.questionImage.displayHeight}`);
+					if (this.questionImage.displayHeight > 500 && this.questionImage.displayHeight < 800) this.questionImage.setScale(0.2);
+					if (this.questionImage.displayHeight >= 800) this.questionImage.setScale(0.15);
+					this.inputHtml = this.add.dom(this.width * 0.4, this.height * 0.85).createFromCache(CST.HTML.ANSWER_INPUT);
 
-				this.yesText = this.add
-					.text(this.width * 0.6, this.height * 0.8, "yes", {
-						fontFamily: "Courier",
-						fontSize: "32px",
-						align: "center",
-						color: "#000000",
-						fontStyle: "bold",
-					})
-					.setScrollFactor(0);
+					this.enterButton = this.add
+						.text(this.width * 0.6, this.height * 0.85, "enter", {
+							fontFamily: "Courier",
+							fontSize: "32px",
+							align: "center",
+							color: "#000000",
+							fontStyle: "bold",
+						})
+						.setScrollFactor(0);
 
-				this.noText = this.add
-					.text(this.width * 0.4, this.height * 0.8, "no", {
-						fontFamily: "Courier",
-						fontSize: "32px",
-						align: "center",
-						color: "#000000",
-						fontStyle: "bold",
-					})
-					.setScrollFactor(0);
+					this.enterButton.setInteractive({
+						useHandCursor: true,
+					});
 
-				this.yesText.setInteractive({
-					useHandCursor: true,
-				});
-				this.noText.setInteractive({
-					useHandCursor: true,
-				});
-
-				this.yesText.on("pointerup", () => {
-					this.answerQuestion(true);
-				});
-				this.noText.on("pointerup", () => {
-					this.answerQuestion(false);
-				});
+					this.enterButton.on("pointerup", () => {
+						this.answerQuestion();
+					});
+				}
 			},
 			this
 		);
@@ -83,7 +73,8 @@ export default class QuestionScene extends Phaser.Scene {
 
 	update() {}
 
-	private answerQuestion(answer: boolean) {
+	private answerQuestion() {
+		const answer = this.question.IsAnswerRight((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
 		this.questionImage.destroy();
 		this.textures.remove("question");
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
