@@ -1,4 +1,6 @@
+import { Question } from "../../gameCore/race/question/Question";
 import { getBase64ImageForQuestion } from "../services/QuestionsService";
+import { getUserInfo } from "../services/UserInformationService";
 import { CST } from "./../CST";
 import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {
@@ -6,6 +8,7 @@ export default class QuestionScene extends Phaser.Scene {
 	width: number;
 	height: number;
 	targetLocation: Point;
+	question: Question;
 
 	questionImage: Phaser.GameObjects.Image;
 	questionTexture: Phaser.Textures.Texture;
@@ -18,7 +21,8 @@ export default class QuestionScene extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	init(data: any) {
+	init(data: QuestionSceneData) {
+		this.question = data.question;
 		this.targetLocation = data.targetLocation;
 		this.width = data.width;
 		this.height = data.height;
@@ -71,7 +75,8 @@ export default class QuestionScene extends Phaser.Scene {
 			this
 		);
 
-		getBase64ImageForQuestion("1", "fr", "1").then((value) => {
+		const userInfo = getUserInfo();
+		getBase64ImageForQuestion(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
 			this.textures.addBase64("question", value);
 		});
 	}
@@ -86,4 +91,10 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 }
 
-export interface QuestionSceneData {}
+export interface QuestionSceneData {
+	question: Question;
+	targetLocation: Point;
+	position: Point;
+	width: number;
+	height: number;
+}

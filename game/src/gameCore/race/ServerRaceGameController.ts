@@ -7,11 +7,14 @@ import {
 	MoveRequestEvent,
 	PlayerEndState,
 	PlayerLeftEvent,
+	QuestionAnsweredEvent,
+	QuestionFoundEvent,
 	StartingRaceGridInfo,
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
+import QuestionRepository from "../../server/data/QuestionRepository";
 import User from "../../server/data/User";
 import { getObjectValues } from "../../utils/Utils";
 import { ServerGame } from "../Game";
@@ -27,10 +30,13 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
 	private gameId: string;
+	private questionRepo: QuestionRepository;
 
-	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string) {
+	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string, questionRepo: QuestionRepository) {
 		//The server has the truth regarding the start timestamp.
 		super(gameTime, Date.now(), grid, players);
+		this.gameId = gameId;
+		this.questionRepo = questionRepo;
 		this.handleAllUsersSocketEvents(users);
 	}
 
@@ -117,6 +123,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
 			this.inputBuffer.push(newInput);
 		});
+
+		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
+			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: data };
+			this.inputBuffer.push(newInput);
+		});
 	}
 
 	private removeSocketEvents(socket: Socket): void {
@@ -146,10 +157,39 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.MOVE_REQUEST:
+					const currentPlayer = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+					const language = (<MoveRequestEvent>inputData).language;
+					const schoolGrade = (<MoveRequestEvent>inputData).schoolGrade;
+					console.log(`id: ${(<MoveRequestEvent>inputData).playerId}, lang: ${language}, schoolGrade: ${schoolGrade}`);
+					this.questionRepo
+						.getQuestionsIdByDifficulty(language, schoolGrade, currentPlayer.getMaxMovementDistance())
+						.then((questionIdArray) => {
+							const randomPosition = Math.floor(Math.random() * questionIdArray.length) - 1;
+							this.questionRepo
+								.getQuestionById(questionIdArray[randomPosition], language, schoolGrade)
+								.then((question) => {
+									this.context
+										.getNamespace()
+										.to(currentPlayer.id)
+										.emit(CE.QUESTION_FOUND, <QuestionFoundEvent>{
+											targetLocation: (<MoveRequestEvent>inputData).targetLocation,
+											questionDTO: question.getDTO(),
+										});
+								})
+								.catch((err) => {
+									console.log(err);
+								});
+						})
+						.catch((err) => {
+							console.log(err);
+						});
+					break;
+
+				case SE.QUESTION_ANSWERED:
 					this.movePlayerTo(
-						(<MoveRequestEvent>inputData).playerId,
-						(<MoveRequestEvent>inputData).startTimestamp,
-						(<MoveRequestEvent>inputData).targetLocation
+						(<QuestionAnsweredEvent>inputData).playerId,
+						(<QuestionAnsweredEvent>inputData).startTimestamp,
+						(<QuestionAnsweredEvent>inputData).targetLocation
 					);
 					break;
 

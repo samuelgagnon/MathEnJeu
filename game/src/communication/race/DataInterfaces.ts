@@ -12,8 +12,9 @@ export interface ItemUsedEvent {
 
 export interface MoveRequestEvent {
 	playerId: string;
-	startTimestamp: number;
 	targetLocation: Point;
+	language: string;
+	schoolGrade: number;
 }
 
 export interface GameStartEvent {
@@ -29,6 +30,18 @@ export interface GameEndEvent {
 
 export interface PlayerLeftEvent {
 	playerId: string;
+}
+
+//Maybe rework targetlocation to put it somewhere else ?
+export interface QuestionFoundEvent {
+	targetLocation: Point;
+	questionDTO: QuestionDTO;
+}
+
+export interface QuestionAnsweredEvent {
+	playerId: string;
+	startTimestamp: number;
+	targetLocation: Point;
 }
 
 export interface PlayerEndState {
@@ -54,4 +67,19 @@ export interface PlayerInfo {
 	name: string;
 	status: StatusType;
 	inventory: Inventory;
+}
+
+export interface QuestionDTO {
+	id: number;
+	answers: AnswerDTO[];
+	answerType: string;
+	schoolGradeId: number;
+	difficulty: number;
+	questionRelativePath: string;
+	feedbackRelativePath: string;
+}
+
+export interface AnswerDTO {
+	label: string;
+	isRight: boolean;
 }

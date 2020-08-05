@@ -1,4 +1,4 @@
-import { ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent } from "../../communication/race/DataInterfaces";
+import { ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
@@ -57,10 +57,19 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.playerSocket.emit(SE.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
 	}
 
-	public playerMoveRequest(targetLocation: Point): void {
+	public playerMoveRequest(targetLocation: Point, language: string, schoolGrade: number): void {
+		this.playerSocket.emit(SE.MOVE_REQUEST, <MoveRequestEvent>{
+			targetLocation: targetLocation,
+			playerId: this.currentPlayerId,
+			language: language,
+			schoolGrade: schoolGrade,
+		});
+	}
+
+	public playerAnsweredQuestionCorrectly(targetLocation: Point): void {
 		let now = Date.now();
 		super.movePlayerTo(this.currentPlayerId, now, targetLocation);
-		this.playerSocket.emit(SE.MOVE_REQUEST, <MoveRequestEvent>{
+		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
 			playerId: this.currentPlayerId,
 			startTimestamp: now,
 			targetLocation: targetLocation,
