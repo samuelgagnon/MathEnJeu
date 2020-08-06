@@ -17,6 +17,10 @@ export default class QuestionScene extends Phaser.Scene {
 	enterButton: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
 
+	feedbackMaxTime: number;
+	feedbackStartTimeStamp: number;
+	feedbackRemainingTime: Phaser.GameObjects.Text;
+
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
 		super(sceneConfig);
@@ -28,6 +32,7 @@ export default class QuestionScene extends Phaser.Scene {
 		this.width = data.width;
 		this.height = data.height;
 		this.position = data.position;
+		this.feedbackMaxTime = 5000;
 	}
 
 	create() {
@@ -83,18 +88,33 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 	}
 
-	update() {}
+	update() {
+		if (this.feedbackStartTimeStamp !== undefined) {
+			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
+		}
+	}
 
 	private answerQuestion(): void {
 		const isAnswerCorrect = this.question.IsAnswerRight((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
 		if (!isAnswerCorrect) {
 			this.inputHtml.destroy();
 			this.enterButton.destroy();
+			this.feedbackStartTimeStamp = Date.now();
+
+			this.feedbackRemainingTime = this.add
+				.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {
+					fontFamily: "Courier",
+					fontSize: "26px",
+					align: "center",
+					color: "#cc0000",
+					fontStyle: "bold",
+				})
+				.setScrollFactor(0);
 
 			this.feedbackImage.setAlpha(1);
 			setTimeout(() => {
 				this.destroyScene(isAnswerCorrect);
-			}, 3000);
+			}, this.feedbackMaxTime);
 		} else {
 			this.destroyScene(isAnswerCorrect);
 		}
