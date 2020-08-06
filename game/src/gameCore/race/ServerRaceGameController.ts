@@ -22,7 +22,9 @@ import GameFSM from "../gameState/GameFSM";
 import State from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
+import Move from "./Move";
 import Player from "./player/Player";
+import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
@@ -160,32 +162,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					const currentPlayer = this.findPlayer((<MoveRequestEvent>inputData).playerId);
 					const language = (<MoveRequestEvent>inputData).language;
 					const schoolGrade = (<MoveRequestEvent>inputData).schoolGrade;
-					console.log(`id: ${(<MoveRequestEvent>inputData).playerId}, lang: ${language}, schoolGrade: ${schoolGrade}`);
-					this.questionRepo
-						.getQuestionsIdByDifficulty(language, schoolGrade, currentPlayer.getMaxMovementDistance())
-						.then((questionIdArray) => {
-							const newArray = questionIdArray.filter((id) => id < 1000);
-							const randomPosition = Math.floor(Math.random() * newArray.length) - 1;
-							console.log(newArray);
-							this.questionRepo
-								.getQuestionById(questionIdArray[randomPosition], language, schoolGrade)
-								.then((question) => {
-									this.context
-										.getNamespace()
-										.to(currentPlayer.id)
-										.emit(CE.QUESTION_FOUND, <QuestionFoundEvent>{
-											targetLocation: (<MoveRequestEvent>inputData).targetLocation,
-											questionDTO: question.getDTO(),
-										});
-								})
-								.catch((err) => {
-									console.log(err);
-								});
-						})
-						.catch((err) => {
-							console.log(err);
-						});
-					break;
+					try {
+						this.sendQuestionToPlayer(language, schoolGrade, currentPlayer, (<MoveRequestEvent>inputData).targetLocation);
+					} catch (err) {
+						console.log(err);
+					}
 
 				case SE.QUESTION_ANSWERED:
 					this.movePlayerTo(
@@ -200,6 +181,26 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			}
 		});
 		this.inputBuffer = [];
+	}
+
+	private async findQuestionForPlayer(language: string, schoolGrade: number, movement: number): Promise<Question> {
+		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, movement);
+		const newArray = questionIdArray.filter((id) => id < 1000);
+		const randomPosition = Math.floor(Math.random() * newArray.length) - 1;
+		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
+	}
+
+	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
+		const movement = Move.getTaxiCabDistance(player.getPosition(), targetLocation);
+		this.findQuestionForPlayer(language, schoolGrade, movement).then((question) => {
+			this.context
+				.getNamespace()
+				.to(player.id)
+				.emit(CE.QUESTION_FOUND, <QuestionFoundEvent>{
+					targetLocation: targetLocation,
+					questionDTO: question.getDTO(),
+				});
+		});
 	}
 
 	private getPlayersState(): PlayerState[] {
