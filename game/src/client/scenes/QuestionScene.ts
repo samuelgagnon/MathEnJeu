@@ -20,6 +20,7 @@ export default class QuestionScene extends Phaser.Scene {
 	feedbackMaxTime: number;
 	feedbackStartTimeStamp: number;
 	feedbackRemainingTime: Phaser.GameObjects.Text;
+	showFeedbackTime: boolean;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
@@ -33,6 +34,7 @@ export default class QuestionScene extends Phaser.Scene {
 		this.height = data.height;
 		this.position = data.position;
 		this.feedbackMaxTime = 5000;
+		this.showFeedbackTime = false;
 	}
 
 	create() {
@@ -89,7 +91,7 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	update() {
-		if (this.feedbackStartTimeStamp !== undefined) {
+		if (this.showFeedbackTime) {
 			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
 		}
 	}
@@ -110,8 +112,9 @@ export default class QuestionScene extends Phaser.Scene {
 					fontStyle: "bold",
 				})
 				.setScrollFactor(0);
-
 			this.feedbackImage.setAlpha(1);
+
+			this.showFeedbackTime = true;
 			setTimeout(() => {
 				this.destroyScene(isAnswerCorrect);
 			}, this.feedbackMaxTime);
