@@ -12,4 +12,5 @@ export const CLIENT_EVENT_NAMES = {
 	GAME_UPDATE: "game-update",
 	PLAYER_LEFT: "player-left",
 	QUESTION_FOUND: "question-found",
+	QUESTION_FOUND_WITH_BOOK: "question-found-with-book",
 };

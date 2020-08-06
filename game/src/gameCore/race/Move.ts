@@ -72,7 +72,7 @@ export default class Move {
 
 	//Returns taxicab distance (norm 1).
 	public getDistance(): number {
-		return Move.getTaxiCabDistance(this.startLocation, this.targetLocation);
+		return Math.abs(this.targetLocation.x - this.startLocation.x) + Math.abs(this.targetLocation.y - this.startLocation.y);
 	}
 
 	public static getTaxiCabDistance(startLocation: Point, targetLocation: Point): number {

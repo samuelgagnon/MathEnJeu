@@ -22,7 +22,6 @@ import GameFSM from "../gameState/GameFSM";
 import State from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
-import Move from "./Move";
 import Player from "./player/Player";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
@@ -159,14 +158,14 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.MOVE_REQUEST:
-					const currentPlayer = this.findPlayer((<MoveRequestEvent>inputData).playerId);
-					const language = (<MoveRequestEvent>inputData).language;
-					const schoolGrade = (<MoveRequestEvent>inputData).schoolGrade;
-					try {
-						this.sendQuestionToPlayer(language, schoolGrade, currentPlayer, (<MoveRequestEvent>inputData).targetLocation);
-					} catch (err) {
-						console.log(err);
-					}
+				// const currentPlayer = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+				// const language = (<MoveRequestEvent>inputData).language;
+				// const schoolGrade = (<MoveRequestEvent>inputData).schoolGrade;
+				// try {
+				// 	this.sendQuestionToPlayer(language, schoolGrade, currentPlayer, (<MoveRequestEvent>inputData).targetLocation);
+				// } catch (err) {
+				// 	console.log(err);
+				// }
 
 				case SE.QUESTION_ANSWERED:
 					this.movePlayerTo(
@@ -191,8 +190,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
-		const movement = Move.getTaxiCabDistance(player.getPosition(), targetLocation);
-		this.findQuestionForPlayer(language, schoolGrade, movement).then((question) => {
+		//const movement = Move.getTaxiCabDistance(player.getPosition(), targetLocation);
+		//console.log(`movement: ${movement}`);
+		this.findQuestionForPlayer(language, schoolGrade, player.getMaxMovementDistance()).then((question) => {
 			this.context
 				.getNamespace()
 				.to(player.id)

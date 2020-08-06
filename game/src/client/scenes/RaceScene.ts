@@ -240,7 +240,6 @@ export default class RaceScene extends Phaser.Scene {
 
 		const currentPlayer = this.raceGame.getCurrentPlayer();
 		if (currentPlayer.hasArrived() && this.isReadyToGetPossiblePositions) {
-			console.log(currentPlayer.getPosition());
 			this.activateAccessiblePositions();
 		} else if (
 			//If a player gets affected by a banana or any other state change without moving
@@ -307,6 +306,10 @@ export default class RaceScene extends Phaser.Scene {
 		this.isReadyToGetPossiblePositions = true;
 	}
 
+	getPlayerPosition(): Point {
+		return this.raceGame.getCurrentPlayer().getPosition();
+	}
+
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
 		socket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
 			this.characterSprites.find((sprite) => data.playerId === sprite.playerId).sprite.destroy();
@@ -322,6 +325,7 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
+			console.log(data.questionDTO);
 			this.createQuestionWindow(data.targetLocation, QuestionMapper.fromDTO(data.questionDTO));
 		});
 	}

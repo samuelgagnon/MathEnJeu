@@ -1,4 +1,8 @@
+import { QuestionFoundFromBookEvent } from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
+import { ItemType } from "../../gameCore/race/items/Item";
 import { Question } from "../../gameCore/race/question/Question";
+import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
 import { getUserInfo } from "../services/UserInformationService";
 import { CST } from "./../CST";
@@ -80,6 +84,16 @@ export default class QuestionScene extends Phaser.Scene {
 			this
 		);
 
+		this.getTexturesForQuestion();
+	}
+
+	update() {
+		if (this.showFeedbackTime) {
+			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
+		}
+	}
+
+	private getTexturesForQuestion(): void {
 		const userInfo = getUserInfo();
 		getBase64ImageForQuestion(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
 			this.textures.addBase64("question", value);
@@ -88,12 +102,6 @@ export default class QuestionScene extends Phaser.Scene {
 		getBase64ImageForQuestionFeedback(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
 			this.textures.addBase64("feedback", value);
 		});
-	}
-
-	update() {
-		if (this.showFeedbackTime) {
-			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
-		}
 	}
 
 	private answerQuestion(): void {
@@ -125,10 +133,32 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private destroyScene(isAnswerCorrect: boolean): void {
 		this.questionImage.destroy();
-		this.textures.remove("question");
-		this.textures.remove("feedback");
+		this.clearQuestionTextures();
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(isAnswerCorrect, this.targetLocation);
+	}
+
+	private useBook(): void {
+		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
+		try {
+			raceScene.useItem(ItemType.Book, raceScene.raceGame.getCurrentPlayer().id);
+			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
+				this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
+			});
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	private newQuestionFound(question: Question): void {
+		this.clearQuestionTextures();
+		this.question = question;
+		this.getTexturesForQuestion();
+	}
+
+	private clearQuestionTextures(): void {
+		this.textures.remove("question");
+		this.textures.remove("feedback");
 	}
 }
 

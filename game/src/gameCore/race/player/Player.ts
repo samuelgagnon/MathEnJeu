@@ -84,6 +84,10 @@ export default class Player {
 		return this.inventory;
 	}
 
+	public getPoints(): number {
+		return this.points;
+	}
+
 	public transitionTo(status: Status) {
 		this.playerStatus = status;
 		this.playerStatus.setContext(this);
@@ -105,11 +109,44 @@ export default class Player {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
+			this.addPointsForMove(this.move.getDistance());
 		}
 	}
 
 	public getMaxMovementDistance(): number {
 		return this.maxPossibleMoveDistance;
+	}
+
+	private addPointsForMove(moveDistance: number): void {
+		let points = 0;
+		switch (moveDistance) {
+			case 1:
+				points = 2;
+				break;
+			case 2:
+				points = 3;
+				break;
+			case 3:
+				points = 5;
+				break;
+			case 4:
+				points = 8;
+				break;
+			case 5:
+				points = 13;
+				break;
+			case 6:
+				points = 21;
+				break;
+			case 7:
+				points = 34;
+				break;
+		}
+		this.addPoints(points);
+	}
+
+	private addPoints(points: number): void {
+		this.points += points;
 	}
 
 	public passingByCheckpoint(checkpointGroup: number): void {
@@ -119,6 +156,7 @@ export default class Player {
 	public passingByFinishLine(): void {
 		if (this.lastValidCheckpoint == RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
 			//TODO : Add point when finished line is properly passed.
+			this.addPoints(RACE_CST.CIRCUIT.POINTS_FOR_LAP);
 			console.log("debug: player " + this.id + " passed the finish line");
 		}
 		this.lastValidCheckpoint = 0;

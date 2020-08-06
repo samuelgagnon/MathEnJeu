@@ -38,6 +38,10 @@ export interface QuestionFoundEvent {
 	questionDTO: QuestionDTO;
 }
 
+export interface QuestionFoundFromBookEvent {
+	questionDTO: QuestionDTO;
+}
+
 export interface QuestionAnsweredEvent {
 	playerId: string;
 	startTimestamp: number;
