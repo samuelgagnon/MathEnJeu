@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
+	BookUsedEvent,
 	GameEndEvent,
 	GameStartEvent,
 	ItemUsedEvent,
@@ -9,6 +10,7 @@ import {
 	PlayerLeftEvent,
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
+	QuestionFoundFromBookEvent,
 	StartingRaceGridInfo,
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
@@ -155,15 +157,40 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			let inputData: any = input.data;
 			switch (input.eventType) {
 				case SE.ITEM_USED:
-					this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+					try {
+						this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+					} catch (error) {
+						console.log(error);
+					}
 					break;
 
 				case SE.MOVE_REQUEST:
-					const currentPlayer = this.findPlayer((<MoveRequestEvent>inputData).playerId);
-					const language = (<MoveRequestEvent>inputData).language;
-					const schoolGrade = (<MoveRequestEvent>inputData).schoolGrade;
 					try {
-						this.sendQuestionToPlayer(language, schoolGrade, currentPlayer, (<MoveRequestEvent>inputData).targetLocation);
+						this.sendQuestionToPlayer(
+							(<MoveRequestEvent>inputData).language,
+							(<MoveRequestEvent>inputData).schoolGrade,
+							this.findPlayer((<MoveRequestEvent>inputData).playerId),
+							(<MoveRequestEvent>inputData).targetLocation
+						);
+					} catch (err) {
+						console.log(err);
+					}
+					break;
+
+				case SE.BOOK_USED:
+					try {
+						const player = this.findPlayer((<BookUsedEvent>inputData).playerId);
+						const movement = Move.getTaxiCabDistance(player.getPosition(), (<BookUsedEvent>inputData).targetLocation) - 1; //for now reduce difficulty only by 1;
+						this.findQuestionForPlayer((<MoveRequestEvent>inputData).language, (<MoveRequestEvent>inputData).schoolGrade, movement).then(
+							(question) => {
+								this.context
+									.getNamespace()
+									.to(player.id)
+									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+										questionDTO: question.getDTO(),
+									});
+							}
+						);
 					} catch (err) {
 						console.log(err);
 					}
@@ -186,23 +213,31 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private async findQuestionForPlayer(language: string, schoolGrade: number, movement: number): Promise<Question> {
 		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, movement);
+		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${movement}`);
 		//temporary to limit the number of png files to load
 		const newArray = questionIdArray.filter((id) => id < 1000);
-		const randomPosition = Math.floor(Math.random() * newArray.length) - 1;
+		const randomPosition = Math.floor(Math.random() * newArray.length);
+		console.log(newArray);
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
 	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
+		console.log("player position");
+		console.log(player.getPosition());
+		console.log("target location");
+		console.log(targetLocation);
 		const movement = Move.getTaxiCabDistance(player.getPosition(), targetLocation);
-		this.findQuestionForPlayer(language, schoolGrade, movement).then((question) => {
-			this.context
-				.getNamespace()
-				.to(player.id)
-				.emit(CE.QUESTION_FOUND, <QuestionFoundEvent>{
-					targetLocation: targetLocation,
-					questionDTO: question.getDTO(),
-				});
-		});
+		this.findQuestionForPlayer(language, schoolGrade, movement)
+			.then((question) => {
+				this.context
+					.getNamespace()
+					.to(player.id)
+					.emit(CE.QUESTION_FOUND, <QuestionFoundEvent>{
+						targetLocation: targetLocation,
+						questionDTO: question.getDTO(),
+					});
+			})
+			.catch((error) => console.log(error));
 	}
 
 	private getPlayersState(): PlayerState[] {

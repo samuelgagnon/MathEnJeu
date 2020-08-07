@@ -237,7 +237,7 @@ export default class RaceGameUI extends Phaser.Scene {
 		});
 
 		this.positionButton.on("pointerup", () => {
-			console.log(raceScene.getPlayerPosition());
+			console.log(raceScene.raceGame.getCurrentPlayer());
 		});
 
 		this.disabledInteractionZone = this.add

@@ -277,6 +277,7 @@ export default class RaceScene extends Phaser.Scene {
 			this.raceGame.itemUsed(itemType, targetPlayerId);
 		} catch (e) {
 			console.log(e);
+			throw e;
 		}
 	}
 

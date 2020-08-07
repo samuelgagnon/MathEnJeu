@@ -17,6 +17,13 @@ export interface MoveRequestEvent {
 	schoolGrade: number;
 }
 
+export interface BookUsedEvent {
+	playerId: string;
+	targetLocation: Point;
+	language: string;
+	schoolGrade: number;
+}
+
 export interface GameStartEvent {
 	gameTime: number;
 	gameStartTimeStamp: number;

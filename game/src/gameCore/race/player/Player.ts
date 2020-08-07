@@ -39,6 +39,7 @@ export default class Player {
 
 	public update(): void {
 		this.updatePosition();
+		console.log(this.position);
 		this.playerStatus.update();
 	}
 
@@ -182,7 +183,10 @@ export default class Player {
 
 	public useItemType(itemType: ItemType, target: Player): void {
 		const usedItem = this.inventory.getItem(itemType);
-		if (!usedItem) return; //Manage error maybe
+		if (!usedItem) {
+			console.log(`No more item of item type: ${itemType}`);
+			throw new Error(itemType);
+		} //Manage error maybe
 
 		//if he's not anwsering a question and it's only usable during a question.
 		if (!this.isAnsweringQuestion && usedItem.isForAnsweringQuestion) throw new Error(itemType); //TODO: create specific error type

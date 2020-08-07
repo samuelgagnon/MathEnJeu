@@ -19,6 +19,7 @@ export default class QuestionScene extends Phaser.Scene {
 	questionTexture: Phaser.Textures.Texture;
 
 	enterButton: Phaser.GameObjects.Text;
+	correctAnswer: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
 
 	bookIcon: Phaser.GameObjects.Sprite;
@@ -62,12 +63,30 @@ export default class QuestionScene extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
+		this.correctAnswer = this.add
+			.text(this.width * 0.8, this.height * 0.85, "correct answer", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
 		this.enterButton.setInteractive({
+			useHandCursor: true,
+		});
+
+		this.correctAnswer.setInteractive({
 			useHandCursor: true,
 		});
 
 		this.enterButton.on("pointerup", () => {
 			this.answerQuestion();
+		});
+
+		this.correctAnswer.on("pointerup", () => {
+			this.destroyScene(true);
 		});
 
 		this.bookIcon = this.add
@@ -87,7 +106,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 		this.bookIcon.on("pointerup", () => {
 			this.bookIcon.clearTint();
-			console.log("book");
+			this.useBook();
 		});
 
 		this.crystalBallIcon.on("pointerdown", () => {
@@ -98,7 +117,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 		this.crystalBallIcon.on("pointerup", () => {
 			this.crystalBallIcon.clearTint();
-			console.log("crystal ball");
+			this.useCrystalBall();
 		});
 
 		this.bookCount = this.add
@@ -202,12 +221,28 @@ export default class QuestionScene extends Phaser.Scene {
 	private useBook(): void {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		try {
-			raceScene.useItem(ItemType.Book, raceScene.raceGame.getCurrentPlayer().id);
+			raceScene.useItem(ItemType.Book);
+			const userInfo = getUserInfo();
+			raceScene.raceGame.bookUsed(userInfo.language, userInfo.schoolGrade, this.targetLocation);
 			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
+				console.log(data.questionDTO);
 				this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
 			});
 		} catch (err) {
 			console.log(err);
+		}
+	}
+
+	private useCrystalBall(): void {
+		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
+			try {
+				(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).useItem(ItemType.Book);
+				this.question.removeWrongAnswer();
+			} catch (error) {
+				console.log(error);
+			}
+		} else {
+			alert("must be a multiple choice question");
 		}
 	}
 

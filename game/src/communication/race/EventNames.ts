@@ -3,6 +3,7 @@ export const SERVER_EVENT_NAMES = {
 	MOVE_REQUEST: "move-request",
 	QUESTION_ANSWERED: "question-answered",
 	ITEM_USED: "item-used",
+	BOOK_USED: "book-used", //we may have to rethink how items are used for this specific case
 };
 
 //Events the client controller is subscribed to
