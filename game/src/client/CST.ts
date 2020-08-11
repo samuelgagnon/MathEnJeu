@@ -31,6 +31,7 @@ export const CST = {
 		TITLE: "mathamaze_logo5.png",
 	},
 	HTML: {
+		ANSWERS_LIST: "answersList.html",
 		ANSWER_INPUT: "answerInput.html",
 		ROOM_INPUT: "roomInput.html",
 		ROOMS_LIST: "roomsList.html",

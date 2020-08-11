@@ -43,7 +43,7 @@ export default class Inventory {
 		}
 	}
 
-	public getItem(itemType: string): Item {
+	public getItem(itemType: ItemType): Item {
 		switch (itemType) {
 			case ItemType.Banana:
 				if (this.bananaCount > 0) return ItemFactory.create(ItemType.Banana);
@@ -56,7 +56,7 @@ export default class Inventory {
 		}
 	}
 
-	public removeItem(itemType: string): void {
+	public removeItem(itemType: ItemType): void {
 		switch (itemType) {
 			case ItemType.Banana:
 				this.bananaCount -= 1;

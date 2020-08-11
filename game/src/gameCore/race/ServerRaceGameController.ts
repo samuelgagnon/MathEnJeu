@@ -132,6 +132,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: data };
 			this.inputBuffer.push(newInput);
 		});
+
+		socket.on(SE.BOOK_USED, (data: BookUsedEvent) => {
+			const newInput: BufferedInput = { eventType: SE.BOOK_USED, data: data };
+			this.inputBuffer.push(newInput);
+		});
 	}
 
 	private removeSocketEvents(socket: Socket): void {
@@ -155,6 +160,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	public resolveInputs(): void {
 		this.inputBuffer.forEach((input: BufferedInput) => {
 			let inputData: any = input.data;
+			let player: Player;
 			switch (input.eventType) {
 				case SE.ITEM_USED:
 					try {
@@ -166,10 +172,12 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 				case SE.MOVE_REQUEST:
 					try {
+						player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+						player.setIsAnsweringQuestion(true);
 						this.sendQuestionToPlayer(
 							(<MoveRequestEvent>inputData).language,
 							(<MoveRequestEvent>inputData).schoolGrade,
-							this.findPlayer((<MoveRequestEvent>inputData).playerId),
+							player,
 							(<MoveRequestEvent>inputData).targetLocation
 						);
 					} catch (err) {
@@ -179,7 +187,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 				case SE.BOOK_USED:
 					try {
-						const player = this.findPlayer((<BookUsedEvent>inputData).playerId);
+						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
 						const movement = Move.getTaxiCabDistance(player.getPosition(), (<BookUsedEvent>inputData).targetLocation) - 1; //for now reduce difficulty only by 1;
 						this.findQuestionForPlayer((<MoveRequestEvent>inputData).language, (<MoveRequestEvent>inputData).schoolGrade, movement).then(
 							(question) => {
@@ -197,6 +205,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
+					this.findPlayer((<MoveRequestEvent>inputData).playerId).setIsAnsweringQuestion(false);
 					this.movePlayerTo(
 						(<QuestionAnsweredEvent>inputData).playerId,
 						(<QuestionAnsweredEvent>inputData).startTimestamp,

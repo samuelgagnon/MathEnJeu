@@ -50,16 +50,11 @@ export class Question {
 	}
 
 	//returns true if there was a wrong question remaining and false if there was none
-	public removeWrongAnswer(): boolean {
-		const rightAnswer: Answer = this.answers.find((question) => question.isRight());
-		const wrongAnswers: Answer[] = this.answers.filter((question) => !question.isRight());
-		if (wrongAnswers.length === 0) {
-			return false;
-		} else {
-			this.answers = wrongAnswers.splice(Math.floor(Math.random() * wrongAnswers.length), 1);
-			this.answers.push(rightAnswer);
-			return true;
-		}
+	public removeWrongAnswer(): void {
+		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.isRight());
+		const wrongAnswers: Answer[] = this.answers.filter((answer) => !answer.isRight());
+		wrongAnswers.splice(Math.floor(Math.random() * wrongAnswers.length), 1);
+		this.answers = wrongAnswers.concat(rightAnswers);
 	}
 
 	public getDTO(): QuestionDTO {

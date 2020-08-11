@@ -39,7 +39,6 @@ export default class Player {
 
 	public update(): void {
 		this.updatePosition();
-		console.log(this.position);
 		this.playerStatus.update();
 	}
 

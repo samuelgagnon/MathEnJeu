@@ -13,6 +13,8 @@ export default class QuestionScene extends Phaser.Scene {
 	height: number;
 	targetLocation: Point;
 	question: Question;
+	questionConstant: string;
+	feedbackConstant: string;
 
 	feedbackImage: Phaser.GameObjects.Image;
 	questionImage: Phaser.GameObjects.Image;
@@ -21,6 +23,7 @@ export default class QuestionScene extends Phaser.Scene {
 	enterButton: Phaser.GameObjects.Text;
 	correctAnswer: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
+	answersList: Phaser.GameObjects.DOMElement;
 
 	bookIcon: Phaser.GameObjects.Sprite;
 	crystalBallIcon: Phaser.GameObjects.Sprite;
@@ -45,6 +48,10 @@ export default class QuestionScene extends Phaser.Scene {
 		this.position = data.position;
 		this.feedbackMaxTime = 5000;
 		this.showFeedbackTime = false;
+		this.questionImage = undefined;
+		this.feedbackImage = undefined;
+		this.feedbackConstant = "feedback";
+		this.questionConstant = "question";
 	}
 
 	create() {
@@ -52,6 +59,7 @@ export default class QuestionScene extends Phaser.Scene {
 		this.cameras.main.setBackgroundColor(0xffffff);
 
 		this.inputHtml = this.add.dom(this.width * 0.4, this.height * 0.85).createFromCache(CST.HTML.ANSWER_INPUT);
+		this.answersList = this.add.dom(this.width * 0.8, this.height * 0.6).createFromCache(CST.HTML.ANSWERS_LIST);
 
 		this.enterButton = this.add
 			.text(this.width * 0.6, this.height * 0.85, "enter", {
@@ -143,14 +151,13 @@ export default class QuestionScene extends Phaser.Scene {
 		this.textures.on(
 			"addtexture",
 			(textureId: string) => {
-				if (textureId === "question") {
-					this.questionImage = this.add.image(this.width * 0.5, this.height * 0.35, "question").setScale(0.3);
-					console.log(`width: ${this.questionImage.displayWidth},  height: ${this.questionImage.displayHeight}`);
+				if (textureId === this.questionConstant && !this.questionImage) {
+					this.questionImage = this.add.image(this.width * 0.5, this.height * 0.35, this.questionConstant).setScale(0.3);
 					if (this.questionImage.displayHeight > 500 && this.questionImage.displayHeight < 800) this.questionImage.setScale(0.2);
 					if (this.questionImage.displayHeight >= 800) this.questionImage.setScale(0.15);
-				} else if (textureId === "feedback") {
+				} else if (textureId === this.feedbackConstant && !this.feedbackImage) {
 					this.feedbackImage = this.add
-						.image(this.width * 0.5, this.height * 0.35, "feedback")
+						.image(this.width * 0.5, this.height * 0.35, this.feedbackConstant)
 						.setScale(0.3)
 						.setAlpha(0);
 					if (this.feedbackImage.displayHeight > 500 && this.questionImage.displayHeight < 800) this.questionImage.setScale(0.2);
@@ -161,11 +168,28 @@ export default class QuestionScene extends Phaser.Scene {
 		);
 
 		this.getTexturesForQuestion();
+
+		//@ts-ignore
+		window.questionScene = this;
 	}
 
 	update() {
 		if (this.showFeedbackTime) {
 			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
+		}
+
+		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
+			let answersList = <HTMLInputElement>this.answersList.getChildByID("answersList");
+
+			while (answersList.firstChild) {
+				answersList.removeChild(answersList.firstChild);
+			}
+
+			this.question.getDTO().answers.forEach((answer) => {
+				var li = document.createElement("li");
+				li.appendChild(document.createTextNode(answer.label));
+				answersList.appendChild(li);
+			});
 		}
 
 		const inventoryState = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayer().getInventory().getInventoryState();
@@ -176,11 +200,11 @@ export default class QuestionScene extends Phaser.Scene {
 	private getTexturesForQuestion(): void {
 		const userInfo = getUserInfo();
 		getBase64ImageForQuestion(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
-			this.textures.addBase64("question", value);
+			this.textures.addBase64(this.questionConstant, value);
 		});
 
 		getBase64ImageForQuestionFeedback(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
-			this.textures.addBase64("feedback", value);
+			this.textures.addBase64(this.feedbackConstant, value);
 		});
 	}
 
@@ -212,7 +236,7 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private destroyScene(isAnswerCorrect: boolean): void {
-		this.questionImage.destroy();
+		this.destroyImages();
 		this.clearQuestionTextures();
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(isAnswerCorrect, this.targetLocation);
@@ -225,6 +249,7 @@ export default class QuestionScene extends Phaser.Scene {
 			const userInfo = getUserInfo();
 			raceScene.raceGame.bookUsed(userInfo.language, userInfo.schoolGrade, this.targetLocation);
 			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
+				console.log("new question");
 				console.log(data.questionDTO);
 				this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
 			});
@@ -234,10 +259,12 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private useCrystalBall(): void {
+		//TODO: Make constants of the types
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
 			try {
-				(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).useItem(ItemType.Book);
+				(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).useItem(ItemType.CrystalBall);
 				this.question.removeWrongAnswer();
+				console.log(this.question);
 			} catch (error) {
 				console.log(error);
 			}
@@ -248,13 +275,21 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private newQuestionFound(question: Question): void {
 		this.clearQuestionTextures();
+		this.destroyImages();
 		this.question = question;
 		this.getTexturesForQuestion();
 	}
 
 	private clearQuestionTextures(): void {
-		this.textures.remove("question");
-		this.textures.remove("feedback");
+		this.textures.remove(this.questionConstant);
+		this.textures.remove(this.feedbackConstant);
+	}
+
+	private destroyImages(): void {
+		this.questionImage.destroy();
+		this.feedbackImage.destroy();
+		this.questionImage = undefined;
+		this.feedbackImage = undefined;
 	}
 }
 

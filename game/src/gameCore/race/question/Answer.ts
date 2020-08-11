@@ -24,9 +24,10 @@ export class Answer {
 	}
 
 	public getDTO(): AnswerDTO {
+		const isright = this._isRight ? 1 : 0;
 		return {
 			label: this.label,
-			isRight: this._isRight,
+			isRight: isright,
 		};
 	}
 }

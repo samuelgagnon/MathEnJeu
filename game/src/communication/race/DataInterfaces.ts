@@ -92,5 +92,5 @@ export interface QuestionDTO {
 
 export interface AnswerDTO {
 	label: string;
-	isRight: boolean;
+	isRight: number;
 }
