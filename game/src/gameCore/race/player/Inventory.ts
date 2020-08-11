@@ -38,22 +38,26 @@ export default class Inventory {
 			case ItemType.CrystalBall:
 				this.crystalBallCount += 1;
 				break;
-			default:
-				break;
 		}
 	}
 
 	public getItem(itemType: ItemType): Item {
+		let item: Item = undefined;
 		switch (itemType) {
 			case ItemType.Banana:
-				if (this.bananaCount > 0) return ItemFactory.create(ItemType.Banana);
+				if (this.bananaCount > 0) item = ItemFactory.create(ItemType.Banana);
+				break;
 			case ItemType.Book:
-				if (this.bookCount > 0) return ItemFactory.create(ItemType.Book);
+				if (this.bookCount > 0) item = ItemFactory.create(ItemType.Book);
+				break;
 			case ItemType.CrystalBall:
-				if (this.crystalBallCount > 0) return ItemFactory.create(ItemType.CrystalBall);
+				if (this.crystalBallCount > 0) item = ItemFactory.create(ItemType.CrystalBall);
+				break;
 			default:
-				return undefined;
+				throw new Error(`Item of type: ${itemType} doesn't exist`);
 		}
+		if (!item) throw new Error(`No more item of type: ${itemType} is left`);
+		return item;
 	}
 
 	public removeItem(itemType: ItemType): void {
@@ -66,8 +70,6 @@ export default class Inventory {
 				break;
 			case ItemType.CrystalBall:
 				this.crystalBallCount -= 1;
-				break;
-			default:
 				break;
 		}
 	}
