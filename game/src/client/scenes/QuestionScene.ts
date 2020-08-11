@@ -211,8 +211,10 @@ export default class QuestionScene extends Phaser.Scene {
 	private answerQuestion(): void {
 		const isAnswerCorrect = this.question.IsAnswerRight((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
 		if (!isAnswerCorrect) {
-			this.inputHtml.destroy();
-			this.enterButton.destroy();
+			this.inputHtml.setAlpha(0);
+			this.enterButton.setAlpha(0);
+			this.answersList.setAlpha(0);
+			this.correctAnswer.setAlpha(0);
 			this.feedbackStartTimeStamp = Date.now();
 
 			this.feedbackRemainingTime = this.add

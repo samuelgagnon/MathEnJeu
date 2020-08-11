@@ -66,10 +66,11 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	public playerAnsweredQuestionCorrectly(targetLocation: Point): void {
+	public playerAnsweredQuestion(isAnswerCorrect: boolean, targetLocation: Point): void {
 		let now = Date.now();
-		super.movePlayerTo(this.currentPlayerId, now, targetLocation);
+		super.playerAnsweredQuestion(isAnswerCorrect, targetLocation, this.currentPlayerId, now);
 		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
+			isAnswerCorrect: isAnswerCorrect,
 			playerId: this.currentPlayerId,
 			startTimestamp: now,
 			targetLocation: targetLocation,

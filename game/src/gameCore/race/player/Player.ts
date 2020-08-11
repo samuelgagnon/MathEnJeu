@@ -16,6 +16,7 @@ export default class Player {
 	private readonly MAX_BRAINIAC_MOVEMENT = 7;
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;
+	private readonly MOVE_PER_QUESTION = 1;
 	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
@@ -27,6 +28,8 @@ export default class Player {
 	private inventory: Inventory;
 	private answeredQuestionsId: Number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
 	private lastValidCheckpoint: number = 0;
+	private schoolGrade: number;
+	private language: string;
 
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
 		this.id = id;
@@ -105,11 +108,26 @@ export default class Player {
 		return this.move.getHasArrived();
 	}
 
+	public getDifficulty(targetLocation: Point): number {
+		return Move.getTaxiCabDistance(this.position, targetLocation);
+	}
+
+	public answeredQuestion(isAnswerCorrect: boolean): void {
+		this.setIsAnsweringQuestion(false);
+		if (isAnswerCorrect) {
+			this.addToMoveDistance(this.MOVE_PER_QUESTION);
+		} else {
+			this.addToMoveDistance(-this.answeredQuestion);
+		}
+	}
+
+	//Happens when a question is answered correctly
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 			this.addPointsForMove(this.move.getDistance());
+			this.setIsAnsweringQuestion(false);
 		}
 	}
 
@@ -155,9 +173,7 @@ export default class Player {
 
 	public passingByFinishLine(): void {
 		if (this.lastValidCheckpoint == RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
-			//TODO : Add point when finished line is properly passed.
 			this.addPoints(RACE_CST.CIRCUIT.POINTS_FOR_LAP);
-			console.log("debug: player " + this.id + " passed the finish line");
 		}
 		this.lastValidCheckpoint = 0;
 	}
@@ -182,10 +198,6 @@ export default class Player {
 
 	public useItemType(itemType: ItemType, target: Player): void {
 		const usedItem = this.inventory.getItem(itemType);
-		if (!usedItem) {
-			console.log(`No more item of item type: ${itemType}`);
-			throw new Error(itemType);
-		} //Manage error maybe
 
 		//if he's not anwsering a question and it's only usable during a question.
 		if (!this.isAnsweringQuestion && usedItem.isForAnsweringQuestion) throw new Error(itemType); //TODO: create specific error type

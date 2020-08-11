@@ -205,11 +205,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
-					this.findPlayer((<MoveRequestEvent>inputData).playerId).setIsAnsweringQuestion(false);
-					this.movePlayerTo(
+					super.playerAnsweredQuestion(
+						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,
+						(<QuestionAnsweredEvent>inputData).targetLocation,
 						(<QuestionAnsweredEvent>inputData).playerId,
-						(<QuestionAnsweredEvent>inputData).startTimestamp,
-						(<QuestionAnsweredEvent>inputData).targetLocation
+						(<QuestionAnsweredEvent>inputData).startTimestamp
 					);
 					break;
 
@@ -231,12 +231,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
-		console.log("player position");
-		console.log(player.getPosition());
-		console.log("target location");
-		console.log(targetLocation);
-		const movement = Move.getTaxiCabDistance(player.getPosition(), targetLocation);
-		this.findQuestionForPlayer(language, schoolGrade, movement)
+		this.findQuestionForPlayer(language, schoolGrade, player.getDifficulty(targetLocation))
 			.then((question) => {
 				this.context
 					.getNamespace()
