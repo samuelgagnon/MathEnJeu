@@ -23,4 +23,24 @@ export default class ItemFactory {
 				break;
 		}
 	}
+
+	public static generateItemType(): ItemType {
+		const rng = Math.floor(Math.random() * 4) + 1;
+		let itemType: ItemType;
+		switch (rng) {
+			case 1:
+				itemType = ItemType.Banana;
+				break;
+			case 2:
+				itemType = ItemType.Book;
+				break;
+			case 3:
+				itemType = ItemType.Brainiac;
+				break;
+			case 4:
+				itemType = ItemType.CrystalBall;
+				break;
+		}
+		return itemType;
+	}
 }

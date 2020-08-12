@@ -1,13 +1,11 @@
 import ItemState from "../../../communication/race/ItemState";
 import ItemFactory from "../items/ItemFactory";
+import Player from "../player/Player";
 import Tile from "./Tile";
 
 export default class RaceGrid {
 	private tiles: Tile[];
 	private items: ItemState[] = [];
-	private startingPositions: Point[] = [];
-	private finishLinePositions: Point[] = [];
-	private nonWalkablePositions: Point[] = [];
 	private width: number;
 	private height: number;
 
@@ -104,39 +102,33 @@ export default class RaceGrid {
 	}
 
 	public getStartingPositions(): Point[] {
-		if (this.startingPositions.length == 0) {
-			for (let y = 0; y < this.height; y++) {
-				for (let x = 0; x < this.width; x++) {
-					if (this.getTile({ x, y }).isStartPosition) this.startingPositions.push({ x, y });
-				}
-			}
-		}
-
-		return this.startingPositions;
+		return this.getTiles()
+			.filter((tile: Tile) => {
+				return tile.isStartPosition;
+			})
+			.map((tile) => {
+				return tile.getPosition();
+			});
 	}
 
 	public getFinishLinePositions(): Point[] {
-		if (this.finishLinePositions.length == 0) {
-			for (let y = 0; y < this.height; y++) {
-				for (let x = 0; x < this.width; x++) {
-					if (this.getTile({ x, y }).isFinishLine) this.finishLinePositions.push({ x, y });
-				}
-			}
-		}
-
-		return this.finishLinePositions;
+		return this.getTiles()
+			.filter((tile: Tile) => {
+				return tile.isFinishLine;
+			})
+			.map((tile) => {
+				return tile.getPosition();
+			});
 	}
 
 	public getNonWalkablePositions(): Point[] {
-		if (this.nonWalkablePositions.length == 0) {
-			for (let y = 0; y < this.height; y++) {
-				for (let x = 0; x < this.width; x++) {
-					if (!this.getTile({ x, y }).isWalkable) this.nonWalkablePositions.push({ x, y });
-				}
-			}
-		}
-
-		return this.nonWalkablePositions;
+		return this.getTiles()
+			.filter((tile: Tile) => {
+				return !tile.isWalkable;
+			})
+			.map((tile) => {
+				return tile.getPosition();
+			});
 	}
 
 	private createItemsStateList(): void {
@@ -144,6 +136,27 @@ export default class RaceGrid {
 			const item = tile.getItem();
 			if (!item) this.items.push({ type: item.type, location: item.location });
 		});
+	}
+
+	public handleItemCollision(player: Player): boolean {
+		let itemPickedUp: boolean = false;
+		if (player.hasArrived()) {
+			const position = player.getPosition();
+			itemPickedUp = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
+		}
+		return itemPickedUp;
+	}
+
+	public generateNewItem() {
+		const availableTiles = this.getTiles().filter((tile: Tile) => {
+			return tile.isAvailableForANewItem();
+		});
+		const rng = Math.floor(Math.random() * availableTiles.length);
+		const itemTile = availableTiles[rng];
+		const itemType = ItemFactory.generateItemType();
+		const newItem = ItemFactory.create(itemType, itemTile.getPosition());
+		itemTile.setItem(newItem);
+		this.items.push(newItem);
 	}
 }
 

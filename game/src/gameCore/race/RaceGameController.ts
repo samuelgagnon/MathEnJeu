@@ -64,7 +64,7 @@ export default abstract class RaceGameController {
 		from.useItemType(itemType, target);
 	}
 
-	private handleItemCollisions(): void {
+	protected handleItemCollisions(): void {
 		this.players.forEach((player) => {
 			if (player.hasArrived()) {
 				const position = player.getPosition();

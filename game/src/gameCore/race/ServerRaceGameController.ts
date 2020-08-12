@@ -23,10 +23,12 @@ import Player from "./player/Player";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
+	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
 	private context: GameFSM;
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
 	private gameId: string;
+	private itemPickUpTimestamps: Number[] = [];
 
 	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string) {
 		//The server has the truth regarding the start timestamp.
@@ -166,5 +168,23 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			playersState.push(player.getPlayerState());
 		});
 		return playersState;
+	}
+
+	protected handleItemCollisions(): void {
+		this.players.forEach((player) => {
+			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
+			if (itemPickedUp) {
+				this.itemPickUpTimestamps.push(Date.now());
+			}
+		});
+	}
+
+	private handleItemsRespawn(): void {
+		this.itemPickUpTimestamps.forEach((itemPickUpTimestamp: number, index: number) => {
+			if (Date.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
+				this.itemPickUpTimestamps.splice(index, 1);
+				this.grid.generateNewItem();
+			}
+		});
 	}
 }

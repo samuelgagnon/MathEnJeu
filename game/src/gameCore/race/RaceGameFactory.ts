@@ -43,31 +43,15 @@ export default class RaceGameFactory {
 
 				//Tile is Non walkable
 				if (tileSymbol === "x") {
-					tiles.push(new Tile(false, false, false));
+					tiles.push(new Tile(<Point>{ x, y }, false, false, false));
 
 					//Tile is Startposition & Finishline
 				} else if (tileSymbol === "|") {
-					tiles.push(new Tile(true, true, true));
+					tiles.push(new Tile(<Point>{ x, y }, true, true, true));
 				} else {
 					let item: Item = undefined;
 					if ((gridWidth * y + x) % 4 == 0) {
-						const rng = Math.floor(Math.random() * 4) + 1;
-						let itemType: ItemType;
-						switch (rng) {
-							case 1:
-								itemType = ItemType.Banana;
-								break;
-							case 2:
-								itemType = ItemType.Book;
-								break;
-							case 3:
-								itemType = ItemType.Brainiac;
-								break;
-							case 4:
-								itemType = ItemType.CrystalBall;
-								break;
-						}
-
+						let itemType: ItemType = ItemFactory.generateItemType();
 						const itemState: ItemState = { type: itemType, location: <Point>{ x, y } };
 						itemsState.push(itemState);
 
@@ -76,7 +60,7 @@ export default class RaceGameFactory {
 
 					//Tile is Walkable
 					if (tileSymbol == ".") {
-						tiles.push(new Tile(true, false, false, item));
+						tiles.push(new Tile(<Point>{ x, y }, true, false, false, item));
 
 						//Tile is Checkpoint
 					} else {
@@ -85,7 +69,7 @@ export default class RaceGameFactory {
 							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
 						} else {
 							if (checkpointGroup >= 1 && checkpointGroup <= RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
-								tiles.push(new Tile(true, false, false, item, Number(tileSymbol)));
+								tiles.push(new Tile(<Point>{ x, y }, true, false, false, item, Number(tileSymbol)));
 							} else {
 								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
 							}
@@ -119,7 +103,7 @@ export default class RaceGameFactory {
 					startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
 				const isFinishLine: boolean =
 					startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
-				tiles.push(new Tile(isWalkable, isStartPosition, isFinishLine));
+				tiles.push(new Tile(<Point>{ x, y }, isWalkable, isStartPosition, isFinishLine));
 			}
 		}
 
