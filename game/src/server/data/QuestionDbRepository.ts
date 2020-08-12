@@ -1,12 +1,12 @@
 import { getConnection } from "typeorm";
-import { Answer as GameAnswer } from "../../gameCore/race/Answer";
-import { Question as GameQuestion } from "../../gameCore/race/Question";
+import { Answer as GameAnswer } from "../../gameCore/race/question/Answer";
+import { Question as GameQuestion } from "../../gameCore/race/question/Question";
 import QuestionRepository from "./QuestionRepository";
 
 export default class QuestionDbRepository implements QuestionRepository {
 	constructor() {}
 
-	async getQuestionsIdByDifficulty(languageShortName: string, schoolGradeId: number, difficulty: number): Promise<Number[]> {
+	async getQuestionsIdByDifficulty(languageShortName: string, schoolGradeId: number, difficulty: number): Promise<number[]> {
 		const queryString = `SELECT DISTINCT question.question_id as questionId
 		FROM question
 		INNER JOIN question_info
@@ -24,7 +24,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		const rows = await getConnection().query(queryString);
 
-		const questionsId: Number[] = rows.map((row) => Number(row.questionId));
+		const questionsId: number[] = rows.map((row) => Number(row.questionId));
 		return questionsId;
 	}
 
@@ -38,7 +38,7 @@ export default class QuestionDbRepository implements QuestionRepository {
             INNER JOIN question_info
 			ON question.question_id=question_info.question_id
             INNER JOIN answer_type
-			ON question.question_id=answer_type.answer_type_id
+			ON question.answer_type_id = answer_type.answer_type_id
             INNER JOIN question_level
 			ON question.question_id=question_level.question_id
 			WHERE question_level.level_id = ${schoolGradeId}
@@ -63,6 +63,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 		//The number of row corresponds to the number of possible answers for the question.
 		//Information concerning the question can be fetched in any row. Here we take the first one.
 		const gameQuestion: GameQuestion = new GameQuestion(
+			questionId,
 			gameAnswers,
 			rows[0].answerType,
 			schoolGradeId,

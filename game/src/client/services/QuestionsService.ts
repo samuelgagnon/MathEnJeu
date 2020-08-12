@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const getBase64ImageForQuestion = (questionId: string, languageShortName: string, schoolGradeId: string): Promise<string> => {
+export const getBase64ImageForQuestion = (questionId: number, languageShortName: string, schoolGradeId: number): Promise<string> => {
 	return axios({
 		method: "get",
 		url: `${process.env.SERVER_API_URL}/questionImage`,
@@ -20,7 +20,7 @@ export const getBase64ImageForQuestion = (questionId: string, languageShortName:
 		});
 };
 
-export const getBase64ImageForQuestionFeedback = (questionId: string, languageShortName: string, schoolGradeId: string): Promise<string> => {
+export const getBase64ImageForQuestionFeedback = (questionId: number, languageShortName: string, schoolGradeId: number): Promise<string> => {
 	return axios({
 		method: "get",
 		url: `${process.env.SERVER_API_URL}/questionFeedbackImage`,

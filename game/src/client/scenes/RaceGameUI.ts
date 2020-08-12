@@ -20,6 +20,9 @@ export default class RaceGameUI extends Phaser.Scene {
 	crystalBallText: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
 	throwBananaText: Phaser.GameObjects.Text;
+	positionButton: Phaser.GameObjects.Text;
+	pointsText: Phaser.GameObjects.Text;
+	pointsTotal: Phaser.GameObjects.Text;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.RACE_GAME_UI };
@@ -149,8 +152,38 @@ export default class RaceGameUI extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
+		this.pointsText = this.add
+			.text(50, 350, "Points: ", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
+		this.pointsTotal = this.add
+			.text(this.pointsText.getTopRight().x + 10, this.pointsText.getTopRight().y, "Points: ", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
 		this.followPlayerText = this.add
 			.text(50, 500, "Camera follow: Off", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
+		this.positionButton = this.add
+			.text(50, 550, "position", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -171,6 +204,11 @@ export default class RaceGameUI extends Phaser.Scene {
 		this.followPlayerText.setInteractive({
 			useHandCursor: true,
 		});
+
+		this.positionButton.setInteractive({
+			useHandCursor: true,
+		});
+
 		this.bookText.on("pointerup", () => {
 			raceScene.useItem(ItemType.Book);
 		});
@@ -196,6 +234,10 @@ export default class RaceGameUI extends Phaser.Scene {
 				this.followPlayerText.setText("Camera follow: On");
 				raceScene.cameras.main.startFollow(raceScene.currentPlayerSprite, false, 0.09, 0.09);
 			}
+		});
+
+		this.positionButton.on("pointerup", () => {
+			console.log(raceScene.raceGame.getCurrentPlayer());
 		});
 
 		this.disabledInteractionZone = this.add
@@ -230,8 +272,11 @@ export default class RaceGameUI extends Phaser.Scene {
 
 		//setting player item count
 		const playerItemState = currentPlayer.getInventory().getInventoryState();
-		this.bananaCount.text = playerItemState.bananaCount.toString();
-		this.bookCount.text = playerItemState.bookCount.toString();
-		this.crystalBallCount.text = playerItemState.crystalBallCount.toString();
+		this.bananaCount.setText(playerItemState.bananaCount.toString());
+		this.bookCount.setText(playerItemState.bookCount.toString());
+		this.crystalBallCount.setText(playerItemState.crystalBallCount.toString());
+
+		//setting player points
+		this.pointsTotal.setText(currentPlayer.getPoints().toString());
 	}
 }

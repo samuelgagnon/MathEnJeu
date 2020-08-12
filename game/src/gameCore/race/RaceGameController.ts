@@ -64,6 +64,13 @@ export default abstract class RaceGameController {
 		from.useItemType(itemType, target);
 	}
 
+	protected playerAnsweredQuestion(isAnswerCorrect: boolean, targetLocation: Point, playerId: string, timestamp: number): void {
+		this.findPlayer(playerId).answeredQuestion(isAnswerCorrect);
+		if (isAnswerCorrect) {
+			this.movePlayerTo(playerId, timestamp, targetLocation);
+		}
+	}
+
 	protected handleItemCollisions(): void {
 		this.players.forEach((player) => {
 			if (player.hasArrived()) {

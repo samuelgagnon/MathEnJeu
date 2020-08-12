@@ -1,5 +1,7 @@
 import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
+import { serviceConstants } from "../../server/context/CommonContext";
+import ServiceLocator from "../../server/context/ServiceLocator";
 import User from "../../server/data/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
@@ -30,7 +32,14 @@ export default class RaceGameFactory {
 	public static createServer(gameId: string, users: User[]): ServerRaceGameController {
 		const raceGrid = this.generateRaceGrid(RACE_CST.CIRCUIT.GRID_WIDTH, RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID);
 		const players = this.generatePlayers(users, raceGrid.getStartingPositions());
-		return new ServerRaceGameController(RACE_CST.CIRCUIT.GAME_MAX_LENGTH, raceGrid, players, users, gameId);
+		return new ServerRaceGameController(
+			RACE_CST.CIRCUIT.GAME_MAX_LENGTH,
+			raceGrid,
+			players,
+			users,
+			gameId,
+			ServiceLocator.resolve(serviceConstants.QUESTION_REPOSITORY_CLASS)
+		);
 	}
 
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.

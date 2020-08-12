@@ -1,17 +1,22 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
+	BookUsedEvent,
 	GameEndEvent,
 	GameStartEvent,
 	ItemUsedEvent,
 	MoveRequestEvent,
 	PlayerEndState,
 	PlayerLeftEvent,
+	QuestionAnsweredEvent,
+	QuestionFoundEvent,
+	QuestionFoundFromBookEvent,
 	StartingRaceGridInfo,
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
+import QuestionRepository from "../../server/data/QuestionRepository";
 import User from "../../server/data/User";
 import { getObjectValues } from "../../utils/Utils";
 import { ServerGame } from "../Game";
@@ -19,7 +24,9 @@ import GameFSM from "../gameState/GameFSM";
 import State from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
+import Move from "./Move";
 import Player from "./player/Player";
+import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
@@ -29,10 +36,13 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private isGameStarted: boolean = false;
 	private gameId: string;
 	private itemPickUpTimestamps: Number[] = [];
+	private questionRepo: QuestionRepository;
 
-	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string) {
+	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string, questionRepo: QuestionRepository) {
 		//The server has the truth regarding the start timestamp.
 		super(gameTime, Date.now(), grid, players);
+		this.gameId = gameId;
+		this.questionRepo = questionRepo;
 		this.handleAllUsersSocketEvents(users);
 	}
 
@@ -119,6 +129,16 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
 			this.inputBuffer.push(newInput);
 		});
+
+		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
+			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: data };
+			this.inputBuffer.push(newInput);
+		});
+
+		socket.on(SE.BOOK_USED, (data: BookUsedEvent) => {
+			const newInput: BufferedInput = { eventType: SE.BOOK_USED, data: data };
+			this.inputBuffer.push(newInput);
+		});
 	}
 
 	private removeSocketEvents(socket: Socket): void {
@@ -142,16 +162,56 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	public resolveInputs(): void {
 		this.inputBuffer.forEach((input: BufferedInput) => {
 			let inputData: any = input.data;
+			let player: Player;
 			switch (input.eventType) {
 				case SE.ITEM_USED:
-					this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+					try {
+						this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+					} catch (error) {
+						console.log(error);
+					}
 					break;
 
 				case SE.MOVE_REQUEST:
-					this.movePlayerTo(
-						(<MoveRequestEvent>inputData).playerId,
-						(<MoveRequestEvent>inputData).startTimestamp,
-						(<MoveRequestEvent>inputData).targetLocation
+					try {
+						player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+						player.setIsAnsweringQuestion(true);
+						this.sendQuestionToPlayer(
+							(<MoveRequestEvent>inputData).language,
+							(<MoveRequestEvent>inputData).schoolGrade,
+							player,
+							(<MoveRequestEvent>inputData).targetLocation
+						);
+					} catch (err) {
+						console.log(err);
+					}
+					break;
+
+				case SE.BOOK_USED:
+					try {
+						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
+						const movement = Move.getTaxiCabDistance(player.getPosition(), (<BookUsedEvent>inputData).targetLocation) - 1; //for now reduce difficulty only by 1;
+						this.findQuestionForPlayer((<MoveRequestEvent>inputData).language, (<MoveRequestEvent>inputData).schoolGrade, movement).then(
+							(question) => {
+								this.context
+									.getNamespace()
+									.to(player.id)
+									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+										questionDTO: question.getDTO(),
+									});
+							}
+						);
+					} catch (err) {
+						console.log(err);
+					}
+					break;
+
+				case SE.QUESTION_ANSWERED:
+					super.playerAnsweredQuestion(
+						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,
+						(<QuestionAnsweredEvent>inputData).targetLocation,
+						(<QuestionAnsweredEvent>inputData).playerId,
+						(<QuestionAnsweredEvent>inputData).startTimestamp
 					);
 					break;
 
@@ -160,6 +220,30 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			}
 		});
 		this.inputBuffer = [];
+	}
+
+	private async findQuestionForPlayer(language: string, schoolGrade: number, movement: number): Promise<Question> {
+		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, movement);
+		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${movement}`);
+		//temporary to limit the number of png files to load
+		const newArray = questionIdArray.filter((id) => id < 1000);
+		const randomPosition = Math.floor(Math.random() * newArray.length);
+		console.log(newArray);
+		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
+	}
+
+	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
+		this.findQuestionForPlayer(language, schoolGrade, player.getDifficulty(targetLocation))
+			.then((question) => {
+				this.context
+					.getNamespace()
+					.to(player.id)
+					.emit(CE.QUESTION_FOUND, <QuestionFoundEvent>{
+						targetLocation: targetLocation,
+						questionDTO: question.getDTO(),
+					});
+			})
+			.catch((error) => console.log(error));
 	}
 
 	private getPlayersState(): PlayerState[] {
