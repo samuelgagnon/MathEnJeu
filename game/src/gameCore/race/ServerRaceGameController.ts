@@ -177,8 +177,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
 						player.setIsAnsweringQuestion(true);
 						this.sendQuestionToPlayer(
-							(<MoveRequestEvent>inputData).language,
-							(<MoveRequestEvent>inputData).schoolGrade,
+							player.getInfoForQuestion().language,
+							player.getInfoForQuestion().schoolGrade,
 							player,
 							(<MoveRequestEvent>inputData).targetLocation
 						);
@@ -191,16 +191,14 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					try {
 						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
 						const movement = Move.getTaxiCabDistance(player.getPosition(), (<BookUsedEvent>inputData).targetLocation) - 1; //for now reduce difficulty only by 1;
-						this.findQuestionForPlayer((<MoveRequestEvent>inputData).language, (<MoveRequestEvent>inputData).schoolGrade, movement).then(
-							(question) => {
-								this.context
-									.getNamespace()
-									.to(player.id)
-									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
-										questionDTO: question.getDTO(),
-									});
-							}
-						);
+						this.findQuestionForPlayer(player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, movement).then((question) => {
+							this.context
+								.getNamespace()
+								.to(player.id)
+								.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+									questionDTO: question.getDTO(),
+								});
+						});
 					} catch (err) {
 						console.log(err);
 					}

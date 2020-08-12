@@ -7,7 +7,7 @@ import StatusFactory from "./playerStatus/StatusFactory";
 
 export default class PlayerFactory {
 	public static create(user: User, startLocation: Point, status: Status, inventory: Inventory): Player {
-		return new Player(user.userId, startLocation, user.userInfo.name, status, inventory);
+		return new Player(user.userId, startLocation, user.userInfo.name, status, inventory, user.schoolGrade, user.language);
 	}
 
 	public static createFromPlayerState(playerState: PlayerState): Player {
@@ -16,7 +16,9 @@ export default class PlayerFactory {
 			playerState.move.startLocation,
 			playerState.name,
 			StatusFactory.create(playerState.statusState.statusType, playerState.statusState.statusTimestamp),
-			new Inventory(playerState.inventoryState.bananaCount, playerState.inventoryState.bookCount, playerState.inventoryState.crystalBallCount)
+			new Inventory(playerState.inventoryState.bananaCount, playerState.inventoryState.bookCount, playerState.inventoryState.crystalBallCount),
+			playerState.schoolGrade,
+			playerState.language
 		);
 	}
 }

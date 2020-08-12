@@ -57,12 +57,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.playerSocket.emit(SE.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
 	}
 
-	public playerMoveRequest(targetLocation: Point, language: string, schoolGrade: number): void {
+	public playerMoveRequest(targetLocation: Point): void {
 		this.playerSocket.emit(SE.MOVE_REQUEST, <MoveRequestEvent>{
 			targetLocation: targetLocation,
 			playerId: this.currentPlayerId,
-			language: language,
-			schoolGrade: schoolGrade,
 		});
 	}
 
@@ -102,12 +100,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	public bookUsed(language: string, schoolGrade: number, targetLocation: Point): void {
+	public bookUsed(targetLocation: Point): void {
 		this.playerSocket.emit(SE.BOOK_USED, <BookUsedEvent>{
 			playerId: this.currentPlayerId,
 			targetLocation: targetLocation,
-			language: language,
-			schoolGrade: schoolGrade,
 		});
 	}
 

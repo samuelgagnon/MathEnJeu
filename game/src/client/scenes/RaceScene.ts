@@ -8,7 +8,6 @@ import Player from "../../gameCore/race/player/Player";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { CST } from "../CST";
-import { getUserInfo } from "../services/UserInformationService";
 import { QuestionSceneData } from "./QuestionScene";
 
 export default class RaceScene extends Phaser.Scene {
@@ -116,8 +115,7 @@ export default class RaceScene extends Phaser.Scene {
 							//TODO verify if has arrived logic should be moved to player
 							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
 								this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
-								const currentPlayer = getUserInfo();
-								this.raceGame.playerMoveRequest({ x: x, y: y }, currentPlayer.language, currentPlayer.schoolGrade);
+								this.raceGame.playerMoveRequest({ x: x, y: y });
 							}
 						}
 					});

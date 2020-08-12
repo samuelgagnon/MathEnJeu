@@ -1,3 +1,4 @@
+import { InfoForQuestion } from "../../../communication/race/DataInterfaces";
 import PlayerState from "../../../communication/race/PlayerState";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
@@ -31,17 +32,20 @@ export default class Player {
 	private schoolGrade: number;
 	private language: string;
 
-	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory) {
+	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory, schoolGrade: number, language: string) {
 		this.id = id;
 		this.position = startLocation;
 		this.move = new Move(Date.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
+		this.schoolGrade = schoolGrade;
+		this.language = language;
 		this.transitionTo(status);
 	}
 
 	public update(): void {
 		this.updatePosition();
+		console.log(this.position);
 		this.playerStatus.update();
 	}
 
@@ -64,6 +68,8 @@ export default class Player {
 			isAnsweringQuestion: this.isAnsweringQuestion,
 			missedQuestionsCount: this.missedQuestionsCount,
 			inventoryState: this.inventory.getInventoryState(),
+			schoolGrade: this.schoolGrade,
+			language: this.language,
 		};
 	}
 
@@ -110,6 +116,13 @@ export default class Player {
 
 	public getDifficulty(targetLocation: Point): number {
 		return Move.getTaxiCabDistance(this.position, targetLocation);
+	}
+
+	public getInfoForQuestion(): InfoForQuestion {
+		return {
+			schoolGrade: this.schoolGrade,
+			language: this.language,
+		};
 	}
 
 	public answeredQuestion(isAnswerCorrect: boolean): void {
