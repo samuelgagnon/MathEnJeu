@@ -1,4 +1,4 @@
-import { ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent } from "../../communication/race/DataInterfaces";
+import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
@@ -57,10 +57,20 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.playerSocket.emit(SE.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
 	}
 
-	public playerMoveRequest(targetLocation: Point): void {
-		let now = Date.now();
-		super.movePlayerTo(this.currentPlayerId, now, targetLocation);
+	public playerMoveRequest(targetLocation: Point, language: string, schoolGrade: number): void {
 		this.playerSocket.emit(SE.MOVE_REQUEST, <MoveRequestEvent>{
+			targetLocation: targetLocation,
+			playerId: this.currentPlayerId,
+			language: language,
+			schoolGrade: schoolGrade,
+		});
+	}
+
+	public playerAnsweredQuestion(isAnswerCorrect: boolean, targetLocation: Point): void {
+		let now = Date.now();
+		super.playerAnsweredQuestion(isAnswerCorrect, targetLocation, this.currentPlayerId, now);
+		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
+			isAnswerCorrect: isAnswerCorrect,
 			playerId: this.currentPlayerId,
 			startTimestamp: now,
 			targetLocation: targetLocation,
@@ -89,6 +99,15 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
 			this.removePlayer(data.playerId);
+		});
+	}
+
+	public bookUsed(language: string, schoolGrade: number, targetLocation: Point): void {
+		this.playerSocket.emit(SE.BOOK_USED, <BookUsedEvent>{
+			playerId: this.currentPlayerId,
+			targetLocation: targetLocation,
+			language: language,
+			schoolGrade: schoolGrade,
 		});
 	}
 

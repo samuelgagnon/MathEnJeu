@@ -7,6 +7,7 @@ export const RACE_CST = {
 		GRID_WIDTH: 20,
 		GRID_HEIGTH: 16,
 		NUMBER_OF_CHECKPOINTS: 5,
+		POINTS_FOR_LAP: 50,
 		GRID:
 			"xx.......3........xx" +
 			"x........3.........x" +

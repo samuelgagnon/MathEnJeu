@@ -1,11 +1,15 @@
-import { GameEndEvent, PlayerLeftEvent } from "../../communication/race/DataInterfaces";
+import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import AffineTransform from "../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import { PossiblePositions } from "../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../gameCore/race/items/Item";
 import Player from "../../gameCore/race/player/Player";
+import { Question } from "../../gameCore/race/question/Question";
+import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { CST } from "../CST";
+import { getUserInfo } from "../services/UserInformationService";
+import { QuestionSceneData } from "./QuestionScene";
 
 export default class RaceScene extends Phaser.Scene {
 	//Loops
@@ -112,7 +116,8 @@ export default class RaceScene extends Phaser.Scene {
 							//TODO verify if has arrived logic should be moved to player
 							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
 								this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
-								this.createQuestionWindow(<Point>{ x: x, y: y });
+								const currentPlayer = getUserInfo();
+								this.raceGame.playerMoveRequest({ x: x, y: y }, currentPlayer.language, currentPlayer.schoolGrade);
 							}
 						}
 					});
@@ -272,30 +277,37 @@ export default class RaceScene extends Phaser.Scene {
 			this.raceGame.itemUsed(itemType, targetPlayerId);
 		} catch (e) {
 			console.log(e);
+			throw e;
 		}
 	}
 
-	private createQuestionWindow(targetLocation: Point): void {
+	private createQuestionWindow(targetLocation: Point, question: Question): void {
 		var x = Number(this.game.config.width) * 0.05;
 		var y = Number(this.game.config.height) * 0.05;
 
-		this.scene.launch(CST.SCENES.QUESTION_WINDOW, {
+		const questionWindowData: QuestionSceneData = {
+			question: question,
 			targetLocation: targetLocation,
 			width: Number(this.game.config.width) * 0.9,
 			height: Number(this.game.config.height) * 0.9,
 			position: { x: x, y: y },
-		});
+		};
+
+		this.scene.launch(CST.SCENES.QUESTION_WINDOW, questionWindowData);
 	}
 
-	answerQuestion(correctAnswer: boolean, position: Point) {
+	answerQuestion(isAnswerCorrect: boolean, position: Point) {
 		this.clearTileInteractions();
-		if (correctAnswer) {
-			this.raceGame.playerMoveRequest(<Point>{ x: position.x, y: position.y });
+		if (isAnswerCorrect) {
 			this.targetLocation = position;
 		}
-		this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(false);
+		this.raceGame.playerAnsweredQuestion(isAnswerCorrect, <Point>{ x: position.x, y: position.y });
 
 		this.isReadyToGetPossiblePositions = true;
+	}
+
+	getPlayerPosition(): Point {
+		return this.raceGame.getCurrentPlayer().getPosition();
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
@@ -311,13 +323,15 @@ export default class RaceScene extends Phaser.Scene {
 			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.raceGame.getCurrentPlayerSocket() });
 		});
+
+		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
+			console.log(data.questionDTO);
+			this.createQuestionWindow(data.targetLocation, QuestionMapper.fromDTO(data.questionDTO));
+		});
 	}
 
 	private activateAccessiblePositions(): void {
 		const possiblePositions = this.raceGame.getPossiblePlayerMovement(this.targetLocation);
-
-		console.log("outside method");
-		console.log(this.raceGame.getCurrentPlayer());
 
 		this.clearTileInteractions();
 

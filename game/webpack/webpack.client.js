@@ -55,7 +55,7 @@ module.exports = (env) => {
 					{ from: "src/client/pages", to: "pages" },
 				],
 				options: {
-					concurrency: 100,
+					concurrency: 1000,
 				},
 			}),
 			new webpack.DefinePlugin({
