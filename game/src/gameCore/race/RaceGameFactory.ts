@@ -10,6 +10,7 @@ import Item, { ItemType } from "./items/Item";
 import ItemFactory from "./items/ItemFactory";
 import Inventory from "./player/Inventory";
 import Player from "./player/Player";
+import PlayerFactory from "./player/PlayerFactory";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
 import { RACE_CST } from "./RACE_CST";
@@ -95,7 +96,7 @@ export default class RaceGameFactory {
 		let players: Player[] = [];
 		let i: number = 0;
 		users.forEach((user: User) => {
-			players.push(new Player(user.userId, startingPositions[i], user.userInfo.name, StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			players.push(PlayerFactory.create(user, startingPositions[i], StatusFactory.create(StatusType.NormalStatus), new Inventory()));
 			i++;
 		});
 

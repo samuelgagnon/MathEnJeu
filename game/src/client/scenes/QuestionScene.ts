@@ -248,8 +248,7 @@ export default class QuestionScene extends Phaser.Scene {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		try {
 			raceScene.useItem(ItemType.Book);
-			const userInfo = getUserInfo();
-			raceScene.raceGame.bookUsed(userInfo.language, userInfo.schoolGrade, this.targetLocation);
+			raceScene.raceGame.bookUsed(this.targetLocation);
 			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
 				console.log("new question");
 				console.log(data.questionDTO);
