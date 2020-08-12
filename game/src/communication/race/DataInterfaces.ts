@@ -1,6 +1,4 @@
 import { ItemType } from "../../gameCore/race/items/Item";
-import Inventory from "../../gameCore/race/player/Inventory";
-import { StatusType } from "../../gameCore/race/player/playerStatus/StatusType";
 import ItemState from "./ItemState";
 import PlayerState from "./PlayerState";
 
@@ -13,15 +11,11 @@ export interface ItemUsedEvent {
 export interface MoveRequestEvent {
 	playerId: string;
 	targetLocation: Point;
-	language: string;
-	schoolGrade: number;
 }
 
 export interface BookUsedEvent {
 	playerId: string;
 	targetLocation: Point;
-	language: string;
-	schoolGrade: number;
 }
 
 export interface GameStartEvent {
@@ -73,14 +67,6 @@ export interface StartingRaceGridInfo {
 	itemStates: ItemState[];
 }
 
-export interface PlayerInfo {
-	id: string;
-	startLocation: Point;
-	name: string;
-	status: StatusType;
-	inventory: Inventory;
-}
-
 export interface QuestionDTO {
 	id: number;
 	answers: AnswerDTO[];
@@ -94,4 +80,9 @@ export interface QuestionDTO {
 export interface AnswerDTO {
 	label: string;
 	isRight: number;
+}
+
+export interface InfoForQuestion {
+	schoolGrade: number;
+	language: string;
 }

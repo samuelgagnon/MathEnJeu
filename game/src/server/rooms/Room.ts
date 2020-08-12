@@ -26,6 +26,8 @@ export class Room {
 			userId: clientSocket.id,
 			userInfo: userInfo,
 			socket: clientSocket,
+			schoolGrade: userInfo.schoolGrade,
+			language: userInfo.language,
 		};
 		this.users.push(user);
 		clientSocket.join(this.roomString);

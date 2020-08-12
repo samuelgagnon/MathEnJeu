@@ -10,6 +10,8 @@ export default interface PlayerState {
 	missedQuestionsCount: number;
 	statusState: StatusState;
 	inventoryState: InventoryState;
+	schoolGrade: number;
+	language: string;
 }
 
 export interface StatusState {
