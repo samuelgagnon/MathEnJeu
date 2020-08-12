@@ -264,6 +264,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private handleItemsRespawn(): void {
+		//new branch
 		this.itemPickUpTimestamps.forEach((itemPickUpTimestamp: number, index: number) => {
 			if (Date.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);
