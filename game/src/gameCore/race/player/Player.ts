@@ -117,7 +117,7 @@ export default class Player {
 		if (isAnswerCorrect) {
 			this.addToMoveDistance(this.MOVE_PER_QUESTION);
 		} else {
-			this.addToMoveDistance(-this.answeredQuestion);
+			this.addToMoveDistance(-this.MOVE_PER_QUESTION);
 		}
 	}
 
