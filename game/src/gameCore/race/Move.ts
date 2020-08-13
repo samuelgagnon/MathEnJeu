@@ -89,7 +89,7 @@ export default class Move {
 		t = t < 0 ? 0 : t;
 		t = t > 1 ? 1 : t;
 
-		if (t === 1) this.hasArrived = true;
+		this.hasArrived = t === 1;
 
 		//The current position c(t) is a R -> R^2 linear function for t in [0,1]
 		let c: Point = {

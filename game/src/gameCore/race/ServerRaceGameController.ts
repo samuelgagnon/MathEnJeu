@@ -131,7 +131,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		});
 
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
-			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: data };
+			const lag = data.clientTimestamp - Date.now();
+			const newData: QuestionAnsweredEvent = {
+				isAnswerCorrect: data.isAnswerCorrect,
+				playerId: data.playerId,
+				clientTimestamp: data.clientTimestamp,
+				startTimestamp: data.startTimestamp + lag,
+				targetLocation: data.targetLocation,
+			};
+			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: newData };
 			this.inputBuffer.push(newInput);
 		});
 
