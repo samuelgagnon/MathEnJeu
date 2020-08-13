@@ -16,6 +16,7 @@ export interface MoveRequestEvent {
 export interface BookUsedEvent {
 	playerId: string;
 	targetLocation: Point;
+	questionDifficulty: number;
 }
 
 export interface GameStartEvent {
@@ -44,6 +45,7 @@ export interface QuestionFoundFromBookEvent {
 }
 
 export interface QuestionAnsweredEvent {
+	questionId: number;
 	isAnswerCorrect: boolean;
 	playerId: string;
 	clientTimestamp: number;

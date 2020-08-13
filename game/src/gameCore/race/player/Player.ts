@@ -27,7 +27,7 @@ export default class Player {
 	private position: Point;
 	private move: Move;
 	private inventory: Inventory;
-	private answeredQuestionsId: Number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
+	private answeredQuestionsId: number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
 	private lastValidCheckpoint: number = 0;
 	private schoolGrade: number;
 	private language: string;
@@ -131,7 +131,9 @@ export default class Player {
 		};
 	}
 
-	public answeredQuestion(isAnswerCorrect: boolean): void {
+	public answeredQuestion(questionId: number, isAnswerCorrect: boolean): void {
+		//add answered question to answeredQuestion list so you don't ask the player the same question again
+		this.answeredQuestionsId.push(questionId);
 		this.setIsAnsweringQuestion(false);
 		if (isAnswerCorrect) {
 			this.addToMoveDistance(this.MOVE_PER_QUESTION);

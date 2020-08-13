@@ -13,7 +13,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 			  ON question.question_id=question_info.question_id
 		INNER JOIN question_level
 			  ON question.question_id=question_level.question_id
-		WHERE question.answer_type_id IN (1,4)
+		WHERE question.answer_type_id IN (1,2,3,4)
 		AND question_info.is_valid = 1
 		AND question_level.level_id = ${schoolGradeId}
 		AND question_level.\`value\` = ${difficulty}

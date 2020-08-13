@@ -294,12 +294,12 @@ export default class RaceScene extends Phaser.Scene {
 		this.scene.launch(CST.SCENES.QUESTION_WINDOW, questionWindowData);
 	}
 
-	answerQuestion(isAnswerCorrect: boolean, position: Point) {
+	answerQuestion(questionId: number, isAnswerCorrect: boolean, position: Point) {
 		this.clearTileInteractions();
 		if (isAnswerCorrect) {
 			this.targetLocation = position;
 		}
-		this.raceGame.playerAnsweredQuestion(isAnswerCorrect, <Point>{ x: position.x, y: position.y });
+		this.raceGame.playerAnsweredQuestion(questionId, isAnswerCorrect, <Point>{ x: position.x, y: position.y });
 
 		this.isReadyToGetPossiblePositions = true;
 	}

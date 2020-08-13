@@ -24,7 +24,6 @@ import GameFSM from "../gameState/GameFSM";
 import State from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
-import Move from "./Move";
 import Player from "./player/Player";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
@@ -133,6 +132,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
 			const lag = data.clientTimestamp - Date.now();
 			const newData: QuestionAnsweredEvent = {
+				questionId: data.questionId,
 				isAnswerCorrect: data.isAnswerCorrect,
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
@@ -198,15 +198,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				case SE.BOOK_USED:
 					try {
 						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
-						const movement = Move.getTaxiCabDistance(player.getPosition(), (<BookUsedEvent>inputData).targetLocation) - 1; //for now reduce difficulty only by 1;
-						this.findQuestionForPlayer(player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, movement).then((question) => {
-							this.context
-								.getNamespace()
-								.to(player.id)
-								.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
-									questionDTO: question.getDTO(),
-								});
-						});
+						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
+						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
+						this.findQuestionForPlayer(player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
+							(question) => {
+								this.context
+									.getNamespace()
+									.to(player.id)
+									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+										questionDTO: question.getDTO(),
+									});
+							}
+						);
 					} catch (err) {
 						console.log(err);
 					}
@@ -214,6 +217,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 				case SE.QUESTION_ANSWERED:
 					super.playerAnsweredQuestion(
+						(<QuestionAnsweredEvent>inputData).questionId,
 						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,
 						(<QuestionAnsweredEvent>inputData).targetLocation,
 						(<QuestionAnsweredEvent>inputData).playerId,

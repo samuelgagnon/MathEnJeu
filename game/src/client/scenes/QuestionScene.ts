@@ -241,14 +241,14 @@ export default class QuestionScene extends Phaser.Scene {
 		this.destroyImages();
 		this.clearQuestionTextures();
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(isAnswerCorrect, this.targetLocation);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), isAnswerCorrect, this.targetLocation);
 	}
 
 	private useBook(): void {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		try {
 			raceScene.useItem(ItemType.Book);
-			raceScene.raceGame.bookUsed(this.targetLocation);
+			raceScene.raceGame.bookUsed(this.question.getDifficulty(), this.targetLocation);
 			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
 				console.log("new question");
 				console.log(data.questionDTO);

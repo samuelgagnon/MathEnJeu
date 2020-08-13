@@ -49,6 +49,10 @@ export class Question {
 		return this.feedbackRelativePath;
 	}
 
+	public getDifficulty(): number {
+		return this.difficulty;
+	}
+
 	//returns true if there was a wrong question remaining and false if there was none
 	public removeWrongAnswer(): void {
 		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.isRight());

@@ -64,10 +64,11 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	public playerAnsweredQuestion(isAnswerCorrect: boolean, targetLocation: Point): void {
+	public playerAnsweredQuestion(questionId: number, isAnswerCorrect: boolean, targetLocation: Point): void {
 		let moveTimestamp = Date.now();
-		super.playerAnsweredQuestion(isAnswerCorrect, targetLocation, this.currentPlayerId, moveTimestamp);
+		super.playerAnsweredQuestion(questionId, isAnswerCorrect, targetLocation, this.currentPlayerId, moveTimestamp);
 		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
+			questionId: questionId,
 			isAnswerCorrect: isAnswerCorrect,
 			playerId: this.currentPlayerId,
 			clientTimestamp: Date.now(),
@@ -104,10 +105,11 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	public bookUsed(targetLocation: Point): void {
+	public bookUsed(questionDifficulty: number, targetLocation: Point): void {
 		this.playerSocket.emit(SE.BOOK_USED, <BookUsedEvent>{
 			playerId: this.currentPlayerId,
 			targetLocation: targetLocation,
+			questionDifficulty: questionDifficulty,
 		});
 	}
 
