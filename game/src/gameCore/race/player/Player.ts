@@ -22,7 +22,7 @@ export default class Player {
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
 	private isAnsweringQuestion: boolean = false;
-	public name: string;
+	private name: string;
 	private points: number = 0;
 	private position: Point;
 	private move: Move;
