@@ -65,12 +65,13 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public playerAnsweredQuestion(isAnswerCorrect: boolean, targetLocation: Point): void {
-		let now = Date.now();
-		super.playerAnsweredQuestion(isAnswerCorrect, targetLocation, this.currentPlayerId, now);
+		let moveTimestamp = Date.now();
+		super.playerAnsweredQuestion(isAnswerCorrect, targetLocation, this.currentPlayerId, moveTimestamp);
 		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
 			isAnswerCorrect: isAnswerCorrect,
 			playerId: this.currentPlayerId,
-			startTimestamp: now,
+			clientTimestamp: Date.now(),
+			startTimestamp: moveTimestamp,
 			targetLocation: targetLocation,
 		});
 	}
@@ -80,7 +81,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		//Ajusting client game time only if it has a difference of 1.5 seconds (1500 millisecondes)
 		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime + lag;
 		this.players.forEach((player: Player) => {
-			player.updateFromPlayerState(gameState.players.find((playerState) => playerState.id === player.id));
+			player.updateFromPlayerState(
+				gameState.players.find((playerState) => playerState.id === player.id),
+				lag
+			);
 		});
 		this.grid.updateFromItemStates(gameState.itemsState, lag);
 	}

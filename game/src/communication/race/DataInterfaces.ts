@@ -46,6 +46,7 @@ export interface QuestionFoundFromBookEvent {
 export interface QuestionAnsweredEvent {
 	isAnswerCorrect: boolean;
 	playerId: string;
+	clientTimestamp: number;
 	startTimestamp: number;
 	targetLocation: Point;
 }

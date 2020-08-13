@@ -22,7 +22,7 @@ export default class Player {
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
 	private isAnsweringQuestion: boolean = false;
-	private name: string;
+	public name: string;
 	private points: number = 0;
 	private position: Point;
 	private move: Move;
@@ -45,17 +45,23 @@ export default class Player {
 
 	public update(): void {
 		this.updatePosition();
-		console.log(this.position);
 		this.playerStatus.update();
 	}
 
-	public updateFromPlayerState(playerState: PlayerState): void {
+	public updateFromPlayerState(playerState: PlayerState, lag: number): void {
 		if (!playerState) return;
 
 		this.points = playerState.points;
 		this.inventory.updateInventoryFromState(playerState.inventoryState);
-		this.playerStatus.updateFromState(playerState.statusState);
-		this.move.updateFromMoveState(playerState.move);
+		this.playerStatus.updateFromState({
+			statusTimestamp: playerState.statusState.statusTimestamp + lag,
+			statusType: playerState.statusState.statusType,
+		});
+		this.move.updateFromMoveState({
+			startTimestamp: playerState.move.startTimestamp + lag,
+			startLocation: playerState.move.startLocation,
+			targetLocation: playerState.move.targetLocation,
+		});
 	}
 
 	public getPlayerState(): PlayerState {
