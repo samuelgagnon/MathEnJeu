@@ -77,16 +77,6 @@ export default abstract class RaceGameController {
 				const position = player.getPosition();
 				this.grid.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
 			}
-			// const targetLocation = player.getMove().getMoveState().targetLocation;
-			// const startLocation = player.getMove().getMoveState().startLocation;
-			// const position = player.getPosition();
-
-			// if (targetLocation.x > startLocation.x || targetLocation.y > startLocation.y) {
-			// 	this.grid.getTile({ x: Math.floor(position.x), y: Math.floor(position.y) }).playerPickUpItem(player);
-			// } else {
-			// 	this.grid.getTile({ x: Math.ceil(position.x), y: Math.ceil(position.y) }).playerPickUpItem(player);
-			// }
-			// this.grid.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
 		});
 	}
 
