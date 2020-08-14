@@ -121,7 +121,9 @@ export default class Player {
 	}
 
 	public getDifficulty(targetLocation: Point): number {
-		return Move.getTaxiCabDistance(this.position, targetLocation);
+		let difficulty = Move.getTaxiCabDistance(this.position, targetLocation);
+		if (difficulty > 6) difficulty = 6; //Max difficulty is 6 even though we can move by 6 tiles
+		return difficulty;
 	}
 
 	public getInfoForQuestion(): InfoForQuestion {
