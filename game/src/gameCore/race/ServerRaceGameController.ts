@@ -232,9 +232,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.inputBuffer = [];
 	}
 
-	private async findQuestionForPlayer(language: string, schoolGrade: number, movement: number): Promise<Question> {
-		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, movement);
-		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${movement}`);
+	private async findQuestionForPlayer(language: string, schoolGrade: number, difficulty: number): Promise<Question> {
+		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, difficulty);
+		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${difficulty}`);
 		//temporary to limit the number of png files to load
 		const newArray = questionIdArray.filter((id) => id < 1000);
 		const randomPosition = Math.floor(Math.random() * newArray.length);
