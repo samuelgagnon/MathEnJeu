@@ -1,5 +1,5 @@
-import { GameStartEvent } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
+import { GameStartEvent, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import Player from "../../gameCore/race/player/Player";
@@ -10,6 +10,7 @@ import { CST } from "../CST";
 export default class WaitingRoomScene extends Phaser.Scene {
 	private startButton: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
+	private usersListHtml: Phaser.GameObjects.DOMElement;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
@@ -37,6 +38,22 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	create() {
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
+		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.5, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
+
+		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {
+			let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
+
+			while (usersList.firstChild) {
+				usersList.removeChild(usersList.firstChild);
+			}
+
+			data.usersInfo.forEach((userInfo) => {
+				var li = document.createElement("li");
+				li.appendChild(document.createTextNode(userInfo.name));
+				usersList.appendChild(li);
+			});
+		});
+
 		this.startButton = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
 			fontFamily: "Courier",
 			fontSize: "50px",
@@ -61,8 +78,11 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.startButton.on("pointerup", () => {
 			this.startButton.clearTint();
+			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
 			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_START);
 		});
+
+		this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
 	}
 
 	private createPlayers(playersState: PlayerState[]): Player[] {

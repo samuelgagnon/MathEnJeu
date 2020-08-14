@@ -1,4 +1,5 @@
 import { ItemType } from "../../gameCore/race/items/Item";
+import UserInfo from "../userInfo";
 import ItemState from "./ItemState";
 import PlayerState from "./PlayerState";
 
@@ -42,6 +43,10 @@ export interface QuestionFoundEvent {
 
 export interface QuestionFoundFromBookEvent {
 	questionDTO: QuestionDTO;
+}
+
+export interface UsersInfoSentEvent {
+	usersInfo: UserInfo[];
 }
 
 export interface QuestionAnsweredEvent {

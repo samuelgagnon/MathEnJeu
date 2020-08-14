@@ -15,3 +15,8 @@ export const CLIENT_EVENT_NAMES = {
 	QUESTION_FOUND: "question-found",
 	QUESTION_FOUND_WITH_BOOK: "question-found-with-book",
 };
+
+export const WAITING_ROOM_EVENT_NAMES = {
+	CURRENT_USERS: "current-users",
+	SCENE_LOADED: "scene-loaded",
+};

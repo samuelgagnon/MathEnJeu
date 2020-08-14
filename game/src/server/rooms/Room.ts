@@ -1,4 +1,6 @@
 import { Socket } from "socket.io";
+import { UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
+import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import UserInfo from "../../communication/userInfo";
 import GameFSM from "../../gameCore/gameState/GameFSM";
 import User from "../data/User";
@@ -34,6 +36,7 @@ export class Room {
 		this.handleSocketEvents(clientSocket);
 		this.gameFSM.userJoined(user);
 		clientSocket.emit("room-joined");
+		this.emitUsersInRoom();
 	}
 
 	public leaveRoom(clientSocket: Socket): void {
@@ -42,13 +45,26 @@ export class Room {
 		this.gameFSM.userLeft(userLeaving);
 		this.removeListeners(clientSocket);
 		clientSocket.leave(this.roomString);
+		this.emitUsersInRoom();
+	}
+
+	public emitUsersInRoom(): void {
+		this.nsp
+			.to(this.roomString)
+			.emit(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, <UsersInfoSentEvent>{ usersInfo: this.users.map((user) => user.userInfo) });
 	}
 
 	public isRoomEmtpty(): boolean {
 		return this.users.length === 0;
 	}
 
-	public handleSocketEvents(clientSocket: Socket): void {}
+	public handleSocketEvents(clientSocket: Socket): void {
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED, () => {
+			this.emitUsersInRoom();
+		});
+	}
 
-	private removeListeners(clientSocket: Socket) {}
+	private removeListeners(clientSocket: Socket) {
+		clientSocket.removeAllListeners(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
+	}
 }
