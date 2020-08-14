@@ -18,6 +18,7 @@ export default class Player {
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;
 	private readonly MOVE_PER_QUESTION = 1;
+	private readonly MAX_DIFFICULTY = 6;
 	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
@@ -122,7 +123,7 @@ export default class Player {
 
 	public getDifficulty(targetLocation: Point): number {
 		let difficulty = Move.getTaxiCabDistance(this.position, targetLocation);
-		if (difficulty > 6) difficulty = 6; //Max difficulty is 6 even though we can move by 6 tiles
+		if (difficulty > this.MAX_DIFFICULTY) difficulty = this.MAX_DIFFICULTY; //Max difficulty is 6 even though we can move by 6 tiles
 		return difficulty;
 	}
 
