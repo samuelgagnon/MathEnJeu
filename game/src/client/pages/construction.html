@@ -3,7 +3,36 @@
   <head>
     <meta charset="UTF-8" />
   </head>
-  <body>
-    <h1>Site currently under construction</h1>
+  <body >
+    <div class="wrapper">
+      <div class="container">
+        <div class="column-item">
+          <h1>Site currently under construction</h1>
+        </div>
+        <div class="column-item">
+            <img src="../assets/images/construction.png" alt="" width="20%" height="20%">
+        </div>
+      </div>
+    </div>
   </body>
 </html>
+
+<style>
+  body {
+    text-align: "center";
+    background: linear-gradient(to left top, silver, gray) fixed;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    padding-top: 200px;
+  }
+
+  .column-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 25px;
+  }
+</style>
