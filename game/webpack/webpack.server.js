@@ -36,13 +36,5 @@ module.exports = (env) => {
 			],
 		},
 		externals: [nodeExternals()],
-		plugins: [
-			new CopyWebpackPlugin({
-				patterns: [{ from: "src/server/questions_png", to: "assets" }],
-				options: {
-					concurrency: 1000,
-				},
-			}),
-		],
 	};
 };
