@@ -4,7 +4,7 @@ Jeu multijoueur où on répond à des questions mathématiques pour progresser.
 
 ### Database
 
-- questions storage : game/src/server/question_png/'question_file_name'/1.png
+- questions storage : ./question_png/'question_file_name'/1.png
 - The database SQL file must be placed in /database.
 - If the file name is, for example, 'mathamaze2.sql', make sure to update the docker-entrypoint-initdb command in /database/Dockerfile for 'ADD mathamaze2.sql /docker-entrypoint-initdb.d'.
 
