@@ -4,3 +4,8 @@ services:
     build: 
       context: ./game
       dockerfile: Dockerfile
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile

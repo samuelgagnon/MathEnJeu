@@ -1,9 +1,6 @@
 version: "3"
 services:
   app:
-    #Would be implemented to rebuild on change for developpement 
-    #volumes:
-    #  - .:/usr/src/MathEnJeu
     container_name: app
     ports:
       - "8080:8080"
@@ -12,6 +9,10 @@ services:
     volumes: 
       - ./questions_png:/usr/src/MathEnJeu/dist/server/assets/
 
+  web:
+    container_name: vue_app
+    ports: 
+      - "80:80"
 
   db:
     image: mysql
