@@ -4,7 +4,9 @@
       <router-link to="/">Home</router-link>|
       <router-link to="/about">About</router-link>
     </div>
-    <router-view />
+    <div class="router-container">
+      <router-view />
+    </div>
   </div>
 </template>
 
@@ -28,5 +30,9 @@
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.router-container {
+  height: 100%;
 }
 </style>
