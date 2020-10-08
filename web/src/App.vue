@@ -31,8 +31,4 @@
 #nav a.router-link-exact-active {
   color: #42b983;
 }
-
-.router-container {
-  height: 100%;
-}
 </style>
