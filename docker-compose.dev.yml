@@ -4,6 +4,8 @@ services:
     build: 
       context: ./game
       dockerfile: Dockerfile.dev
+    volumes: 
+      - ./game/src:/usr/src/MathEnJeu/src
 
   web:
     build:
