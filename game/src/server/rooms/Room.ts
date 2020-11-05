@@ -24,6 +24,10 @@ export class Room {
 		return this.id;
 	}
 
+	public getGameState(): GameState {
+		return this.gameFSM.getGameState();
+	}
+
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
 		if(this.gameFSM.getGameState() == GameState.PreGame) {
 			const user: User = {
