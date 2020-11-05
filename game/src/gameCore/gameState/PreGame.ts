@@ -3,13 +3,18 @@ import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import User from "../../server/data/User";
 import RaceGameFactory from "../race/RaceGameFactory";
 import GameFSM from "./GameFSM";
-import State from "./State";
+import State, { GameState } from "./State";
 
 export default class PreGame implements State {
 	private context: GameFSM;
+	private state: GameState = GameState.PreGame;
 
 	constructor(users: User[] = []) {
 		this.handleAllUsersSocketEvents(users);
+	}
+
+	public getStateType(): GameState {
+		return this.state;
 	}
 
 	public setContext(context: GameFSM): void {

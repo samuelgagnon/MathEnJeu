@@ -2,7 +2,7 @@ import { Namespace } from "socket.io";
 import GameRepository from "../../server/data/GameRepository";
 import User from "../../server/data/User";
 import { ServerGame } from "../Game";
-import State from "./State";
+import State, { GameState } from "./State";
 export default class GameFSM {
 	private readonly fsmId: string;
 	private state: State;
@@ -34,6 +34,10 @@ export default class GameFSM {
 
 	public getNamespace(): SocketIO.Namespace {
 		return this.nsp;
+	}
+
+	public getGameState(): GameState {
+		return this.state.getStateType();
 	}
 
 	public transitionTo(nextState: State): void {

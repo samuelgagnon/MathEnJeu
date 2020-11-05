@@ -21,7 +21,7 @@ export default class RoomSelectionNamespace {
 
 			socket.emit(
 				"room-update",
-				this.roomRepo.getAllRooms().map((room) => room.getRoomId())
+				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
 			);
 
 			socket.on("disconnect", () => {
@@ -37,7 +37,7 @@ export default class RoomSelectionNamespace {
 			console.log(this.roomRepo.getAllRooms().map((room) => room.getRoomId()));
 			socket.emit(
 				"room-update",
-				this.roomRepo.getAllRooms().map((room) => room.getRoomId())
+				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
 			);
 			this.sendRoomsToClient(socket);
 		}, this.ROOM_UPDATE_TIME_INTERVAL);

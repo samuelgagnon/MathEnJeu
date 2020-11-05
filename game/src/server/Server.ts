@@ -28,6 +28,12 @@ export class Server {
 			res.sendFile(path.join(__dirname, "../", "/client/index.html"));
 		});
 
+		this.app.get("/heartbeat", (req, res) => {
+			res.send({
+				villeChoisie: "Quebec",
+			});
+		});
+
 		this.app.get("/questionImage", async (req, res) => {
 			const questionId = req.query.id;
 			const languageShortName = req.query.languageShortName;

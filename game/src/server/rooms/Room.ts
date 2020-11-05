@@ -3,6 +3,7 @@ import { UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import UserInfo from "../../communication/userInfo";
 import GameFSM from "../../gameCore/gameState/GameFSM";
+import { GameState } from "../../gameCore/gameState/State";
 import User from "../data/User";
 
 export class Room {
@@ -23,20 +24,28 @@ export class Room {
 		return this.id;
 	}
 
+	public getGameState(): GameState {
+		return this.gameFSM.getGameState();
+	}
+
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
-		const user: User = {
-			userId: clientSocket.id,
-			userInfo: userInfo,
-			socket: clientSocket,
-			schoolGrade: userInfo.schoolGrade,
-			language: userInfo.language,
-		};
-		this.users.push(user);
-		clientSocket.join(this.roomString);
-		this.handleSocketEvents(clientSocket);
-		this.gameFSM.userJoined(user);
-		clientSocket.emit("room-joined");
-		this.emitUsersInRoom();
+		if(this.gameFSM.getGameState() == GameState.PreGame) {
+			const user: User = {
+				userId: clientSocket.id,
+				userInfo: userInfo,
+				socket: clientSocket,
+				schoolGrade: userInfo.schoolGrade,
+				language: userInfo.language,
+			};
+			this.users.push(user);
+			clientSocket.join(this.roomString);
+			this.handleSocketEvents(clientSocket);
+			this.gameFSM.userJoined(user);
+			clientSocket.emit("room-joined");
+			this.emitUsersInRoom();	
+		} else {
+			throw new RoomNotFoundError(`Room ${this.id} is currently in progress. You cannot join right now.`);
+		}
 	}
 
 	public leaveRoom(clientSocket: Socket): void {
