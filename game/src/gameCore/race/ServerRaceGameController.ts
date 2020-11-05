@@ -11,7 +11,7 @@ import {
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	StartingRaceGridInfo,
+	StartingRaceGridInfo
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
@@ -21,7 +21,7 @@ import User from "../../server/data/User";
 import { getObjectValues } from "../../utils/Utils";
 import { ServerGame } from "../Game";
 import GameFSM from "../gameState/GameFSM";
-import State from "../gameState/State";
+import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
@@ -36,6 +36,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private gameId: string;
 	private itemPickUpTimestamps: Number[] = [];
 	private questionRepo: QuestionRepository;
+	private state: GameState = GameState.RaceGame;
 
 	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string, questionRepo: QuestionRepository) {
 		//The server has the truth regarding the start timestamp.
@@ -51,6 +52,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	public getGameId(): string {
 		return this.gameId;
+	}
+
+	public getStateType(): GameState {
+		return this.state;
 	}
 
 	private emitStartGameEvent(): void {
