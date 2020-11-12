@@ -11,7 +11,7 @@ import {
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	StartingRaceGridInfo,
+	StartingRaceGridInfo
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
@@ -30,7 +30,7 @@ import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
-	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
+	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000; //In milliseconds
 	private context: GameFSM;
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
@@ -89,6 +89,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		if (!this.isGameStarted) this.emitStartGameEvent();
 		this.resolveInputs();
 		super.update();
+		this.handleItemsRespawn();
 		if (this.timeRemaining <= 0) this.gameFinished();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}
@@ -224,11 +225,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private async findQuestionForPlayer(language: string, schoolGrade: number, movement: number): Promise<Question> {
 		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, movement);
-		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${movement}`);
-		//temporary to limit the number of png files to load
+		//DEV : temporary to limit the number of png files to load
 		const newArray = questionIdArray.filter((id) => id < 1000);
 		const randomPosition = Math.floor(Math.random() * newArray.length);
-		console.log(newArray);
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
@@ -264,7 +263,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private handleItemsRespawn(): void {
-		//new branch
 		this.itemPickUpTimestamps.forEach((itemPickUpTimestamp: number, index: number) => {
 			if (Date.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);

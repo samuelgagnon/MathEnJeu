@@ -156,7 +156,9 @@ export default class RaceGrid {
 		const itemType = ItemFactory.generateItemType();
 		const newItem = ItemFactory.create(itemType, itemTile.getPosition());
 		itemTile.setItem(newItem);
-		this.items.push(newItem);
+		this.items.push(<ItemState>{ type: itemType, location: itemTile.getPosition() });
+
+		console.log(`NEW ITEM: type:${itemType}, position:${itemTile.getPosition()}, time:${Date.now()}`);
 	}
 }
 

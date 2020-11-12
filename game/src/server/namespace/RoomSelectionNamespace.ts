@@ -17,8 +17,6 @@ export default class RoomSelectionNamespace {
 
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
-			//console.log("connection on room selection");
-
 			socket.emit(
 				"room-update",
 				this.roomRepo.getAllRooms().map((room) => room.getRoomId())
