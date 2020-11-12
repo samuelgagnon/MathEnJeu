@@ -90,7 +90,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.grid.updateFromItemStates(gameState.itemsState, lag);
 	}
 
-	public getPossiblePlayerMovement(position: Point): PossiblePositions[] {
+	public getPossibleCurrentPlayerMovement(position: Point): PossiblePositions[] {
 		const currentPlayer = this.getCurrentPlayer();
 		return this.grid.getPossibleMovementFrom(position, currentPlayer.getMaxMovementDistance());
 	}

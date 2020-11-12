@@ -11,7 +11,7 @@ import {
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	StartingRaceGridInfo
+	StartingRaceGridInfo,
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
@@ -186,17 +186,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.MOVE_REQUEST:
-					try {
-						player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
-						player.setIsAnsweringQuestion(true);
-						this.sendQuestionToPlayer(
-							player.getInfoForQuestion().language,
-							player.getInfoForQuestion().schoolGrade,
-							player,
-							(<MoveRequestEvent>inputData).targetLocation
-						);
-					} catch (err) {
-						console.log(err);
+					if (this.isMoveRequestValid(<MoveRequestEvent>inputData)) {
+						try {
+							player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+							player.setIsAnsweringQuestion(true);
+							this.sendQuestionToPlayer(
+								player.getInfoForQuestion().language,
+								player.getInfoForQuestion().schoolGrade,
+								player,
+								(<MoveRequestEvent>inputData).targetLocation
+							);
+						} catch (err) {
+							console.log(err);
+						}
 					}
 					break;
 
@@ -283,5 +285,22 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				this.grid.generateNewItem();
 			}
 		});
+	}
+
+	isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
+		const player = this.findPlayer(moveRequestEvent.playerId);
+		if (!player.getIsAnsweringQuestion() && player.hasArrived()) {
+			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
+			if (
+				possibleTargetLocations.some(
+					(possibleTargetLocation) =>
+						possibleTargetLocation.position.x == moveRequestEvent.targetLocation.x &&
+						possibleTargetLocation.position.y == moveRequestEvent.targetLocation.y
+				)
+			) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
