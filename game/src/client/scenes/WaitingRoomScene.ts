@@ -9,6 +9,7 @@ import { CST } from "../CST";
 
 export default class WaitingRoomScene extends Phaser.Scene {
 	private startButton: Phaser.GameObjects.Text;
+	private quitButton: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
 
@@ -62,7 +63,17 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			fontStyle: "bold",
 		});
 
+		this.quitButton = this.add.text(this.game.renderer.width * 0.05, this.game.renderer.height * 0.1, "<- Leave Room", {
+			fontFamily: "Courier",
+			fontSize: "40px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
 		this.startButton.setInteractive({ useHandCursor: true });
+
+		this.quitButton.setInteractive({ useHandCursor: true });
 
 		this.startButton.on("pointerover", () => {
 			this.startButton.setTint(0xffff66);
@@ -80,6 +91,25 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.startButton.clearTint();
 			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
 			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_START);
+		});
+
+		this.quitButton.on("pointerover", () => {
+			this.startButton.setTint(0xffff66);
+		});
+
+		this.quitButton.on("pointerout", () => {
+			this.startButton.clearTint();
+		});
+
+		this.quitButton.on("pointerdown", () => {
+			this.startButton.setTint(0x86bfda);
+		});
+
+		this.quitButton.on("pointerup", () => {
+			this.startButton.clearTint();
+			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
+			this.gameSocket.close();
+			this.scene.start(CST.SCENES.ROOM_SELECTION);
 		});
 
 		this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);

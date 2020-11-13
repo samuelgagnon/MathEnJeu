@@ -1,4 +1,5 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/userInfo";
 import RoomRepository from "../data/RoomRepository";
 import RoomFactory from "./RoomFactory";
@@ -31,17 +32,17 @@ export default class RoomManager {
 				console.log("disconnected");
 			});
 
-			socket.on("create-room", () => {
-				console.log("create room");
+			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
 					newRoom.joinRoom(socket, userInfo);
+					console.log(newRoom);
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getRoomId();
 
-					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
+					console.log("room created");
 				} catch (err) {
 					socket.error({
 						type: 400,
@@ -50,7 +51,7 @@ export default class RoomManager {
 				}
 			});
 
-			socket.on("join-room", (req) => {
+			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM, (req) => {
 				try {
 					const roomId: string = req.roomId;
 					console.log(`joining room: ${roomId}`);
@@ -60,7 +61,6 @@ export default class RoomManager {
 					}
 
 					currentRoom.joinRoom(socket, userInfo);
-					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {
 					socket.error({
@@ -87,14 +87,6 @@ export default class RoomManager {
 
 	private handleDisconnection(socket: Socket, roomId: string): void {
 		socket.on("disconnect", () => {
-			console.log("disconnection");
-
-			this.removeUserFromRoom(roomId, socket);
-		});
-	}
-
-	private handleLeavingRoom(socket: Socket, roomId: string): void {
-		socket.on("leave-room", () => {
 			this.removeUserFromRoom(roomId, socket);
 		});
 	}

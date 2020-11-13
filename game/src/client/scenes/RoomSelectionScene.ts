@@ -1,3 +1,4 @@
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { CST } from "../CST";
 import { getUserInfo } from "../services/UserInformationService";
 import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/RoomService";
@@ -18,8 +19,8 @@ export default class RoomSelection extends Phaser.Scene {
 	}
 
 	init() {
-		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.gameSocket = connectToGameNamespace(getUserInfo());
+		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.events.on("shutdown", () => {
 			this.roomSelectionSocket.close();
 		});
@@ -110,7 +111,7 @@ export default class RoomSelection extends Phaser.Scene {
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
 			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
-			this.gameSocket.emit("join-room", { roomId });
+			this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId });
 		});
 
 		this.backButton.on("pointerover", () => {
