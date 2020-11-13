@@ -18,12 +18,16 @@ export const getObjectValues = (obj: any) => {
 };
 
 export const arithmeticMean = (values: number[]) => {
-	return values.reduce((a, b) => a + b) / values.length;
+	let total = 0;
+	values.forEach((element) => {
+		total += element;
+	});
+	return total / values.length;
 };
 
 export const standardDeviation = (values: number[]) => {
 	const n = values.length;
-	const mean = values.reduce((a, b) => a + b) / values.length;
+	const mean = arithmeticMean(values);
 	return Math.sqrt(values.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
 };
 

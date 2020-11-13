@@ -323,9 +323,6 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
-			//DEBUG
-			//console.log(data.questionDTO);
-
 			this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
 			this.createQuestionWindow(data.targetLocation, QuestionMapper.fromDTO(data.questionDTO));
 		});
@@ -333,7 +330,10 @@ export default class RaceScene extends Phaser.Scene {
 
 	private activateAccessiblePositions(): void {
 		const tile = this.getTileFromPhaserPosition(this.targetLocation.x, this.targetLocation.y);
-		const possiblePositions = this.raceGame.getPossibleCurrentPlayerMovement({ x: tile.getData("gridPosition").x, y: tile.getData("gridPosition").y });
+		const possiblePositions = this.raceGame.getPossibleCurrentPlayerMovement({
+			x: tile.getData("gridPosition").x,
+			y: tile.getData("gridPosition").y,
+		});
 
 		this.clearTileInteractions();
 

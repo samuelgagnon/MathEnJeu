@@ -68,6 +68,7 @@ export class Clock {
 			(clockDelta) => Math.abs(clockDelta - clockDeltasMedian) < clockDeltasStandardDeviation
 		);
 		Clock.clockDelta = arithmeticMean(clockDeltasWithoutOutliers);
+		console.log(`Current Clock Delta : ${Clock.clockDelta}`);
 	}
 
 	public static now(): number {

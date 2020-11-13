@@ -251,8 +251,6 @@ export default class QuestionScene extends Phaser.Scene {
 			raceScene.useItem(ItemType.Book);
 			raceScene.raceGame.bookUsed(this.question.getDifficulty(), this.targetLocation);
 			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
-				console.log("new question");
-				console.log(data.questionDTO);
 				this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
 			});
 		} catch (err) {
@@ -266,7 +264,6 @@ export default class QuestionScene extends Phaser.Scene {
 			try {
 				(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).useItem(ItemType.CrystalBall);
 				this.question.removeWrongAnswer();
-				console.log(this.question);
 			} catch (error) {
 				console.log(error);
 			}

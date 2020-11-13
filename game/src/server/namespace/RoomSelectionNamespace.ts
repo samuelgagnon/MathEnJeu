@@ -20,18 +20,18 @@ export default class RoomSelectionNamespace {
 
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
-			//console.log("connection on room selection");
-
 			socket.emit(
 				"room-update",
 				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
 			);
 
 			socket.on(SE.TIME_REQUEST, (timeRequestEvent: TimeRequestEvent) => {
+				const serverCurrentLocalTime = Clock.now();
 				socket.emit(CE.TIME_RESPONSE, <TimeResponseEvent>{
 					clientCurrentLocalTime: timeRequestEvent.clientCurrentLocalTime,
-					serverCurrentLocalTime: Clock.now(),
+					serverCurrentLocalTime: serverCurrentLocalTime,
 				});
+				console.log(`[TIME_RESPONSE] Client:${timeRequestEvent.clientCurrentLocalTime}, Server:${serverCurrentLocalTime}`);
 			});
 
 			socket.on("disconnect", () => {
@@ -44,7 +44,6 @@ export default class RoomSelectionNamespace {
 
 	private sendRoomsToClient(socket: Socket) {
 		setTimeout(() => {
-			console.log(this.roomRepo.getAllRooms().map((room) => room.getRoomId()));
 			socket.emit(
 				"room-update",
 				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)

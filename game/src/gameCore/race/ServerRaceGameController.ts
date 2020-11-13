@@ -242,9 +242,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private async findQuestionForPlayer(language: string, schoolGrade: number, difficulty: number): Promise<Question> {
 		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, difficulty);
-		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${difficulty}`);
 		const randomPosition = Math.floor(Math.random() * questionIdArray.length);
-		console.log(questionIdArray);
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
