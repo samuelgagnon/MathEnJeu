@@ -64,9 +64,11 @@ export class Clock {
 	private static computeFinalClockDelta(): void {
 		const clockDeltasStandardDeviation = standardDeviation(Clock.synchClockDeltas);
 		const clockDeltasMedian = median(Clock.synchClockDeltas);
+
 		const clockDeltasWithoutOutliers = Clock.synchClockDeltas.filter(
-			(clockDelta) => Math.abs(clockDelta - clockDeltasMedian) < clockDeltasStandardDeviation
+			(clockDelta) => Math.abs(clockDelta - clockDeltasMedian) <= clockDeltasStandardDeviation
 		);
+
 		Clock.clockDelta = arithmeticMean(clockDeltasWithoutOutliers);
 		console.log(`Current Clock Delta : ${Clock.clockDelta}`);
 	}
