@@ -28,15 +28,11 @@ export default class RoomManager {
 				role: role,
 			};
 
-			socket.on("disconnect", () => {
-				console.log("disconnected");
-			});
-
 			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
 					newRoom.joinRoom(socket, userInfo);
-					console.log(newRoom);
+
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getRoomId();
