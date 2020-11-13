@@ -40,7 +40,6 @@ export default class RoomManager {
 					clientCurrentLocalTime: timeRequestEvent.clientCurrentLocalTime,
 					serverCurrentLocalTime: serverCurrentLocalTime,
 				});
-				console.log(`[TIME_RESPONSE(RoomManager)] Client:${timeRequestEvent.clientCurrentLocalTime}, Server:${serverCurrentLocalTime}`);
 			});
 
 			socket.on("create-room", () => {
