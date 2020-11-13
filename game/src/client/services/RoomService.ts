@@ -1,10 +1,8 @@
 import io from "socket.io-client";
 import UserInfo from "../../communication/userInfo";
-import { Clock } from "./../../gameCore/clock/Clock";
 
 export const connectToRoomSelectionNamespace = (): SocketIOClient.Socket => {
 	const socket = io.connect(`${process.env.SERVER_API_URL}/roomSelection`);
-	Clock.synchronizeWithServer(socket);
 	return socket;
 };
 
@@ -17,9 +15,6 @@ export const connectToGameNamespace = (userInfo: UserInfo): SocketIOClient.Socke
 			schoolGrade: userInfo.schoolGrade,
 		},
 	});
-	if (!Clock.getIsSynchronizedWithServer()) {
-		Clock.synchronizeWithServer(socket);
-	}
 	return socket;
 };
 

@@ -28,6 +28,7 @@ export class Server {
 			res.sendFile(path.join(__dirname, "../", "/client/index.html"));
 		});
 
+		//TODO: Better describe the purpose of this (or delete if it's not used)
 		this.app.get("/heartbeat", (req, res) => {
 			res.send({
 				villeChoisie: "Quebec",
