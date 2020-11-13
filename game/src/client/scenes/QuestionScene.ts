@@ -1,5 +1,6 @@
 import { QuestionFoundFromBookEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
+import { Clock } from "../../gameCore/clock/Clock";
 import { ItemType } from "../../gameCore/race/items/Item";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
@@ -175,7 +176,7 @@ export default class QuestionScene extends Phaser.Scene {
 
 	update() {
 		if (this.showFeedbackTime) {
-			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
+			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime) / 1000).toString());
 		}
 
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
@@ -215,7 +216,7 @@ export default class QuestionScene extends Phaser.Scene {
 			this.enterButton.setAlpha(0);
 			this.answersList.setAlpha(0);
 			this.correctAnswer.setAlpha(0);
-			this.feedbackStartTimeStamp = Date.now();
+			this.feedbackStartTimeStamp = Clock.now();
 
 			this.feedbackRemainingTime = this.add
 				.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {

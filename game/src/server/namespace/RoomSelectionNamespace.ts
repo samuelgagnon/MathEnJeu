@@ -1,5 +1,8 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import RoomRepository from "../data/RoomRepository";
+import { TimeRequestEvent, TimeResponseEvent } from "./../../communication/clock/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "./../../communication/clock/EventNames";
+import { Clock } from "./../../gameCore/clock/Clock";
 
 export default class RoomSelectionNamespace {
 	private io: SocketIOServer;
@@ -23,6 +26,13 @@ export default class RoomSelectionNamespace {
 				"room-update",
 				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
 			);
+
+			socket.on(SE.TIME_REQUEST, (timeRequestEvent: TimeRequestEvent) => {
+				socket.emit(CE.TIME_RESPONSE, <TimeResponseEvent>{
+					clientCurrentLocalTime: timeRequestEvent.clientCurrentLocalTime,
+					serverCurrentLocalTime: Clock.now(),
+				});
+			});
 
 			socket.on("disconnect", () => {
 				console.log("room selection disconnection");

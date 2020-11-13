@@ -1,4 +1,5 @@
 import { StatusState } from "../../../../communication/race/PlayerState";
+import { Clock } from "../../../clock/Clock";
 import Status from "./Status";
 import StatusFactory from "./StatusFactory";
 import { StatusType } from "./StatusType";
@@ -30,7 +31,7 @@ export default class BananaStatus extends Status {
 	}
 
 	public activateBananaStatus(): void {
-		this.startTimeStatus = Date.now();
+		this.startTimeStatus = Clock.now();
 	}
 
 	public activateBrainiacStatus(): void {
@@ -38,13 +39,13 @@ export default class BananaStatus extends Status {
 	}
 
 	private setToNormalStatusIfCurrentStatusIsOver() {
-		if (Date.now() - this.startTimeStatus > this.DEFAULT_MAX_TIME_STATUS) {
+		if (Clock.now() - this.startTimeStatus > this.DEFAULT_MAX_TIME_STATUS) {
 			this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 		}
 	}
 
 	public getRemainingTime(): number {
-		return this.DEFAULT_MAX_TIME_STATUS - (Date.now() - this.startTimeStatus);
+		return this.DEFAULT_MAX_TIME_STATUS - (Clock.now() - this.startTimeStatus);
 	}
 
 	public getCurrentStatus(): StatusType {

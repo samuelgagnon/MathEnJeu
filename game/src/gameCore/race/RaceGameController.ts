@@ -1,3 +1,4 @@
+import { Clock } from "../clock/Clock";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
 import Item, { ItemType } from "./items/Item";
@@ -27,7 +28,7 @@ export default abstract class RaceGameController {
 	}
 
 	protected gameLogicUpdate(): void {
-		this.timeRemaining = this.gameTime - (Date.now() - this.gameStartTimeStamp);
+		this.timeRemaining = this.gameTime - (Clock.now() - this.gameStartTimeStamp);
 	}
 
 	public getTimeRemaining(): number {
