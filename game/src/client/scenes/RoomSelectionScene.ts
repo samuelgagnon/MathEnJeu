@@ -22,7 +22,7 @@ export default class RoomSelection extends Phaser.Scene {
 		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.gameSocket = connectToGameNamespace(getUserInfo());
 		if (!Clock.getIsSynchronizedWithServer()) {
-			Clock.synchronizeWithServer(this.gameSocket);
+			Clock.startSynchronizationWithServer(this.gameSocket);
 		}
 		this.events.on("shutdown", () => {
 			this.roomSelectionSocket.close();

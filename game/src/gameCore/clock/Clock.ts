@@ -8,10 +8,10 @@ export class Clock {
 	private static clockDelta: number = 0;
 	private static synchClockDeltas: number[] = [];
 	private static readonly TOTAL_SYNCH_STEP = 6;
-	private static readonly TIME_BETWEEN_SYNCH_STEP = 1000;
-	private static hasBeenSynchronizedOnce: boolean = false;
+	private static readonly TIME_BETWEEN_SYNCH_STEP = 2000;
 	private static isSynchronised: boolean = false;
 	private static isSynchronizing: boolean = false;
+	private static stopSynchronization: boolean = false;
 
 	private constructor() {}
 
@@ -23,7 +23,7 @@ export class Clock {
 		return Clock.isSynchronizing;
 	}
 
-	public static synchronizeWithServer(clientSocket: SocketIOClient.Socket): void {
+	public static startSynchronizationWithServer(clientSocket: SocketIOClient.Socket): void {
 		if (!Clock.getIsSynchronizingWithServer()) {
 			Clock.isSynchronised = false;
 			Clock.isSynchronizing = true;
@@ -35,9 +35,13 @@ export class Clock {
 	}
 
 	private static sendTimeRequest(): void {
-		Clock.socket.emit(SE.TIME_REQUEST, <TimeRequestEvent>{
-			clientCurrentLocalTime: Date.now(),
-		});
+		if (!Clock.stopSynchronization) {
+			Clock.socket.emit(SE.TIME_REQUEST, <TimeRequestEvent>{
+				clientCurrentLocalTime: Date.now(),
+			});
+		} else {
+			Clock.stopSynchronization = false;
+		}
 	}
 
 	private static handleSocketEvents(): void {
@@ -50,20 +54,14 @@ export class Clock {
 		const clientServerTimeDelta = timeResponse.serverCurrentLocalTime - timeResponse.clientCurrentLocalTime;
 		const clockDelta = clientServerTimeDelta + latency;
 		Clock.synchClockDeltas.push(clockDelta);
-
-		if (Clock.synchClockDeltas.length < Clock.TOTAL_SYNCH_STEP) {
-			if (!Clock.hasBeenSynchronizedOnce) {
-				Clock.computeUsedClockDelta();
-			}
-			setTimeout(function () {
-				Clock.sendTimeRequest();
-			}, Clock.TIME_BETWEEN_SYNCH_STEP);
-		} else {
-			Clock.computeUsedClockDelta();
-			Clock.isSynchronizing = false;
+		Clock.computeUsedClockDelta();
+		while (Clock.synchClockDeltas.length >= Clock.TOTAL_SYNCH_STEP) {
 			Clock.isSynchronised = true;
-			Clock.hasBeenSynchronizedOnce = true;
+			Clock.synchClockDeltas.shift();
 		}
+		setTimeout(function () {
+			Clock.sendTimeRequest();
+		}, Clock.TIME_BETWEEN_SYNCH_STEP);
 	}
 
 	private static computeUsedClockDelta(): void {
