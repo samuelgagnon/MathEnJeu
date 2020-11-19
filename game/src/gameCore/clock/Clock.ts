@@ -2,8 +2,11 @@ import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/D
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/clock/EventNames";
 import { arithmeticMean, median, standardDeviation } from "../../utils/Utils";
 
+//When the client clock is not synchronised with server clock, many glitches can occur. Clock.now() returns the current server time.
+//Client Clock.now() should replaces Date.now() so the time used is the same as the server time.
+//When client clock is synchronized with server, Clock.now from client should return a result very close to Clock.now from server.
+//A server using Clock should only use the function now().
 export class Clock {
-	private static instance: Clock;
 	private static socket: SocketIOClient.Socket;
 	private static clockDelta: number = 0;
 	private static synchClockDeltas: number[] = [];
@@ -24,7 +27,7 @@ export class Clock {
 	}
 
 	public static startSynchronizationWithServer(clientSocket: SocketIOClient.Socket): void {
-		if (!Clock.getIsSynchronizingWithServer()) {
+		if (!Clock.isSynchronizing) {
 			Clock.isSynchronised = false;
 			Clock.isSynchronizing = true;
 			Clock.socket = clientSocket;
@@ -45,10 +48,17 @@ export class Clock {
 	}
 
 	private static handleSocketEvents(): void {
-		Clock.socket.on(CE.TIME_RESPONSE, Clock.computeSynchClockDelta);
+		Clock.socket.on(CE.TIME_RESPONSE, Clock.computeClockDeltaFromTimeResponse);
+		Clock.socket.on("disconnect", () => {
+			Clock.stopSynchronization = true;
+			Clock.isSynchronised = false;
+			Clock.isSynchronizing = false;
+		});
 	}
 
-	private static computeSynchClockDelta(timeResponse: TimeResponseEvent): void {
+	//Each time we get a time response from server, we compute a clockdelta.
+	//This specific clockdelta is used to compute the clockDelta used in Clock.now().
+	private static computeClockDeltaFromTimeResponse(timeResponse: TimeResponseEvent): void {
 		const currentTime = Date.now();
 		const latency = (currentTime - timeResponse.clientCurrentLocalTime) / 2;
 		const clientServerTimeDelta = timeResponse.serverCurrentLocalTime - timeResponse.clientCurrentLocalTime;
@@ -64,6 +74,8 @@ export class Clock {
 		}, Clock.TIME_BETWEEN_SYNCH_STEP);
 	}
 
+	//From all the clockDeltas previously calculated, we only keep those being at a max. distance of one standard-deviation from median.
+	//Then, we use the arithmetic mean of all those clockDeltas as the offical ClockDelta.
 	private static computeUsedClockDelta(): void {
 		const clockDeltasStandardDeviation = standardDeviation(Clock.synchClockDeltas);
 		const clockDeltasMedian = median(Clock.synchClockDeltas);
