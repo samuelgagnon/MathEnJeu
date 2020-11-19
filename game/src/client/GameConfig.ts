@@ -1,5 +1,6 @@
 import IsoPlugin from "phaser3-plugin-isometric";
 import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
+import InGameMenuScene from "./scenes/InGameMenuScene";
 import LoadScene from "./scenes/LoadScene";
 import MainScene from "./scenes/MainScene";
 import MenuScene from "./scenes/MenuScene";
@@ -22,7 +23,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 	},
-	scene: [LoadScene, MenuScene, MainScene, RoomSelection, WaitingRoomScene, RaceScene, RaceGameUI, QuestionScene, UsersSettingScene],
+	scene: [LoadScene, MenuScene, MainScene, RoomSelection, WaitingRoomScene, RaceScene, RaceGameUI, QuestionScene, UsersSettingScene, InGameMenuScene],
 	plugins: {
 		scene: [
 			{

@@ -10,6 +10,7 @@ export const CST = {
 		ROOM_SELECTION: "roomSelectionScene",
 		USERS_SETTING: "userSettingsScene",
 		WAITING_ROOM: "waitingRoomScene",
+		IN_GAME_MENU: "inGameMenuScene",
 	},
 	IMAGES: {
 		BACKGROUD: "starfield.jpg",

@@ -11,6 +11,7 @@ export default class QuestionScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
+	sizeFactor: number;
 	targetLocation: Point;
 	question: Question;
 	questionConstant: string;
@@ -43,15 +44,20 @@ export default class QuestionScene extends Phaser.Scene {
 	init(data: QuestionSceneData) {
 		this.question = data.question;
 		this.targetLocation = data.targetLocation;
-		this.width = data.width;
-		this.height = data.height;
-		this.position = data.position;
 		this.feedbackMaxTime = 5000;
 		this.showFeedbackTime = false;
 		this.questionImage = undefined;
 		this.feedbackImage = undefined;
 		this.feedbackConstant = "feedback";
 		this.questionConstant = "question";
+
+		this.sizeFactor = 0.9;
+		this.width = Number(this.game.config.width) * 0.9;
+		this.height = Number(this.game.config.height) * 0.9;
+
+		var x = Number(this.game.config.width) * 0.05;
+		var y = Number(this.game.config.height) * 0.05;
+		this.position = { x: x, y: y };
 	}
 
 	create() {
@@ -168,9 +174,6 @@ export default class QuestionScene extends Phaser.Scene {
 		);
 
 		this.getTexturesForQuestion();
-
-		//@ts-ignore
-		window.questionScene = this;
 	}
 
 	update() {
@@ -297,7 +300,4 @@ export default class QuestionScene extends Phaser.Scene {
 export interface QuestionSceneData {
 	question: Question;
 	targetLocation: Point;
-	position: Point;
-	width: number;
-	height: number;
 }
