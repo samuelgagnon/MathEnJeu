@@ -1,6 +1,9 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
+import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
 import UserInfo from "../../communication/userInfo";
+import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";
+import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "./../../communication/clock/EventNames";
 import RoomFactory from "./RoomFactory";
 
 export default class RoomManager {
@@ -31,6 +34,14 @@ export default class RoomManager {
 				console.log("disconnected");
 			});
 
+			socket.on(SE.TIME_REQUEST, (timeRequestEvent: TimeRequestEvent) => {
+				const serverCurrentLocalTime = Clock.now();
+				socket.emit(CE.TIME_RESPONSE, <TimeResponseEvent>{
+					clientCurrentLocalTime: timeRequestEvent.clientCurrentLocalTime,
+					serverCurrentLocalTime: serverCurrentLocalTime,
+				});
+			});
+
 			socket.on("create-room", () => {
 				console.log("create room");
 				try {
@@ -53,7 +64,6 @@ export default class RoomManager {
 			socket.on("join-room", (req) => {
 				try {
 					const roomId: string = req.roomId;
-					console.log(`joining room: ${roomId}`);
 					const currentRoom = this.roomRepo.getRoomById(roomId);
 					if (currentRoom == undefined) {
 						throw new RoomNotFoundError(`Room ${roomId} was not found`);

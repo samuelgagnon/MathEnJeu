@@ -20,8 +20,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	init(data: any) {
 		this.gameSocket = data.socket;
 		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_START, (gameInfo: GameStartEvent) => {
-			console.log(gameInfo);
-
 			const raceGame: ClientRaceGameController = RaceGameFactory.createClient(
 				gameInfo.gameTime,
 				gameInfo.gameStartTimeStamp,

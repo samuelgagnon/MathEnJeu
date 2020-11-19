@@ -11,7 +11,7 @@ import {
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	StartingRaceGridInfo
+	StartingRaceGridInfo,
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
@@ -19,6 +19,7 @@ import RaceGameState from "../../communication/race/RaceGameState";
 import QuestionRepository from "../../server/data/QuestionRepository";
 import User from "../../server/data/User";
 import { getObjectValues } from "../../utils/Utils";
+import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import GameFSM from "../gameState/GameFSM";
 import State, { GameState } from "../gameState/State";
@@ -40,7 +41,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string, questionRepo: QuestionRepository) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, Date.now(), grid, players);
+		super(gameTime, Clock.now(), grid, players);
 		this.gameId = gameId;
 		this.questionRepo = questionRepo;
 		this.handleAllUsersSocketEvents(users);
@@ -85,7 +86,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			gameState.players.push(player.getPlayerState());
 		});
 
-		gameState.timeStamp = Date.now();
+		gameState.timeStamp = Clock.now();
 		return gameState;
 	}
 
@@ -135,7 +136,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		});
 
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
-			const lag = data.clientTimestamp - Date.now();
+			const lag = data.clientTimestamp - Clock.now();
 			const newData: QuestionAnsweredEvent = {
 				questionId: data.questionId,
 				isAnswerCorrect: data.isAnswerCorrect,
@@ -186,17 +187,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.MOVE_REQUEST:
-					try {
-						player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
-						player.setIsAnsweringQuestion(true);
-						this.sendQuestionToPlayer(
-							player.getInfoForQuestion().language,
-							player.getInfoForQuestion().schoolGrade,
-							player,
-							(<MoveRequestEvent>inputData).targetLocation
-						);
-					} catch (err) {
-						console.log(err);
+					if (this.isMoveRequestValid(<MoveRequestEvent>inputData)) {
+						try {
+							player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+							player.setIsAnsweringQuestion(true);
+							this.sendQuestionToPlayer(
+								player.getInfoForQuestion().language,
+								player.getInfoForQuestion().schoolGrade,
+								player,
+								(<MoveRequestEvent>inputData).targetLocation
+							);
+						} catch (err) {
+							console.log(err);
+						}
 					}
 					break;
 
@@ -239,9 +242,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private async findQuestionForPlayer(language: string, schoolGrade: number, difficulty: number): Promise<Question> {
 		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, difficulty);
-		console.log(`language: ${language}, schoolGrade: ${schoolGrade}, movement: ${difficulty}`);
 		const randomPosition = Math.floor(Math.random() * questionIdArray.length);
-		console.log(questionIdArray);
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
@@ -271,17 +272,34 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.players.forEach((player) => {
 			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
 			if (itemPickedUp) {
-				this.itemPickUpTimestamps.push(Date.now());
+				this.itemPickUpTimestamps.push(Clock.now());
 			}
 		});
 	}
 
 	private handleItemsRespawn(): void {
 		this.itemPickUpTimestamps.forEach((itemPickUpTimestamp: number, index: number) => {
-			if (Date.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
+			if (Clock.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);
 				this.grid.generateNewItem();
 			}
 		});
+	}
+
+	isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
+		const player = this.findPlayer(moveRequestEvent.playerId);
+		if (!player.getIsAnsweringQuestion() && player.hasArrived()) {
+			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
+			if (
+				possibleTargetLocations.some(
+					(possibleTargetLocation) =>
+						possibleTargetLocation.position.x == moveRequestEvent.targetLocation.x &&
+						possibleTargetLocation.position.y == moveRequestEvent.targetLocation.y
+				)
+			) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

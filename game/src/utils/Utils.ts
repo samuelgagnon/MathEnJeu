@@ -16,3 +16,27 @@ export const getObjectValues = (obj: any) => {
 	recurse(obj);
 	return res;
 };
+
+export const arithmeticMean = (values: number[]) => {
+	let total = 0;
+	values.forEach((element) => {
+		total += element;
+	});
+	return total / values.length;
+};
+
+export const standardDeviation = (values: number[]) => {
+	const n = values.length;
+	const mean = arithmeticMean(values);
+	return Math.sqrt(values.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
+};
+
+export const median = (values: number[]) => {
+	if (values.length === 0) return 0;
+	values.sort(function (a, b) {
+		return a - b;
+	});
+	var half = Math.floor(values.length / 2);
+	if (values.length % 2) return values[half];
+	return (values[half - 1] + values[half]) / 2.0;
+};
