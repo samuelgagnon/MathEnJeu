@@ -30,6 +30,7 @@ export const CST = {
 		STAR: "star-158502_640.png",
 		TILE: "tileSprites/testTile.png",
 		TITLE: "mathamaze_logo5.png",
+		START_OPTIONS: "buttons/start_options_button.png",
 	},
 	HTML: {
 		ANSWERS_LIST: "answersList.html",
