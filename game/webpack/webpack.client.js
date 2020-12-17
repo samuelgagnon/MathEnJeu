@@ -5,16 +5,19 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = (env) => {
 	let mode = "development";
+	let sourceMapEnabled = "inline-source-map";
 	let outputPath = path.join(__dirname, "../", "dist/client");
 	let SERVER_API_URL = "http://localhost:8080";
 
-	if (env.NODE_ENV === "production") {
+	if (env.NODE_ENV === "prod") {
 		mode = "production";
+		sourceMapEnabled = "hidden-source-map";
 	}
 
 	return {
 		mode: mode,
 		entry: ["./src/client/index.ts"],
+		devtool: sourceMapEnabled,
 		module: {
 			rules: [
 				{
