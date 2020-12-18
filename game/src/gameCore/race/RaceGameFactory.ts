@@ -1,7 +1,5 @@
 import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
-import { serviceConstants } from "../../server/context/CommonContext";
-import ServiceLocator from "../../server/context/ServiceLocator";
 import User from "../../server/data/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
@@ -14,7 +12,6 @@ import PlayerFactory from "./player/PlayerFactory";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
 import { RACE_CST } from "./RACE_CST";
-import ServerRaceGameController from "./ServerRaceGameController";
 
 export default class RaceGameFactory {
 	public static createClient(
@@ -30,21 +27,8 @@ export default class RaceGameFactory {
 		return new ClientRaceGameController(gameTime, gameStartTimestamp, raceGrid, players, currentPlayerId, playerSocket);
 	}
 
-	public static createServer(gameId: string, users: User[]): ServerRaceGameController {
-		const raceGrid = this.generateRaceGrid(RACE_CST.CIRCUIT.GRID_WIDTH, RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID);
-		const players = this.generatePlayers(users, raceGrid.getStartingPositions());
-		return new ServerRaceGameController(
-			RACE_CST.CIRCUIT.GAME_MAX_LENGTH,
-			raceGrid,
-			players,
-			users,
-			gameId,
-			ServiceLocator.resolve(serviceConstants.QUESTION_REPOSITORY_CLASS)
-		);
-	}
-
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
-	private static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string): RaceGrid {
+	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string): RaceGrid {
 		let tiles: Tile[] = [];
 		let itemsState: ItemState[] = [];
 		for (let y = 0; y < gridHeight; y++) {

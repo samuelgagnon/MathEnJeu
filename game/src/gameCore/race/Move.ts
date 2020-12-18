@@ -1,4 +1,5 @@
 import MoveState from "../../communication/race/MoveState";
+import { Clock } from "../clock/Clock";
 import AffineTransform from "./AffineTransform";
 import { RACE_CST } from "./RACE_CST";
 
@@ -79,7 +80,7 @@ export default class Move {
 		return Math.abs(targetLocation.x - startLocation.x) + Math.abs(targetLocation.y - startLocation.y);
 	}
 
-	public getCurrentPosition(nowTimestamp: number = Date.now()): Point {
+	public getCurrentPosition(nowTimestamp: number = Clock.now()): Point {
 		let d: number = this.getDistance();
 
 		//t in [0,1] corresponds to the proportion of the move done.

@@ -1,4 +1,5 @@
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
+import { Clock } from "../../gameCore/clock/Clock";
 import { CST } from "../CST";
 import { getUserInfo } from "../services/UserInformationService";
 import { connectToGameNamespace, connectToRoomSelectionNamespace, createRoom } from "./../services/RoomService";
@@ -21,6 +22,9 @@ export default class RoomSelection extends Phaser.Scene {
 	init() {
 		this.gameSocket = connectToGameNamespace(getUserInfo());
 		this.roomSelectionSocket = connectToRoomSelectionNamespace();
+		if (!Clock.getIsSynchronizedWithServer()) {
+			Clock.startSynchronizationWithServer(this.gameSocket);
+		}
 		this.events.on("shutdown", () => {
 			this.roomSelectionSocket.close();
 		});

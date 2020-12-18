@@ -1,5 +1,6 @@
 import { InfoForQuestion } from "../../../communication/race/DataInterfaces";
 import PlayerState from "../../../communication/race/PlayerState";
+import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
 import { RACE_CST } from "../RACE_CST";
@@ -36,7 +37,7 @@ export default class Player {
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory, schoolGrade: number, language: string) {
 		this.id = id;
 		this.position = startLocation;
-		this.move = new Move(Date.now(), startLocation, startLocation);
+		this.move = new Move(Clock.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
 		this.schoolGrade = schoolGrade;

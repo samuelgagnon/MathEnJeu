@@ -2,6 +2,7 @@ import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, Questi
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
+import { Clock } from "../clock/Clock";
 import { ClientGame } from "../Game";
 import RaceGrid, { PossiblePositions } from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
@@ -65,20 +66,20 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public playerAnsweredQuestion(questionId: number, isAnswerCorrect: boolean, targetLocation: Point): void {
-		let moveTimestamp = Date.now();
+		let moveTimestamp = Clock.now();
 		super.playerAnsweredQuestion(questionId, isAnswerCorrect, targetLocation, this.currentPlayerId, moveTimestamp);
 		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
 			questionId: questionId,
 			isAnswerCorrect: isAnswerCorrect,
 			playerId: this.currentPlayerId,
-			clientTimestamp: Date.now(),
+			clientTimestamp: Clock.now(),
 			startTimestamp: moveTimestamp,
 			targetLocation: targetLocation,
 		});
 	}
 
 	public setGameState(gameState: RaceGameState): void {
-		const lag = gameState.timeStamp - Date.now();
+		const lag = gameState.timeStamp - Clock.now();
 		//Ajusting client game time only if it has a difference of 1.5 seconds (1500 millisecondes)
 		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime + lag;
 		this.players.forEach((player: Player) => {
@@ -90,7 +91,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		this.grid.updateFromItemStates(gameState.itemsState, lag);
 	}
 
-	public getPossiblePlayerMovement(position: Point): PossiblePositions[] {
+	public getPossibleCurrentPlayerMovement(position: Point): PossiblePositions[] {
 		const currentPlayer = this.getCurrentPlayer();
 		return this.grid.getPossibleMovementFrom(position, currentPlayer.getMaxMovementDistance());
 	}

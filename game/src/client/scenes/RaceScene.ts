@@ -112,8 +112,7 @@ export default class RaceScene extends Phaser.Scene {
 							tileSprite.setTint(this.activeTileColor);
 
 							//TODO verify if has arrived logic should be moved to player
-							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived()) {
-								this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
+							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().getIsAnsweringQuestion()) {
 								this.raceGame.playerMoveRequest({ x: x, y: y });
 							}
 						}
@@ -318,14 +317,17 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
-			console.log(data.questionDTO);
+			this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
 			this.createQuestionWindow(data.targetLocation, QuestionMapper.fromDTO(data.questionDTO));
 		});
 	}
 
 	private activateAccessiblePositions(): void {
 		const tile = this.getTileFromPhaserPosition(this.targetLocation.x, this.targetLocation.y);
-		const possiblePositions = this.raceGame.getPossiblePlayerMovement({ x: tile.getData("gridPosition").x, y: tile.getData("gridPosition").y });
+		const possiblePositions = this.raceGame.getPossibleCurrentPlayerMovement({
+			x: tile.getData("gridPosition").x,
+			y: tile.getData("gridPosition").y,
+		});
 
 		this.clearTileInteractions();
 
