@@ -6,8 +6,11 @@ import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
 import { getUserInfo } from "../services/UserInformationService";
 import { CST } from "./../CST";
+import RaceGameUI from "./RaceGameUI";
 import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {
+	disabledInteractionZone: Phaser.GameObjects.Zone;
+
 	position: Point;
 	width: number;
 	height: number;
@@ -30,6 +33,8 @@ export default class QuestionScene extends Phaser.Scene {
 	crystalBallIcon: Phaser.GameObjects.Sprite;
 	bookCount: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
+
+	raceGameUI: RaceGameUI;
 
 	feedbackMaxTime: number;
 	feedbackStartTimeStamp: number;
@@ -61,6 +66,7 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	create() {
+		this.raceGameUI = <RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
 
@@ -174,9 +180,22 @@ export default class QuestionScene extends Phaser.Scene {
 		);
 
 		this.getTexturesForQuestion();
+
+		this.disabledInteractionZone = this.add
+			.zone(0, 0, Number(this.game.config.width), Number(this.game.config.height))
+			.setInteractive()
+			.setOrigin(0)
+			.setScrollFactor(0)
+			.setActive(false)
+			.setVisible(false);
 	}
 
 	update() {
+		const isGamePaused = this.raceGameUI.isGamePaused;
+		this.inputHtml.setActive(!isGamePaused).setVisible(!isGamePaused);
+		this.answersList.setActive(!isGamePaused).setVisible(!isGamePaused);
+		this.disabledInteractionZone.setActive(isGamePaused).setVisible(isGamePaused);
+
 		if (this.showFeedbackTime) {
 			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Date.now() + this.feedbackMaxTime) / 1000).toString());
 		}

@@ -356,6 +356,10 @@ export default class RaceScene extends Phaser.Scene {
 	private playerHasArrived(phaserCurrentPosition): boolean {
 		return phaserCurrentPosition.x === this.targetLocation.x && phaserCurrentPosition.y === this.targetLocation.y;
 	}
+
+	public quitGame(): void {
+		this.raceGame.getCurrentPlayerSocket().close();
+	}
 }
 
 interface CharacterSprites {

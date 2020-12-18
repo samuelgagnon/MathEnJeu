@@ -92,7 +92,6 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-
 			createRoom(this.gameSocket);
 		});
 

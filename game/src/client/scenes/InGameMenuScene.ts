@@ -1,4 +1,6 @@
 import { CST } from "../CST";
+import RaceGameUI from "./RaceGameUI";
+import RaceScene from "./RaceScene";
 
 export default class InGameMenuScene extends Phaser.Scene {
 	position: Point;
@@ -29,16 +31,9 @@ export default class InGameMenuScene extends Phaser.Scene {
 	}
 
 	create() {
-		this.disabledInteractionZone = this.add
-			.zone(0, 0, Number(this.game.config.width), Number(this.game.config.height))
-			.setInteractive()
-			.setOrigin(0)
-			.setScrollFactor(0)
-			.setActive(true)
-			.setVisible(true);
-
+		const raceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
-		this.cameras.main.setBackgroundColor(0xffffff);
+		this.cameras.main.setBackgroundColor(0x808080);
 
 		this.resumeText = this.add
 			.text(this.width / 2 - 50, this.height * 0.3, "Resume", {
@@ -73,7 +68,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.resumeText.on("pointerup", () => {
-			this.destroyScene();
+			this.resumeGame();
 		});
 
 		this.quitText.on("pointerover", () => {
@@ -89,7 +84,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.quitText.on("pointerup", () => {
-			this.destroyScene();
+			this.quitGame();
 		});
 
 		this.resumeText.setInteractive({
@@ -101,7 +96,17 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 	}
 
-	private destroyScene(): void {
+	private quitGame(): void {
+		this.scene.stop(CST.SCENES.IN_GAME_MENU);
+		this.scene.stop(CST.SCENES.RACE_GAME_UI);
+		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).quitGame();
+		this.scene.stop(CST.SCENES.RACE_GAME);
+		this.scene.start(CST.SCENES.ROOM_SELECTION);
+	}
+
+	private resumeGame(): void {
+		(<RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI)).resumeGame();
 		this.scene.stop(CST.SCENES.IN_GAME_MENU);
 	}
 }

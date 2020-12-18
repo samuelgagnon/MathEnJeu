@@ -13,6 +13,8 @@ export default class RaceGameUI extends Phaser.Scene {
 	playerStatusText: Phaser.GameObjects.Text;
 	playerStatusTime: Phaser.GameObjects.Text;
 
+	isGamePaused: boolean;
+
 	//playerItems
 	bananaText: Phaser.GameObjects.Text;
 	bananaCount: Phaser.GameObjects.Text;
@@ -30,13 +32,10 @@ export default class RaceGameUI extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	init() {}
-
-	preload() {}
-
 	create() {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		const currentPlayer = raceScene.raceGame.getCurrentPlayer();
+		this.isGamePaused = false;
 
 		this.playerStatusText = this.add
 			.text(50, 100, currentPlayer.getCurrentStatus().toString(), {
@@ -272,7 +271,9 @@ export default class RaceGameUI extends Phaser.Scene {
 		});
 
 		this.startOptionsButton.on("pointerup", () => {
+			this.isGamePaused = true;
 			this.startOptionsButton.clearTint();
+			this.startOptionsButton.disableInteractive();
 			this.scene.launch(CST.SCENES.IN_GAME_MENU);
 		});
 	}
@@ -283,6 +284,12 @@ export default class RaceGameUI extends Phaser.Scene {
 		const currentPlayerStatus = currentPlayer.getCurrentStatus().toString();
 
 		if (currentPlayer.getIsAnsweringQuestion()) {
+			this.disabledInteractionZone.setActive(true).setVisible(true);
+		} else {
+			this.disabledInteractionZone.setActive(false).setVisible(false);
+		}
+
+		if (this.isGamePaused) {
 			this.disabledInteractionZone.setActive(true).setVisible(true);
 		} else {
 			this.disabledInteractionZone.setActive(false).setVisible(false);
@@ -306,5 +313,10 @@ export default class RaceGameUI extends Phaser.Scene {
 
 		//setting player points
 		this.pointsTotal.setText(currentPlayer.getPoints().toString());
+	}
+
+	resumeGame() {
+		this.isGamePaused = false;
+		this.startOptionsButton.setInteractive();
 	}
 }
