@@ -22,7 +22,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.lastGameResults = data.lastGameData;
-		console.log(data.lastGameData);
 
 		this.gameSocket = data.socket;
 		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_START, (gameInfo: GameStartEvent) => {
