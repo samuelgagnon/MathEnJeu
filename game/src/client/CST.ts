@@ -28,7 +28,6 @@ export const CST = {
 
 		PLAY: "buttons/play_button.png",
 		STAR: "star-158502_640.png",
-		TILE: "tileSprites/testTile.png",
 		TITLE: "mathamaze_logo5.png",
 		START_OPTIONS: "buttons/start_options_button.png",
 	},

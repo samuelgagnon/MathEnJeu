@@ -85,7 +85,6 @@ export class Clock {
 		);
 
 		Clock.clockDelta = arithmeticMean(clockDeltasWithoutOutliers);
-		console.log(`Current Clock Delta : ${Clock.clockDelta}`);
 	}
 
 	public static now(): number {

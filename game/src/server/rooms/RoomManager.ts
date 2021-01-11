@@ -31,10 +31,7 @@ export default class RoomManager {
 				role: role,
 			};
 
-			socket.on("disconnect", () => {
-				console.log("disconnected");
-			});
-
+			//synchronization with server
 			socket.on(SE.TIME_REQUEST, (timeRequestEvent: TimeRequestEvent) => {
 				const serverCurrentLocalTime = Clock.now();
 				socket.emit(CE.TIME_RESPONSE, <TimeResponseEvent>{
@@ -44,17 +41,13 @@ export default class RoomManager {
 			});
 
 			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
-				console.log("create room");
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
 					newRoom.joinRoom(socket, userInfo);
-
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getRoomId();
-
 					this.handleDisconnection(socket, roomId);
-					console.log("room created");
 				} catch (err) {
 					socket.error({
 						type: 400,

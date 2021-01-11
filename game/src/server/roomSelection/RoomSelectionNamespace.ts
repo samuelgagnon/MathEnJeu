@@ -17,14 +17,10 @@ export default class RoomSelectionNamespace {
 
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
-			socket.emit(
+			this.nsp.emit(
 				"room-update",
 				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
 			);
-
-			socket.on("disconnect", () => {
-				console.log("room selection disconnection");
-			});
 
 			this.sendRoomsToClient(socket);
 		});

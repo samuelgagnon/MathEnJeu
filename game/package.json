@@ -33,7 +33,6 @@
     "express": "^4.17.1",
     "mysql": "^2.18.1",
     "phaser": "^3.23.0",
-    "phaser3-plugin-isometric": "0.0.7",
     "phaser3-rex-plugins": "^1.1.18",
     "reflect-metadata": "^0.1.13",
     "socket.io": "^2.3.0",
