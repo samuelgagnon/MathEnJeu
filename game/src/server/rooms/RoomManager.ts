@@ -1,5 +1,6 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/userInfo";
 import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";
@@ -42,17 +43,18 @@ export default class RoomManager {
 				});
 			});
 
-			socket.on("create-room", () => {
+			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
 				console.log("create room");
 				try {
 					const newRoom = RoomFactory.create(this.nsp);
 					newRoom.joinRoom(socket, userInfo);
+
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getRoomId();
 
-					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
+					console.log("room created");
 				} catch (err) {
 					socket.error({
 						type: 400,
@@ -61,7 +63,7 @@ export default class RoomManager {
 				}
 			});
 
-			socket.on("join-room", (req) => {
+			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM, (req) => {
 				try {
 					const roomId: string = req.roomId;
 					const currentRoom = this.roomRepo.getRoomById(roomId);
@@ -70,7 +72,6 @@ export default class RoomManager {
 					}
 
 					currentRoom.joinRoom(socket, userInfo);
-					this.handleLeavingRoom(socket, roomId);
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {
 					socket.error({
@@ -97,14 +98,6 @@ export default class RoomManager {
 
 	private handleDisconnection(socket: Socket, roomId: string): void {
 		socket.on("disconnect", () => {
-			console.log("disconnection");
-
-			this.removeUserFromRoom(roomId, socket);
-		});
-	}
-
-	private handleLeavingRoom(socket: Socket, roomId: string): void {
-		socket.on("leave-room", () => {
 			this.removeUserFromRoom(roomId, socket);
 		});
 	}

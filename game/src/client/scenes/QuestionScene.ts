@@ -7,11 +7,15 @@ import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
 import { getUserInfo } from "../services/UserInformationService";
 import { CST } from "./../CST";
+import RaceGameUI from "./RaceGameUI";
 import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {
+	disabledInteractionZone: Phaser.GameObjects.Zone;
+
 	position: Point;
 	width: number;
 	height: number;
+	sizeFactor: number;
 	targetLocation: Point;
 	question: Question;
 	questionConstant: string;
@@ -31,6 +35,8 @@ export default class QuestionScene extends Phaser.Scene {
 	bookCount: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
 
+	raceGameUI: RaceGameUI;
+
 	feedbackMaxTime: number;
 	feedbackStartTimeStamp: number;
 	feedbackRemainingTime: Phaser.GameObjects.Text;
@@ -44,18 +50,24 @@ export default class QuestionScene extends Phaser.Scene {
 	init(data: QuestionSceneData) {
 		this.question = data.question;
 		this.targetLocation = data.targetLocation;
-		this.width = data.width;
-		this.height = data.height;
-		this.position = data.position;
 		this.feedbackMaxTime = 5000;
 		this.showFeedbackTime = false;
 		this.questionImage = undefined;
 		this.feedbackImage = undefined;
 		this.feedbackConstant = "feedback";
 		this.questionConstant = "question";
+
+		this.sizeFactor = 0.9;
+		this.width = Number(this.game.config.width) * 0.9;
+		this.height = Number(this.game.config.height) * 0.9;
+
+		var x = Number(this.game.config.width) * 0.05;
+		var y = Number(this.game.config.height) * 0.05;
+		this.position = { x: x, y: y };
 	}
 
 	create() {
+		this.raceGameUI = <RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
 
@@ -170,11 +182,21 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.getTexturesForQuestion();
 
-		//@ts-ignore
-		window.questionScene = this;
+		this.disabledInteractionZone = this.add
+			.zone(0, 0, Number(this.game.config.width), Number(this.game.config.height))
+			.setInteractive()
+			.setOrigin(0)
+			.setScrollFactor(0)
+			.setActive(false)
+			.setVisible(false);
 	}
 
 	update() {
+		const isGamePaused = this.raceGameUI.isGamePaused;
+		this.inputHtml.setActive(!isGamePaused).setVisible(!isGamePaused);
+		this.answersList.setActive(!isGamePaused).setVisible(!isGamePaused);
+		this.disabledInteractionZone.setActive(isGamePaused).setVisible(isGamePaused);
+
 		if (this.showFeedbackTime) {
 			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime) / 1000).toString());
 		}
@@ -295,7 +317,4 @@ export default class QuestionScene extends Phaser.Scene {
 export interface QuestionSceneData {
 	question: Question;
 	targetLocation: Point;
-	position: Point;
-	width: number;
-	height: number;
 }

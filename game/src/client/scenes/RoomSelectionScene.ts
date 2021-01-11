@@ -1,3 +1,4 @@
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { CST } from "../CST";
 import { getUserInfo } from "../services/UserInformationService";
@@ -19,8 +20,8 @@ export default class RoomSelection extends Phaser.Scene {
 	}
 
 	init() {
-		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.gameSocket = connectToGameNamespace(getUserInfo());
+		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		if (!Clock.getIsSynchronizedWithServer()) {
 			Clock.startSynchronizationWithServer(this.gameSocket);
 		}
@@ -95,7 +96,6 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-
 			createRoom(this.gameSocket);
 		});
 
@@ -114,7 +114,7 @@ export default class RoomSelection extends Phaser.Scene {
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
 			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
-			this.gameSocket.emit("join-room", { roomId });
+			this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId });
 		});
 
 		this.backButton.on("pointerover", () => {

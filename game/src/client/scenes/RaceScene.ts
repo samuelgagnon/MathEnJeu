@@ -126,9 +126,6 @@ export default class RaceScene extends Phaser.Scene {
 		this.activateAccessiblePositions();
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
-
-		//@ts-ignore
-		window.myScene = this;
 	}
 
 	phys(currentframe: number) {
@@ -286,9 +283,6 @@ export default class RaceScene extends Phaser.Scene {
 		const questionWindowData: QuestionSceneData = {
 			question: question,
 			targetLocation: targetLocation,
-			width: Number(this.game.config.width) * 0.9,
-			height: Number(this.game.config.height) * 0.9,
-			position: { x: x, y: y },
 		};
 
 		this.scene.launch(CST.SCENES.QUESTION_WINDOW, questionWindowData);
@@ -363,6 +357,10 @@ export default class RaceScene extends Phaser.Scene {
 
 	private playerHasArrived(phaserCurrentPosition): boolean {
 		return phaserCurrentPosition.x === this.targetLocation.x && phaserCurrentPosition.y === this.targetLocation.y;
+	}
+
+	public quitGame(): void {
+		this.raceGame.getCurrentPlayerSocket().close();
 	}
 }
 
