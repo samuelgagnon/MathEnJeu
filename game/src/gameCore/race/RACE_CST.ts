@@ -3,7 +3,7 @@ export const RACE_CST = {
 		SPEED: 0.001, //in tile per millisecond.
 	},
 	CIRCUIT: {
-		GAME_MAX_LENGTH: 5 * 1000, //in milliseconds
+		GAME_MAX_LENGTH: 5 * 60 * 1000, //in milliseconds
 		GRID_WIDTH: 20,
 		GRID_HEIGTH: 16,
 		NUMBER_OF_CHECKPOINTS: 5,
