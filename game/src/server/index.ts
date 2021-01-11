@@ -15,8 +15,8 @@ import { QuestionInfo } from "../orm/entities/QuestionInfo";
 import applyCommonContext, { serviceConstants } from "./context/CommonContext";
 import ServiceLocator from "./context/ServiceLocator";
 import GameManager from "./GameManager";
-import RoomSelectionNamespace from "./namespace/RoomSelectionNamespace";
 import RoomManager from "./rooms/RoomManager";
+import RoomSelectionNamespace from "./roomSelection/RoomSelectionNamespace";
 import { Server } from "./Server";
 
 const app = express();
