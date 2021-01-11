@@ -23,7 +23,6 @@ export default class RaceGameFactory {
 		playerSocket: SocketIOClient.Socket
 	): ClientRaceGameController {
 		const raceGrid = this.generateClientRaceGrid(startingRaceGridInfo);
-		console.log("client created");
 		return new ClientRaceGameController(gameTime, gameStartTimestamp, raceGrid, players, currentPlayerId, playerSocket);
 	}
 

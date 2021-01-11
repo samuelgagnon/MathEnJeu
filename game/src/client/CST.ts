@@ -38,5 +38,6 @@ export const CST = {
 		ROOMS_LIST: "roomsList.html",
 		USER_SETTINGS: "userSettings.html",
 		USERS_LIST: "usersList.html",
+		GAME_RESULTS: "gameResults.html",
 	},
 };

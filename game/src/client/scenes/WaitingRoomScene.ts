@@ -1,4 +1,4 @@
-import { GameStartEvent, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
+import { GameEndEvent, GameStartEvent, PlayerEndState, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
@@ -12,6 +12,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private quitButton: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
+	private gameResultsHtml: Phaser.GameObjects.DOMElement;
+	private lastGameResults: GameEndEvent;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
@@ -19,6 +21,9 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	}
 
 	init(data: any) {
+		this.lastGameResults = data.lastGameData;
+		console.log(data.lastGameData);
+
 		this.gameSocket = data.socket;
 		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_START, (gameInfo: GameStartEvent) => {
 			const raceGame: ClientRaceGameController = RaceGameFactory.createClient(
@@ -37,7 +42,19 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	create() {
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
-		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.5, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
+		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
+
+		if (this.lastGameResults != undefined) {
+			this.gameResultsHtml = this.add.dom(this.game.renderer.width * 0.6, this.game.renderer.height * 0.2).createFromCache(CST.HTML.GAME_RESULTS);
+
+			let playerList = <HTMLInputElement>this.gameResultsHtml.getChildByID("playerList");
+
+			this.lastGameResults.playerEndStates.forEach((playerInfo: PlayerEndState) => {
+				var li = document.createElement("li");
+				li.appendChild(document.createTextNode(`Player: ${playerInfo.name} - ${playerInfo.points} pts`));
+				playerList.appendChild(li);
+			});
+		}
 
 		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {
 			let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
