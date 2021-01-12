@@ -47,6 +47,11 @@ export interface QuestionFoundFromBookEvent {
 
 export interface UsersInfoSentEvent {
 	usersInfo: UserInfo[];
+	hostName: string;
+}
+
+export interface HostChangeEvent {
+	newHostName: string;
 }
 
 export interface QuestionAnsweredEvent {

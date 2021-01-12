@@ -1,4 +1,4 @@
-import { GameEndEvent, GameStartEvent, PlayerEndState, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
+import { GameEndEvent, GameStartEvent, HostChangeEvent, PlayerEndState, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
@@ -10,10 +10,13 @@ import { CST } from "../CST";
 export default class WaitingRoomScene extends Phaser.Scene {
 	private startButton: Phaser.GameObjects.Text;
 	private quitButton: Phaser.GameObjects.Text;
+	private currentHost: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
 	private gameResultsHtml: Phaser.GameObjects.DOMElement;
 	private lastGameResults: GameEndEvent;
+	private isHost: boolean;
+	private hostName: string;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
@@ -22,6 +25,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.lastGameResults = data.lastGameData;
+		this.hostName = "Current host: ";
+		this.isHost = false;
 
 		this.gameSocket = data.socket;
 		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_START, (gameInfo: GameStartEvent) => {
@@ -36,12 +41,27 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame });
 		});
+		this.gameSocket.on("host-change", (data: HostChangeEvent) => {
+			this.isHost = false;
+			this.hostName = `Current host: ${data.newHostName}`;
+		});
+		this.gameSocket.on("is-host", () => {
+			this.isHost = true;
+		});
 	}
 
 	create() {
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
 		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
+
+		this.currentHost = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.1, "Current host: ", {
+			fontFamily: "Courier",
+			fontSize: "30px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
 
 		if (this.lastGameResults != undefined) {
 			this.gameResultsHtml = this.add.dom(this.game.renderer.width * 0.6, this.game.renderer.height * 0.2).createFromCache(CST.HTML.GAME_RESULTS);
@@ -54,20 +74,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				playerList.appendChild(li);
 			});
 		}
-
-		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {
-			let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
-
-			while (usersList.firstChild) {
-				usersList.removeChild(usersList.firstChild);
-			}
-
-			data.usersInfo.forEach((userInfo) => {
-				var li = document.createElement("li");
-				li.appendChild(document.createTextNode(userInfo.name));
-				usersList.appendChild(li);
-			});
-		});
 
 		this.startButton = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
 			fontFamily: "Courier",
@@ -108,25 +114,46 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		});
 
 		this.quitButton.on("pointerover", () => {
-			this.startButton.setTint(0xffff66);
+			this.quitButton.setTint(0xffff66);
 		});
 
 		this.quitButton.on("pointerout", () => {
-			this.startButton.clearTint();
+			this.quitButton.clearTint();
 		});
 
 		this.quitButton.on("pointerdown", () => {
-			this.startButton.setTint(0x86bfda);
+			this.quitButton.setTint(0x86bfda);
 		});
 
 		this.quitButton.on("pointerup", () => {
-			this.startButton.clearTint();
+			this.quitButton.clearTint();
 			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
 			this.gameSocket.close();
 			this.scene.start(CST.SCENES.ROOM_SELECTION);
 		});
 
+		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {
+			this.hostName = `Current host: ${data.hostName}`;
+
+			let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
+
+			while (usersList.firstChild) {
+				usersList.removeChild(usersList.firstChild);
+			}
+
+			data.usersInfo.forEach((userInfo) => {
+				var li = document.createElement("li");
+				li.appendChild(document.createTextNode(userInfo.name));
+				usersList.appendChild(li);
+			});
+		});
+
 		this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
+	}
+
+	update() {
+		this.startButton.setVisible(this.isHost).setActive(this.isHost);
+		this.currentHost.text = this.hostName;
 	}
 
 	private createPlayers(playersState: PlayerState[]): Player[] {
