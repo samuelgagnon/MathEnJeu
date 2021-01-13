@@ -13,6 +13,7 @@ import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
 import { RACE_CST } from "./RACE_CST";
 
+//RaceGameController was split in 2 to prevent unused dependencies to be sent to the client
 export default class RaceGameFactory {
 	public static createClient(
 		gameTime: number,

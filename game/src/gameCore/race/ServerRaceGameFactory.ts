@@ -5,6 +5,7 @@ import RaceGameFactory from "./RaceGameFactory";
 import { RACE_CST } from "./RACE_CST";
 import ServerRaceGameController from "./ServerRaceGameController";
 
+//RaceGameController was split in 2 to prevent unused dependencies to be sent to the client
 export default class ServerRaceGameFactory {
 	public static createServer(gameId: string, users: User[]): ServerRaceGameController {
 		const raceGrid = RaceGameFactory.generateRaceGrid(RACE_CST.CIRCUIT.GRID_WIDTH, RACE_CST.CIRCUIT.GRID_HEIGTH, RACE_CST.CIRCUIT.GRID);
