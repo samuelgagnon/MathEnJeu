@@ -7,6 +7,7 @@ import { GameState } from "../../gameCore/gameState/State";
 import User from "../data/User";
 
 export class Room {
+	private max_player_count = 6;
 	private id: string;
 	private nsp: SocketIO.Namespace;
 	private roomString: string;
@@ -30,6 +31,10 @@ export class Room {
 	}
 
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
+		if (this.users.length > this.max_player_count) {
+			throw new RoomFullError(`Room ${this.id} is currently full. You cannot join right now.`);
+		}
+
 		if (this.gameFSM.getGameState() == GameState.PreGame) {
 			const user: User = {
 				userId: clientSocket.id,
