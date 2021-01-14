@@ -88,7 +88,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 				lag
 			);
 		});
-		this.grid.updateFromItemStates(gameState.itemsState, lag);
+		this.grid.updateFromItemStates(gameState.itemsState);
 	}
 
 	public getPossibleCurrentPlayerMovement(position: Point): PossiblePositions[] {

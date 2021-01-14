@@ -20,8 +20,7 @@ export default class RaceGrid {
 		return this.items;
 	}
 
-	//TODO: implement lag
-	public updateFromItemStates(itemStates: ItemState[], lag: number): void {
+	public updateFromItemStates(itemStates: ItemState[]): void {
 		if (!itemStates || JSON.stringify(itemStates) == JSON.stringify(this.items)) return;
 
 		this.items.forEach((itemState: ItemState) => {
@@ -131,10 +130,11 @@ export default class RaceGrid {
 			});
 	}
 
-	private createItemsStateList(): void {
+	private updateItemsStateList(): void {
+		this.items = [];
 		this.tiles.forEach((tile: Tile) => {
 			const item = tile.getItem();
-			if (!item) this.items.push({ type: item.type, location: item.location });
+			if (item !== undefined) this.items.push({ type: item.type, location: item.location });
 		});
 	}
 
@@ -143,13 +143,17 @@ export default class RaceGrid {
 		if (player.hasArrived()) {
 			const position = player.getPosition();
 			itemPickedUp = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
+
+			if (itemPickedUp) {
+				this.updateItemsStateList();
+			}
 		}
 		return itemPickedUp;
 	}
 
-	public generateNewItem() {
+	public generateNewItem(playerPositions: Point[]) {
 		const availableTiles = this.getTiles().filter((tile: Tile) => {
-			return tile.isAvailableForANewItem();
+			return tile.isAvailableForANewItem() && !playerPositions.some((p) => p.x === tile.getPosition().x && p.y === tile.getPosition().y);
 		});
 		const rng = Math.floor(Math.random() * availableTiles.length);
 		const itemTile = availableTiles[rng];

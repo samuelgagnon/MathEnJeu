@@ -95,6 +95,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.resolveInputs();
 		super.update();
 		if (this.timeRemaining <= 0) this.gameFinished();
+		this.handleItemsRespawn();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}
 
@@ -281,7 +282,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.itemPickUpTimestamps.forEach((itemPickUpTimestamp: number, index: number) => {
 			if (Clock.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);
-				this.grid.generateNewItem();
+				this.grid.generateNewItem(this.players.map((player) => player.getPosition()));
 			}
 		});
 	}
