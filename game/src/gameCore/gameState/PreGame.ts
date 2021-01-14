@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { GameOptions } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import User from "../../server/data/User";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";
@@ -29,8 +30,8 @@ export default class PreGame implements State {
 		this.removeSocketEvents(user.socket);
 	}
 
-	private startRaceGame(): void {
-		const raceGame = ServerRaceGameFactory.createServer(this.context.getId(), this.context.getUsers());
+	private startRaceGame(gameOptions: GameOptions): void {
+		const raceGame = ServerRaceGameFactory.createServer(this.context.getId(), this.context.getUsers(), gameOptions);
 		this.removeAllUsersSocketEvents();
 		this.context.gameStarted(raceGame);
 		this.context.transitionTo(raceGame);
@@ -46,8 +47,8 @@ export default class PreGame implements State {
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		socket.on(CLIENT_EVENT_NAMES.GAME_START, () => {
-			this.startRaceGame();
+		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions) => {
+			this.startRaceGame(gameOptions);
 		});
 	}
 

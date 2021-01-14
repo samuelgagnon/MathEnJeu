@@ -1,4 +1,11 @@
-import { GameEndEvent, GameStartEvent, HostChangeEvent, PlayerEndState, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
+import {
+	GameEndEvent,
+	GameOptions,
+	GameStartEvent,
+	HostChangeEvent,
+	PlayerEndState,
+	UsersInfoSentEvent,
+} from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
@@ -14,6 +21,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
 	private gameResultsHtml: Phaser.GameObjects.DOMElement;
+	private gameOptions: Phaser.GameObjects.DOMElement;
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean;
 	private hostName: string;
@@ -54,6 +62,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
 		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
+		this.gameOptions = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.7).createFromCache(CST.HTML.GAME_OPTIONS);
 
 		this.currentHost = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.1, "Current host: ", {
 			fontFamily: "Courier",
@@ -110,7 +119,9 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.startButton.on("pointerup", () => {
 			this.startButton.clearTint();
 			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
-			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_START);
+			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_INITIALIZED, <GameOptions>{
+				gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
+			});
 		});
 
 		this.quitButton.on("pointerover", () => {

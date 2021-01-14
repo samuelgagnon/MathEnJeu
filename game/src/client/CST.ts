@@ -39,5 +39,6 @@ export const CST = {
 		USER_SETTINGS: "userSettings.html",
 		USERS_LIST: "usersList.html",
 		GAME_RESULTS: "gameResults.html",
+		GAME_OPTIONS: "gameOptions.html",
 	},
 };

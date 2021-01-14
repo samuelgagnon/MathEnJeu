@@ -27,6 +27,11 @@ export interface GameStartEvent {
 	players: PlayerState[];
 }
 
+//this includes the games options selected by the host
+export interface GameOptions {
+	gameTime: number;
+}
+
 export interface GameEndEvent {
 	playerEndStates: PlayerEndState[];
 }
