@@ -6,6 +6,12 @@ import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
 import User from "../data/User";
+
+/**
+ * This class is a final state machine that represents the current state of the room. It is basically the container that will hold each game
+ * states like PreGame and RaceGame. Once a state ends, it will transfer to the next state and continue its operations like usual depending
+ * on the state it is currently using.
+ */
 export default class Room {
 	private max_player_count = 6;
 	private readonly id: string;
