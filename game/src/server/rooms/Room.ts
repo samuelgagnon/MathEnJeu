@@ -1,33 +1,61 @@
-import { Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { HostChangeEvent, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import UserInfo from "../../communication/userInfo";
-import GameFSM from "../../gameCore/gameState/GameFSM";
-import { GameState } from "../../gameCore/gameState/State";
+import { ServerGame } from "../../gameCore/Game";
+import State, { GameState } from "../../gameCore/gameState/State";
+import GameRepository from "../data/GameRepository";
 import User from "../data/User";
-
-export class Room {
+export default class Room {
 	private max_player_count = 6;
-	private id: string;
-	private nsp: SocketIO.Namespace;
+	private readonly id: string;
+	private state: State;
 	private readonly roomString: string;
 	private users: User[] = [];
-	private gameFSM: GameFSM;
+	private nsp: SocketIO.Namespace;
+	private gameRepo: GameRepository;
 	private host: User;
 
-	constructor(id: string, nsp: SocketIO.Namespace, gameFSM: GameFSM, roomString: string) {
+	constructor(id: string, state: State, gameRepo: GameRepository, roomString: string, nsp: Namespace) {
 		this.id = id;
-		this.nsp = nsp;
-		this.gameFSM = gameFSM;
 		this.roomString = roomString;
+		this.nsp = nsp;
+		this.gameRepo = gameRepo;
+		//setting up starting state
+		this.transitionTo(state);
 	}
 
-	public getRoomId(): string {
+	public getId(): string {
 		return this.id;
 	}
 
+	public getUsers(): User[] {
+		return this.users;
+	}
+
+	public getRoomString(): string {
+		return this.roomString;
+	}
+
+	public getNamespace(): SocketIO.Namespace {
+		return this.nsp;
+	}
+
 	public getGameState(): GameState {
-		return this.gameFSM.getGameState();
+		return this.state.getStateType();
+	}
+
+	public transitionTo(nextState: State): void {
+		this.state = nextState;
+		this.state.setContext(this);
+	}
+
+	public gameStarted(game: ServerGame): void {
+		this.gameRepo.addGame(game);
+	}
+
+	public gameFinished(game: ServerGame): void {
+		this.gameRepo.deleteGameById(game.getGameId());
 	}
 
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
@@ -35,7 +63,7 @@ export class Room {
 			throw new RoomFullError(`Room ${this.id} is currently full. You cannot join right now.`);
 		}
 
-		if (this.gameFSM.getGameState() == GameState.PreGame) {
+		if (this.getGameState() == GameState.PreGame) {
 			const user: User = {
 				userId: clientSocket.id,
 				userInfo: userInfo,
@@ -47,7 +75,7 @@ export class Room {
 			this.users.push(user);
 			clientSocket.join(this.roomString);
 			this.handleSocketEvents(clientSocket);
-			this.gameFSM.userJoined(user);
+			this.state.userJoined(user);
 			clientSocket.emit("room-joined");
 
 			//make user host when they're the first joining the room
@@ -63,7 +91,7 @@ export class Room {
 	public leaveRoom(clientSocket: Socket): void {
 		const userLeaving = this.users.find((user) => user.userId === clientSocket.id);
 		this.users = this.users.filter((user) => user.userId !== clientSocket.id);
-		this.gameFSM.userLeft(userLeaving);
+		this.state.userLeft(userLeaving);
 		this.removeListeners(clientSocket);
 		clientSocket.leave(this.roomString);
 		this.emitUsersInRoom();
@@ -85,7 +113,11 @@ export class Room {
 		return this.users.length === 0;
 	}
 
-	public handleSocketEvents(clientSocket: Socket): void {
+	private removeListeners(clientSocket: Socket): void {
+		clientSocket.removeAllListeners(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
+	}
+
+	private handleSocketEvents(clientSocket: Socket): void {
 		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED, () => {
 			this.emitUsersInRoom();
 
@@ -94,10 +126,6 @@ export class Room {
 				clientSocket.emit("is-host");
 			}
 		});
-	}
-
-	private removeListeners(clientSocket: Socket): void {
-		clientSocket.removeAllListeners(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
 	}
 
 	private changeHost(newHostId: string): void {

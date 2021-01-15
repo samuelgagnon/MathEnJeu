@@ -18,10 +18,10 @@ import PlayerState from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
 import QuestionRepository from "../../server/data/QuestionRepository";
 import User from "../../server/data/User";
+import Room from "../../server/rooms/Room";
 import { getObjectValues } from "../../utils/Utils";
 import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
-import GameFSM from "../gameState/GameFSM";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
@@ -31,7 +31,7 @@ import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
-	private context: GameFSM;
+	private context: Room;
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
 	private gameId: string;
@@ -47,7 +47,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.handleAllUsersSocketEvents(users);
 	}
 
-	public setContext(context: GameFSM): void {
+	public setContext(context: Room): void {
 		this.context = context;
 	}
 

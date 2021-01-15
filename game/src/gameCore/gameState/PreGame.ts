@@ -2,12 +2,12 @@ import { Socket } from "socket.io";
 import { GameOptions } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import User from "../../server/data/User";
+import Room from "../../server/rooms/Room";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";
-import GameFSM from "./GameFSM";
 import State, { GameState } from "./State";
 
 export default class PreGame implements State {
-	private context: GameFSM;
+	private context: Room;
 	private state: GameState = GameState.PreGame;
 
 	constructor(users: User[] = []) {
@@ -18,7 +18,7 @@ export default class PreGame implements State {
 		return this.state;
 	}
 
-	public setContext(context: GameFSM): void {
+	public setContext(context: Room): void {
 		this.context = context;
 	}
 

@@ -1,11 +1,11 @@
-import { Room } from "../rooms/Room";
+import Room from "../rooms/Room";
 import RoomRepository from "./RoomRepository";
 
 export default class RoomInMemoryRepository implements RoomRepository {
 	private rooms: Map<string, Room> = new Map<string, Room>();
 
 	public addRoom(room: Room): void {
-		this.rooms.set(room.getRoomId(), room);
+		this.rooms.set(room.getId(), room);
 	}
 
 	public getRoomById(roomId: string): Room {
