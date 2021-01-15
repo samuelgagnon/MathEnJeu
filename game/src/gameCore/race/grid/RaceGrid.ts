@@ -130,11 +130,12 @@ export default class RaceGrid {
 			});
 	}
 
-	private updateItemsStateList(): void {
-		this.items = [];
-		this.tiles.forEach((tile: Tile) => {
-			const item = tile.getItem();
-			if (item !== undefined) this.items.push({ type: item.type, location: item.location });
+	private updateItemsStateList(removedItemPosition: Point): void {
+		this.items.forEach((item: ItemState, index: number) => {
+			const itemPosition = item.location;
+			if (itemPosition.x === removedItemPosition.x && itemPosition.y === removedItemPosition.y) {
+				this.items.splice(index, 1);
+			}
 		});
 	}
 
@@ -145,7 +146,7 @@ export default class RaceGrid {
 			itemPickedUp = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
 
 			if (itemPickedUp) {
-				this.updateItemsStateList();
+				this.updateItemsStateList(position);
 			}
 		}
 		return itemPickedUp;

@@ -48,6 +48,7 @@ export default class PreGame implements State {
 
 	private handleSocketEvents(socket: Socket): void {
 		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions) => {
+			//TODO: add verifications
 			this.startRaceGame(gameOptions);
 		});
 	}

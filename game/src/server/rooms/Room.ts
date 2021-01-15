@@ -10,7 +10,7 @@ export class Room {
 	private max_player_count = 6;
 	private id: string;
 	private nsp: SocketIO.Namespace;
-	private roomString: string;
+	private readonly roomString: string;
 	private users: User[] = [];
 	private gameFSM: GameFSM;
 	private host: User;

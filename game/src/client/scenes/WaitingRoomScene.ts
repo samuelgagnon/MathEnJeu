@@ -164,6 +164,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 	update() {
 		this.startButton.setVisible(this.isHost).setActive(this.isHost);
+		this.gameOptions.setVisible(this.isHost).setActive(this.isHost);
 		this.currentHost.text = this.hostName;
 	}
 
