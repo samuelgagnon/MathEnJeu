@@ -1,4 +1,4 @@
-import { Room } from "../rooms/Room";
+import Room from "../rooms/Room";
 
 export default interface RoomRepository {
 	addRoom(room: Room): void;

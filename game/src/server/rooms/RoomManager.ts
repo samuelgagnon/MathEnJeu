@@ -46,7 +46,7 @@ export default class RoomManager {
 					newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 
-					const roomId = newRoom.getRoomId();
+					const roomId = newRoom.getId();
 					this.handleDisconnection(socket, roomId);
 				} catch (err) {
 					socket.error({

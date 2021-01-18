@@ -19,7 +19,7 @@ export default class RoomSelectionNamespace {
 		this.nsp.on("connection", (socket: Socket) => {
 			this.nsp.emit(
 				"room-update",
-				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
+				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
 			);
 
 			this.sendRoomsToClient(socket);
@@ -30,7 +30,7 @@ export default class RoomSelectionNamespace {
 		setTimeout(() => {
 			socket.emit(
 				"room-update",
-				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getRoomId()} - Currently in: ${room.getGameState()}`)
+				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
 			);
 			this.sendRoomsToClient(socket);
 		}, this.ROOM_UPDATE_TIME_INTERVAL);
