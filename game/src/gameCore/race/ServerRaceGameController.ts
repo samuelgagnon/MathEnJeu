@@ -108,7 +108,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			.to(this.context.getRoomString())
 			.emit(CE.GAME_END, <GameEndEvent>{ playerEndStates: playerEndStates });
 		this.removeAllUsersSocketEvents();
-		this.context.gameFinished(this);
+		this.context.removeGameFromRepo(this);
 		this.context.transitionTo(PreGameFactory.createPreGame(this.context.getUsers()));
 	}
 

@@ -30,11 +30,12 @@ export default class PreGame implements State {
 		this.removeSocketEvents(user.socket);
 	}
 
-	private startRaceGame(gameOptions: GameOptions): void {
+	private startRaceGame(gameOptions: GameOptions): State {
 		const raceGame = ServerRaceGameFactory.createServer(this.context.getId(), this.context.getUsers(), gameOptions);
 		this.removeAllUsersSocketEvents();
-		this.context.gameStarted(raceGame);
-		this.context.transitionTo(raceGame);
+		this.context.addGameToRepo(raceGame);
+
+		return raceGame;
 	}
 
 	private handleAllUsersSocketEvents(users: User[]): void {
@@ -47,9 +48,16 @@ export default class PreGame implements State {
 	}
 
 	private handleSocketEvents(socket: Socket): void {
+		/**
+		 * Rethink implementation when there are multiple game modes added.
+		 * First idea was to just add un switch statement here depending on the mode and then add multiple "startTypeGame(gameOptions)",
+		 * but maybe have one single function startGame that implements that switch case and creates the game depending on gameOptions
+		 **/
 		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions) => {
+			let game: State;
 			//TODO: add verifications
-			this.startRaceGame(gameOptions);
+			game = this.startRaceGame(gameOptions);
+			this.context.transitionTo(game);
 		});
 	}
 

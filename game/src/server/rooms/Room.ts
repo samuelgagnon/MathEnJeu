@@ -16,6 +16,7 @@ export default class Room {
 	private max_player_count = 6;
 	private readonly id: string;
 	private state: State;
+	//Room string is used to distinguish rooms from each other and directly emit events to specific rooms with socket.io
 	private readonly roomString: string;
 	private users: User[] = [];
 	private nsp: SocketIO.Namespace;
@@ -56,11 +57,11 @@ export default class Room {
 		this.state.setContext(this);
 	}
 
-	public gameStarted(game: ServerGame): void {
+	public addGameToRepo(game: ServerGame): void {
 		this.gameRepo.addGame(game);
 	}
 
-	public gameFinished(game: ServerGame): void {
+	public removeGameFromRepo(game: ServerGame): void {
 		this.gameRepo.deleteGameById(game.getGameId());
 	}
 
