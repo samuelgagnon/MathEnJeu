@@ -80,7 +80,11 @@ export default class RaceGameFactory {
 		let players: Player[] = [];
 		let i: number = 0;
 		users.forEach((user: User) => {
-			players.push(PlayerFactory.create(user, startingPositions[i], StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			let currentIndex = i;
+			if (i >= startingPositions.length) {
+				currentIndex = i % startingPositions.length;
+			}
+			players.push(PlayerFactory.create(user, startingPositions[currentIndex], StatusFactory.create(StatusType.NormalStatus), new Inventory()));
 			i++;
 		});
 

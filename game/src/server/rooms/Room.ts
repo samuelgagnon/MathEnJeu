@@ -13,7 +13,7 @@ import User from "../data/User";
  * on the state it is currently using.
  */
 export default class Room {
-	private max_player_count = 6;
+	private max_player_count = 8;
 	private readonly id: string;
 	private state: State;
 	//Room string is used to distinguish rooms from each other and directly emit events to specific rooms with socket.io
@@ -66,7 +66,7 @@ export default class Room {
 	}
 
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
-		if (this.users.length > this.max_player_count) {
+		if (this.users.length >= this.max_player_count) {
 			throw new RoomFullError(`Room ${this.id} is currently full. You cannot join right now.`);
 		}
 
