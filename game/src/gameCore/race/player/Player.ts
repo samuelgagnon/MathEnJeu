@@ -146,47 +146,22 @@ export default class Player {
 		}
 	}
 
-	//Happens when a question is answered correctly
-	public moveTo(startTimestamp: number, targetLocation: Point): void {
+	/**
+	 * Use it when a question is answered correctly
+	 * @param pointsCalculatorCallBack callback function that allows its caller to choose which method it uses for the player to calculate its points.
+	 */
+	public moveTo(startTimestamp: number, targetLocation: Point, pointsCalculatorCallBack: (moveDistance: number) => number): void {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		//diagonal movement is not permitted
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
-			this.addPointsForMove(this.move.getDistance());
+			this.addPoints(pointsCalculatorCallBack(this.move.getDistance()));
 			this.setIsAnsweringQuestion(false);
 		}
 	}
 
 	public getMaxMovementDistance(): number {
 		return this.maxPossibleMoveDistance;
-	}
-
-	private addPointsForMove(moveDistance: number): void {
-		let points = 0;
-		switch (moveDistance) {
-			case 1:
-				points = 2;
-				break;
-			case 2:
-				points = 3;
-				break;
-			case 3:
-				points = 5;
-				break;
-			case 4:
-				points = 8;
-				break;
-			case 5:
-				points = 13;
-				break;
-			case 6:
-				points = 21;
-				break;
-			case 7:
-				points = 34;
-				break;
-		}
-		this.addPoints(points);
 	}
 
 	private addPoints(points: number): void {

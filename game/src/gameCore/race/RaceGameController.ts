@@ -49,9 +49,37 @@ export default abstract class RaceGameController {
 		this.players = this.players.filter((player) => player.id !== socketId);
 	}
 
+	public getPointsForMoveDistance(moveDistance: number): number {
+		let points = 0;
+		switch (moveDistance) {
+			case 1:
+				points = 2;
+				break;
+			case 2:
+				points = 3;
+				break;
+			case 3:
+				points = 5;
+				break;
+			case 4:
+				points = 8;
+				break;
+			case 5:
+				points = 13;
+				break;
+			case 6:
+				points = 21;
+				break;
+			case 7:
+				points = 34;
+				break;
+		}
+		return points;
+	}
+
 	public movePlayerTo(playerId: string, startTimestamp: number, targetLocation: Point): void {
 		const movedPlayer = this.findPlayer(playerId);
-		movedPlayer.moveTo(startTimestamp, targetLocation);
+		movedPlayer.moveTo(startTimestamp, targetLocation, this.getPointsForMoveDistance);
 	}
 
 	protected findPlayer(playerId: string): Player {
