@@ -28,12 +28,12 @@ createConnection({
 	type: "mysql",
 	host: "db",
 	port: 3306,
-	username: "user",
-	password: "123",
+	username: process.env.DB_USER,
+	password: process.env.DB_PWD,
 	database: "mathamaze2",
 	entities: [Question, Answer, AnswerInfo, QuestionInfo, Language, LanguageInfo, AnswerType, AnswerTypeInfo],
 	synchronize: true,
-});
+}).catch((err) => console.log(err));
 
 app.use("/static", express.static(path.join(__dirname, "../")));
 

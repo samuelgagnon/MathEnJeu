@@ -9,7 +9,7 @@ export class Server {
 	private app: Application;
 	private questionRepo: QuestionRepository;
 
-	private readonly DEFAULT_PORT = 8080;
+	private readonly DEFAULT_PORT = Number(process.env.PORT) || 8080;
 
 	constructor(app: Application, httpServer: HTTPServer, questionRepo: QuestionRepository) {
 		this.app = app;
