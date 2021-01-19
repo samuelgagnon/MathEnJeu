@@ -7,7 +7,7 @@ module.exports = (env) => {
 	let mode = "development";
 	let sourceMapEnabled = "inline-source-map";
 	let outputPath = path.join(__dirname, "../", "dist/client");
-	let SERVER_API_URL = "http://localhost:8080";
+	let SERVER_API_URL = process.env.SERVER_API_URL;
 
 	if (env.NODE_ENV === "prod") {
 		mode = "production";

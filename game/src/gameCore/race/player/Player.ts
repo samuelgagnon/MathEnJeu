@@ -149,6 +149,7 @@ export default class Player {
 	//Happens when a question is answered correctly
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
+		//diagonal movement is not permitted
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 			this.addPointsForMove(this.move.getDistance());
