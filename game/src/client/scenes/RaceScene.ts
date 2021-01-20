@@ -4,6 +4,7 @@ import AffineTransform from "../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import { PossiblePositions } from "../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../gameCore/race/items/Item";
+import Move from "../../gameCore/race/Move";
 import Player from "../../gameCore/race/player/Player";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
@@ -23,6 +24,7 @@ export default class RaceScene extends Phaser.Scene {
 	background: Phaser.GameObjects.TileSprite;
 	followPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
+	pointsForPosition: Phaser.GameObjects.Text[];
 
 	targetLocation: Point;
 
@@ -54,6 +56,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
+		this.pointsForPosition = [];
 		this.followPlayer = false;
 		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
@@ -322,18 +325,35 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private activateAccessiblePositions(): void {
-		const tile = this.getTileFromPhaserPosition(this.targetLocation.x, this.targetLocation.y);
+		const playerTile = this.getTileFromPhaserPosition(this.targetLocation.x, this.targetLocation.y);
 		const possiblePositions = this.raceGame.getPossibleCurrentPlayerMovement({
-			x: tile.getData("gridPosition").x,
-			y: tile.getData("gridPosition").y,
+			x: playerTile.getData("gridPosition").x,
+			y: playerTile.getData("gridPosition").y,
 		});
 
 		this.clearTileInteractions();
 
 		possiblePositions.forEach((pos: PossiblePositions) => {
+			//activating clickable tiles
 			const tile = this.getTileFromGridPosition(pos.position.x, pos.position.y);
 			tile.setState(this.tileActiveState);
 			(<Phaser.GameObjects.Sprite>tile).setTint(this.activeTileColor);
+
+			const distanceToTile = Move.getTaxiCabDistance(pos.position, playerTile.getData("gridPosition"));
+
+			//showing points for each tile
+			let points = this.add
+				.text(tile.getData("position").x, tile.getData("position").y, this.raceGame.getPointsForMoveDistance(distanceToTile).toString(), {
+					fontFamily: "Courier",
+					fontSize: "30px",
+					color: "#FDFFB5",
+					fontStyle: "bold",
+				})
+				.setVisible(true)
+				.setActive(true)
+				.setDepth(10)
+				.setScrollFactor(1);
+			this.pointsForPosition.push(points);
 		});
 
 		this.isReadyToGetPossiblePositions = false;
@@ -344,6 +364,11 @@ export default class RaceScene extends Phaser.Scene {
 			(<Phaser.GameObjects.Sprite>tile).clearTint();
 			(<Phaser.GameObjects.Sprite>tile).setState(this.tileInactiveState);
 		});
+
+		this.pointsForPosition.forEach((points) => {
+			points.destroy();
+		});
+		this.pointsForPosition = [];
 	}
 
 	private getTileFromGridPosition(x: number, y: number): Phaser.GameObjects.GameObject {
