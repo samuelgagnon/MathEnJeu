@@ -28,7 +28,7 @@ export default class RaceGameFactory {
 	}
 
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
-	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string): RaceGrid {
+	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string, isSinglePlayer: boolean): RaceGrid {
 		let tiles: Tile[] = [];
 		let itemsState: ItemState[] = [];
 		for (let y = 0; y < gridHeight; y++) {
@@ -45,7 +45,7 @@ export default class RaceGameFactory {
 				} else {
 					let item: Item = undefined;
 					if ((gridWidth * y + x) % 4 == 0) {
-						let itemType: ItemType = ItemFactory.generateItemType();
+						let itemType: ItemType = ItemFactory.generateItemType(isSinglePlayer);
 						const itemState: ItemState = { type: itemType, location: <Point>{ x, y } };
 						itemsState.push(itemState);
 

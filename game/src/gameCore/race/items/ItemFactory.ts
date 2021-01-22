@@ -24,12 +24,12 @@ export default class ItemFactory {
 		}
 	}
 
-	public static generateItemType(): ItemType {
-		const rng = Math.floor(Math.random() * 4) + 1;
+	public static generateItemType(isSinglePlayer: boolean): ItemType {
+		const rng = isSinglePlayer ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 4) + 1;
 		let itemType: ItemType;
 		switch (rng) {
 			case 1:
-				itemType = ItemType.Banana;
+				itemType = ItemType.CrystalBall;
 				break;
 			case 2:
 				itemType = ItemType.Book;
@@ -38,7 +38,7 @@ export default class ItemFactory {
 				itemType = ItemType.Brainiac;
 				break;
 			case 4:
-				itemType = ItemType.CrystalBall;
+				itemType = ItemType.Banana;
 				break;
 		}
 		return itemType;

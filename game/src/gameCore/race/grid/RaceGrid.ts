@@ -152,13 +152,13 @@ export default class RaceGrid {
 		return itemPickedUp;
 	}
 
-	public generateNewItem(playerPositions: Point[]) {
+	public generateNewItem(playerPositions: Point[], isSinglePlayer: boolean) {
 		const availableTiles = this.getTiles().filter((tile: Tile) => {
 			return tile.isAvailableForANewItem() && !playerPositions.some((p) => p.x === tile.getPosition().x && p.y === tile.getPosition().y);
 		});
 		const rng = Math.floor(Math.random() * availableTiles.length);
 		const itemTile = availableTiles[rng];
-		const itemType = ItemFactory.generateItemType();
+		const itemType = ItemFactory.generateItemType(isSinglePlayer);
 		const newItem = ItemFactory.create(itemType, itemTile.getPosition());
 		itemTile.setItem(newItem);
 		this.items.push(newItem);

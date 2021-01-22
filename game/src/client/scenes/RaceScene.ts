@@ -9,6 +9,7 @@ import Player from "../../gameCore/race/player/Player";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { CST } from "../CST";
+import { updateUserHighScore } from "../services/UserInformationService";
 import { QuestionSceneData } from "./QuestionScene";
 
 export default class RaceScene extends Phaser.Scene {
@@ -312,6 +313,7 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.GAME_END, (data: GameEndEvent) => {
+			updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
 			this.raceGame.gameFinished();
 			this.scene.stop(CST.SCENES.RACE_GAME_UI);
 			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
