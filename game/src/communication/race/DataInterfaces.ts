@@ -25,6 +25,7 @@ export interface GameStartEvent {
 	gameStartTimeStamp: number;
 	grid: StartingRaceGridInfo;
 	players: PlayerState[];
+	isSinglePlayer: boolean;
 }
 
 //this includes the games options selected by the host

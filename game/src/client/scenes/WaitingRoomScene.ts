@@ -13,10 +13,12 @@ import Player from "../../gameCore/race/player/Player";
 import PlayerFactory from "../../gameCore/race/player/PlayerFactory";
 import RaceGameFactory from "../../gameCore/race/RaceGameFactory";
 import { CST } from "../CST";
+import { getUserHighScore } from "../services/UserInformationService";
 
 export default class WaitingRoomScene extends Phaser.Scene {
 	private startButton: Phaser.GameObjects.Text;
 	private quitButton: Phaser.GameObjects.Text;
+	private highScoreText: Phaser.GameObjects.Text;
 	private currentHost: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
@@ -25,6 +27,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean;
 	private hostName: string;
+	private highScore: number;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
@@ -35,6 +38,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.lastGameResults = data.lastGameData;
 		this.hostName = "Current host: ";
 		this.isHost = false;
+		this.highScore = getUserHighScore();
 
 		this.gameSocket = data.socket;
 		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_START, (gameInfo: GameStartEvent) => {
@@ -100,6 +104,17 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			fontStyle: "bold",
 		});
 
+		this.highScoreText = this.add
+			.text(this.game.renderer.width * 0.35, this.game.renderer.height * 0.1, `HighScore: ${this.highScore}`, {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setVisible(false)
+			.setActive(false);
+
 		this.startButton.setInteractive({ useHandCursor: true });
 
 		this.quitButton.setInteractive({ useHandCursor: true });
@@ -150,6 +165,12 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 			while (usersList.firstChild) {
 				usersList.removeChild(usersList.firstChild);
+			}
+
+			if (data.usersInfo.length > 1) {
+				this.highScoreText.setActive(false).setVisible(false);
+			} else {
+				this.highScoreText.setActive(true).setVisible(true);
 			}
 
 			data.usersInfo.forEach((userInfo) => {

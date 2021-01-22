@@ -38,12 +38,22 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private itemPickUpTimestamps: Number[] = [];
 	private questionRepo: QuestionRepository;
 	private state: GameState = GameState.RaceGame;
+	private isSinglePlayer: boolean;
 
-	constructor(gameTime: number, grid: RaceGrid, players: Player[], users: User[], gameId: string, questionRepo: QuestionRepository) {
+	constructor(
+		gameTime: number,
+		grid: RaceGrid,
+		players: Player[],
+		users: User[],
+		gameId: string,
+		questionRepo: QuestionRepository,
+		isSinglePlayer: boolean
+	) {
 		//The server has the truth regarding the start timestamp.
 		super(gameTime, Clock.now(), grid, players);
 		this.gameId = gameId;
 		this.questionRepo = questionRepo;
+		this.isSinglePlayer = isSinglePlayer;
 		this.handleAllUsersSocketEvents(users);
 	}
 
@@ -76,6 +86,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					itemStates: this.grid.getItemsState(),
 				},
 				players: this.getPlayersState(),
+				isSinglePlayer: this.isSinglePlayer,
 			});
 	}
 
@@ -282,7 +293,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.itemPickUpTimestamps.forEach((itemPickUpTimestamp: number, index: number) => {
 			if (Clock.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);
-				this.grid.generateNewItem(this.players.map((player) => player.getPosition()));
+				this.grid.generateNewItem(
+					this.players.map((player) => player.getPosition()),
+					this.isSinglePlayer
+				);
 			}
 		});
 	}
