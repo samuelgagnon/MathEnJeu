@@ -21,7 +21,7 @@ export const updateUserHighScore = (score: number): void => {
 	}
 };
 
-export const setUserStats = (): void => {
+export const initializeUserStats = (): void => {
 	const stats = <UserStats>JSON.parse(localStorage.getItem("userStats"));
 	if (stats == null || stats == undefined) {
 		localStorage.setItem("userStats", JSON.stringify(<UserStats>{ highScore: 0 }));

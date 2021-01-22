@@ -1,6 +1,6 @@
 import UserInfo from "../../communication/userInfo";
 import { CST } from "../CST";
-import { getUserInfo, setUserInfo, setUserStats } from "../services/UserInformationService";
+import { getUserInfo, initializeUserStats, setUserInfo } from "../services/UserInformationService";
 
 export default class UsersSettingScene extends Phaser.Scene {
 	private backButton: Phaser.GameObjects.Text;
@@ -91,7 +91,7 @@ export default class UsersSettingScene extends Phaser.Scene {
 			};
 
 			setUserInfo(userInfo);
-			setUserStats();
+			initializeUserStats();
 
 			this.scene.start(CST.SCENES.ROOM_SELECTION);
 		});
