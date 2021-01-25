@@ -74,4 +74,16 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		return gameQuestion;
 	}
+
+	addQuestionError(questionId: number, languageShortName: string, errorDescription: string, username = ""): void {
+		const queryString = `INSERT INTO question_error (question_id, language_id, description, username)
+		VALUES (${questionId}, 
+			(SELECT language_id
+			FROM \`language\`
+			WHERE \`language\`.short_name LIKE '${languageShortName}'), 
+			'${errorDescription}',
+			'${username}');`;
+
+		getConnection().query(queryString);
+	}
 }
