@@ -8,6 +8,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 	errorType: string;
 	reportButton: Phaser.GameObjects.Text;
 	cancelButton: Phaser.GameObjects.Text;
+	inputHtml: Phaser.GameObjects.DOMElement;
 
 	constructor() {
 		const sceneConfig = {
@@ -28,6 +29,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 	create() {
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0x828282);
+		this.inputHtml = this.add.dom(this.width * 0.5, this.height * 0.4).createFromCache(CST.HTML.ERROR_REPORT);
 
 		this.reportButton = this.add
 			.text(this.width / 4, this.height * 0.8, "Confirm", {

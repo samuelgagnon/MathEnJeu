@@ -1,3 +1,21 @@
-<div>
-	<textarea></textarea>
-</div>;
+<div class="error-form-container">
+    <div>
+        <select id="errorType">
+            <option value="General">General</option>
+            <option value="Question">Question</option>
+        </select>
+    </div>
+    <div>
+        <textarea style="resize:none" name="error-detail" cols="100" rows="20"></textarea>
+    </div>
+</div>
+
+<style>
+	.error-form-container {
+		flex-direction: column;
+		display: flex;
+    	align-items: center;
+    	justify-content: center;
+	}
+
+</style>
