@@ -29,6 +29,7 @@ export default class QuestionScene extends Phaser.Scene {
 	correctAnswer: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
 	answersList: Phaser.GameObjects.DOMElement;
+	reportProblemButton: Phaser.GameObjects.Text;
 
 	bookIcon: Phaser.GameObjects.Sprite;
 	crystalBallIcon: Phaser.GameObjects.Sprite;
@@ -94,6 +95,16 @@ export default class QuestionScene extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
+		this.reportProblemButton = this.add
+			.text(this.width * 0.8, this.height * 0.85, "Report problem", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
 		this.enterButton.setInteractive({
 			useHandCursor: true,
 		});
@@ -102,11 +113,19 @@ export default class QuestionScene extends Phaser.Scene {
 			useHandCursor: true,
 		});
 
+		this.reportProblemButton.setInteractive({
+			useHandCursor: true,
+		});
+
 		this.enterButton.on("pointerup", () => {
 			this.answerQuestion();
 		});
 
 		this.correctAnswer.on("pointerup", () => {
+			this.destroyScene(true);
+		});
+
+		this.reportProblemButton.on("pointerup", () => {
 			this.destroyScene(true);
 		});
 

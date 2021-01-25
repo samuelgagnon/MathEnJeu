@@ -11,6 +11,7 @@ export const CST = {
 		USERS_SETTING: "userSettingsScene",
 		WAITING_ROOM: "waitingRoomScene",
 		IN_GAME_MENU: "inGameMenuScene",
+		REPORT_ERROR: "reportErrorScene",
 	},
 	IMAGES: {
 		BACKGROUD: "starfield.jpg",
@@ -34,11 +35,12 @@ export const CST = {
 	HTML: {
 		ANSWERS_LIST: "answersList.html",
 		ANSWER_INPUT: "answerInput.html",
+		ERROR_REPORT: "errorReport.html",
+		GAME_RESULTS: "gameResults.html",
+		GAME_OPTIONS: "gameOptions.html",
 		ROOM_INPUT: "roomInput.html",
 		ROOMS_LIST: "roomsList.html",
 		USER_SETTINGS: "userSettings.html",
 		USERS_LIST: "usersList.html",
-		GAME_RESULTS: "gameResults.html",
-		GAME_OPTIONS: "gameOptions.html",
 	},
 };
