@@ -4,7 +4,7 @@ import ReportedErrorRepository from "./ReportedErrorRepository";
 export default class ReportedErrorDbRepository implements ReportedErrorRepository {
 	constructor() {}
 
-	addReportedError(languageShortName: string, errorDescription: string, questionId?: number, username?: string, errorLog?: string): void {
+	addReportedError(languageShortName: string, errorDescription: string, errorLog?: string, username?: string, questionId?: number): void {
 		const questionIdString = questionId === undefined ? "NULL" : String(questionId);
 		const usernameString = username === undefined ? "NULL" : `'${username}'`;
 		const errorLogString = errorLog === undefined ? "NULL" : `'${errorLog}'`;

@@ -1,3 +1,3 @@
 export default interface ReportedErrorRepository {
-	addReportedError(languageShortName: string, errorDescription: string, questionId?: number, username?: string, errorLog?: string): void;
+	addReportedError(languageShortName: string, errorDescription: string, errorLog?: string, username?: string, questionId?: number): void;
 }
