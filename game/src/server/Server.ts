@@ -19,6 +19,7 @@ export class Server {
 		this.app = app;
 		this.httpServer = httpServer;
 		this.questionRepo = questionRepo;
+		this.errorRepo = errorRepo;
 
 		this.handleRoutes();
 	}
@@ -68,6 +69,7 @@ export class Server {
 
 		this.app.post("/errorReport", jsonParser, (req, res) => {
 			const body: ErrorReport = req.body;
+			console.log(body);
 			this.errorRepo.addReportedError(body.languageShortName, body.errorDescription, body.errorLog, body.username, body.questionId);
 		});
 	}
