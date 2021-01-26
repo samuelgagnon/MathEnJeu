@@ -1,5 +1,5 @@
-import UserInfo from "../../communication/userInfo";
-import UserStats from "../../communication/userStats";
+import UserInfo from "../../communication/UserInfo";
+import UserStats from "../../communication/UserStats";
 
 export const setUserInfo = (userInfo: UserInfo): void => {
 	localStorage.setItem("userInfo", JSON.stringify(userInfo));

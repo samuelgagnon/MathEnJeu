@@ -1,4 +1,4 @@
-import UserInfo from "../../communication/userInfo";
+import UserInfo from "../../communication/UserInfo";
 
 export default interface User {
 	userId: string;

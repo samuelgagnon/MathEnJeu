@@ -1,4 +1,7 @@
+import ErrorReport from "../../communication/ErrorReport";
 import { CST } from "../CST";
+import { postErrorReport } from "../services/ReportErrorService";
+import { getUserInfo } from "../services/UserInformationService";
 
 export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;
@@ -52,6 +55,15 @@ export default class ReportErrorScene extends Phaser.Scene {
 			.setScrollFactor(0);
 
 		this.reportButton.on("pointerup", () => {
+			const userInfo = getUserInfo();
+			const errorReport = <ErrorReport>{
+				languageShortName: userInfo.language,
+				errorDescription: "bla1",
+				errorLog: "bla2",
+				username: userInfo.name,
+				questionId: 1,
+			};
+			postErrorReport(errorReport);
 			this.scene.stop(CST.SCENES.REPORT_ERROR);
 		});
 

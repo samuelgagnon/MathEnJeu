@@ -1,5 +1,5 @@
 import { ItemType } from "../../gameCore/race/items/Item";
-import UserInfo from "../userInfo";
+import UserInfo from "../UserInfo";
 import ItemState from "./ItemState";
 import PlayerState from "./PlayerState";
 

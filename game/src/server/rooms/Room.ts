@@ -1,7 +1,7 @@
 import { Namespace, Socket } from "socket.io";
 import { HostChangeEvent, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
-import UserInfo from "../../communication/userInfo";
+import UserInfo from "../../communication/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
