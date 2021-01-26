@@ -109,7 +109,9 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.reportProblemText.on("pointerup", () => {
-			this.scene.start(CST.SCENES.REPORT_ERROR);
+			this.scene.start(CST.SCENES.REPORT_ERROR, {
+				questionId: null,
+			});
 		});
 
 		this.resumeText.setInteractive({

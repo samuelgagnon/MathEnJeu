@@ -96,7 +96,7 @@ export default class QuestionScene extends Phaser.Scene {
 			.setScrollFactor(0);
 
 		this.reportProblemButton = this.add
-			.text(this.width * 0.8, this.height * 0.85, "Report problem", {
+			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -126,7 +126,9 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.reportProblemButton.on("pointerup", () => {
-			this.destroyScene(true);
+			this.scene.start(CST.SCENES.REPORT_ERROR, {
+				questionId: this.question.getId(),
+			});
 		});
 
 		this.bookIcon = this.add
@@ -282,6 +284,7 @@ export default class QuestionScene extends Phaser.Scene {
 	private destroyScene(isAnswerCorrect: boolean): void {
 		this.destroyImages();
 		this.clearQuestionTextures();
+		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), isAnswerCorrect, this.targetLocation);
 	}

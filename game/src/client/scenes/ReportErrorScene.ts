@@ -7,6 +7,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
+	questionId: number;
 
 	errorType: string;
 	reportButton: Phaser.GameObjects.Text;
@@ -21,6 +22,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 	}
 
 	init(data: any) {
+		this.questionId = data.questionId;
 		this.width = Number(this.game.config.width) * 0.7;
 		this.height = Number(this.game.config.height) * 0.8;
 
@@ -58,7 +60,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 			const userInfo = getUserInfo();
 			const errorReport = <ErrorReport>{
 				languageShortName: userInfo.language,
-				errorDescription: "bla1",
+				errorDescription: (<HTMLInputElement>this.inputHtml.getChildByID("errorDetail")).value,
 				errorLog: "bla2",
 				username: userInfo.name,
 				questionId: 1,
