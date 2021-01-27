@@ -45,7 +45,12 @@ const roomManager: RoomManager = new RoomManager(io, ServiceLocator.resolve(serv
 const roomSelectionNamespace: RoomSelectionNamespace = new RoomSelectionNamespace(io, ServiceLocator.resolve(serviceConstants.ROOM_REPOSITORY_CLASS));
 const gameManager: GameManager = new GameManager(ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS));
 
-const server = new Server(app, httpServer, ServiceLocator.resolve(serviceConstants.QUESTION_REPOSITORY_CLASS));
+const server = new Server(
+	app,
+	httpServer,
+	ServiceLocator.resolve(serviceConstants.QUESTION_REPOSITORY_CLASS),
+	ServiceLocator.resolve(serviceConstants.REPORTED_ERROR_REPOSITORY_CLASS)
+);
 
 server.listen((port) => {
 	console.log(`Server is listening on http://localhost:${port}`);

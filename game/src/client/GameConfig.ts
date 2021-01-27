@@ -5,6 +5,7 @@ import MenuScene from "./scenes/MenuScene";
 import QuestionScene from "./scenes/QuestionScene";
 import RaceGameUI from "./scenes/RaceGameUI";
 import RaceScene from "./scenes/RaceScene";
+import ReportErrorScene from "./scenes/ReportErrorScene";
 import RoomSelection from "./scenes/RoomSelectionScene";
 import UsersSettingScene from "./scenes/UsersSettingScene";
 import WaitingRoomScene from "./scenes/WaitingRoomScene";
@@ -21,7 +22,18 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		width: DEFAULT_WIDTH,
 		height: DEFAULT_HEIGHT,
 	},
-	scene: [LoadScene, MenuScene, RoomSelection, WaitingRoomScene, RaceScene, RaceGameUI, QuestionScene, UsersSettingScene, InGameMenuScene],
+	scene: [
+		LoadScene,
+		MenuScene,
+		RoomSelection,
+		WaitingRoomScene,
+		RaceScene,
+		RaceGameUI,
+		QuestionScene,
+		UsersSettingScene,
+		InGameMenuScene,
+		ReportErrorScene,
+	],
 	plugins: {
 		scene: [
 			{

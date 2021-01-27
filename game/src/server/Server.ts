@@ -1,25 +1,32 @@
+import bodyParser from "body-parser";
 import { Application } from "express";
 import { Server as HTTPServer } from "http";
 import path from "path";
 import "reflect-metadata";
+import ErrorReport from "../communication/ErrorReport";
 import QuestionRepository from "./data/QuestionRepository";
+import ReportedErrorRepository from "./data/ReportedErrorRepository";
 
 export class Server {
 	private httpServer: HTTPServer;
 	private app: Application;
 	private questionRepo: QuestionRepository;
+	private errorRepo: ReportedErrorRepository;
 
 	private readonly DEFAULT_PORT = Number(process.env.PORT) || 8080;
 
-	constructor(app: Application, httpServer: HTTPServer, questionRepo: QuestionRepository) {
+	constructor(app: Application, httpServer: HTTPServer, questionRepo: QuestionRepository, errorRepo: ReportedErrorRepository) {
 		this.app = app;
 		this.httpServer = httpServer;
 		this.questionRepo = questionRepo;
+		this.errorRepo = errorRepo;
 
 		this.handleRoutes();
 	}
 
 	private handleRoutes(): void {
+		const jsonParser = bodyParser.json();
+
 		this.app.get("/error", (req, res) => {
 			res.sendFile(path.join(__dirname, "../", "/client/pages/construction.html"));
 		});
@@ -58,6 +65,12 @@ export class Server {
 					console.log("ORM query status " + error);
 					res.send(error);
 				});
+		});
+
+		this.app.post("/errorReport", jsonParser, (req, res) => {
+			const body: ErrorReport = req.body;
+			console.log(body);
+			this.errorRepo.addReportedError(body.languageShortName, body.errorDescription, body.errorLog, body.username, body.questionId);
 		});
 	}
 

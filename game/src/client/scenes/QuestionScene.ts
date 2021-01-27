@@ -29,6 +29,7 @@ export default class QuestionScene extends Phaser.Scene {
 	correctAnswer: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
 	answersList: Phaser.GameObjects.DOMElement;
+	reportProblemButton: Phaser.GameObjects.Text;
 
 	bookIcon: Phaser.GameObjects.Sprite;
 	crystalBallIcon: Phaser.GameObjects.Sprite;
@@ -94,11 +95,25 @@ export default class QuestionScene extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
+		this.reportProblemButton = this.add
+			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
 		this.enterButton.setInteractive({
 			useHandCursor: true,
 		});
 
 		this.correctAnswer.setInteractive({
+			useHandCursor: true,
+		});
+
+		this.reportProblemButton.setInteractive({
 			useHandCursor: true,
 		});
 
@@ -108,6 +123,12 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.correctAnswer.on("pointerup", () => {
 			this.destroyScene(true);
+		});
+
+		this.reportProblemButton.on("pointerup", () => {
+			this.scene.start(CST.SCENES.REPORT_ERROR, {
+				questionId: this.question.getId(),
+			});
 		});
 
 		this.bookIcon = this.add
@@ -263,6 +284,7 @@ export default class QuestionScene extends Phaser.Scene {
 	private destroyScene(isAnswerCorrect: boolean): void {
 		this.destroyImages();
 		this.clearQuestionTextures();
+		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), isAnswerCorrect, this.targetLocation);
 	}

@@ -6,9 +6,9 @@ export default class InGameMenuScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
-	sizeFactor: number;
 
 	resumeText: Phaser.GameObjects.Text;
+	reportProblemText: Phaser.GameObjects.Text;
 	quitText: Phaser.GameObjects.Text;
 
 	disabledInteractionZone: Phaser.GameObjects.Zone;
@@ -21,7 +21,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 	}
 
 	init() {
-		this.sizeFactor = 0.9;
 		this.width = Number(this.game.config.width) * 0.4;
 		this.height = Number(this.game.config.height) * 0.8;
 
@@ -36,7 +35,17 @@ export default class InGameMenuScene extends Phaser.Scene {
 		this.cameras.main.setBackgroundColor(0x808080);
 
 		this.resumeText = this.add
-			.text(this.width / 2 - 50, this.height * 0.3, "Resume", {
+			.text(this.width / 2 - 75, this.height * 0.3, "Resume", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
+		this.reportProblemText = this.add
+			.text(this.width / 2 - 75, this.height * 0.5, "Report problem", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -46,7 +55,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 			.setScrollFactor(0);
 
 		this.quitText = this.add
-			.text(this.width / 2 - 50, this.height * 0.5, "Quit", {
+			.text(this.width / 2 - 75, this.height * 0.7, "Quit", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -87,11 +96,33 @@ export default class InGameMenuScene extends Phaser.Scene {
 			this.quitGame();
 		});
 
+		this.reportProblemText.on("pointerover", () => {
+			this.reportProblemText.setTint(0xffff66);
+		});
+
+		this.reportProblemText.on("pointerout", () => {
+			this.reportProblemText.clearTint();
+		});
+
+		this.reportProblemText.on("pointerdown", () => {
+			this.reportProblemText.setTint(0x86bfda);
+		});
+
+		this.reportProblemText.on("pointerup", () => {
+			this.scene.start(CST.SCENES.REPORT_ERROR, {
+				questionId: null,
+			});
+		});
+
 		this.resumeText.setInteractive({
 			useHandCursor: true,
 		});
 
 		this.quitText.setInteractive({
+			useHandCursor: true,
+		});
+
+		this.reportProblemText.setInteractive({
 			useHandCursor: true,
 		});
 	}

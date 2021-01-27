@@ -315,6 +315,7 @@ export default class RaceScene extends Phaser.Scene {
 		socket.on(CE.GAME_END, (data: GameEndEvent) => {
 			updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
 			this.raceGame.gameFinished();
+			this.scene.stop(CST.SCENES.REPORT_ERROR);
 			this.scene.stop(CST.SCENES.RACE_GAME_UI);
 			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 			this.scene.start(CST.SCENES.WAITING_ROOM, { lastGameData: data, socket: this.raceGame.getCurrentPlayerSocket() });
