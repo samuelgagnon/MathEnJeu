@@ -1,5 +1,5 @@
 import io from "socket.io-client";
-import UserInfo from "../../communication/UserInfo";
+import UserInfo from "../../communication/user/UserInfo";
 
 export const connectToRoomSelectionNamespace = (): SocketIOClient.Socket => {
 	const socket = io.connect(`${process.env.SERVER_API_URL}/roomSelection`);

@@ -1,4 +1,4 @@
-import UserInfo from "../../communication/UserInfo";
+import UserInfo from "../../communication/user/UserInfo";
 import { CST } from "../CST";
 import { getUserInfo, initializeUserStats, setUserInfo } from "../services/UserInformationService";
 
