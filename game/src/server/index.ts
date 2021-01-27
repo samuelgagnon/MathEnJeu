@@ -4,14 +4,6 @@ import path from "path";
 import "reflect-metadata";
 import socketIO from "socket.io";
 import { createConnection } from "typeorm";
-import { Answer } from "../orm/entities/Answer";
-import { AnswerInfo } from "../orm/entities/AnswerInfo";
-import { AnswerType } from "../orm/entities/AnswerType";
-import { AnswerTypeInfo } from "../orm/entities/AnswerTypeInfo";
-import { Language } from "../orm/entities/Language";
-import { LanguageInfo } from "../orm/entities/LanguageInfo";
-import { Question } from "../orm/entities/Question";
-import { QuestionInfo } from "../orm/entities/QuestionInfo";
 import applyCommonContext, { serviceConstants } from "./context/CommonContext";
 import ServiceLocator from "./context/ServiceLocator";
 import GameManager from "./GameManager";
@@ -31,7 +23,6 @@ createConnection({
 	username: process.env.DB_USER,
 	password: process.env.DB_PWD,
 	database: "mathamaze2",
-	entities: [Question, Answer, AnswerInfo, QuestionInfo, Language, LanguageInfo, AnswerType, AnswerTypeInfo],
 	synchronize: true,
 }).catch((err) => console.log(err));
 
