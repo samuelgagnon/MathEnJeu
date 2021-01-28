@@ -126,7 +126,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.reportProblemButton.on("pointerup", () => {
-			this.scene.start(CST.SCENES.REPORT_ERROR, {
+			this.scene.launch(CST.SCENES.REPORT_ERROR, {
 				questionId: this.question.getId(),
 			});
 		});

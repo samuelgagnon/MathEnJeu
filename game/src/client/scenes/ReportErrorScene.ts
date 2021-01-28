@@ -63,7 +63,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 				errorDescription: (<HTMLInputElement>this.inputHtml.getChildByID("errorDetail")).value,
 				errorLog: "bla2",
 				username: userInfo.name,
-				questionId: 1,
+				questionId: this.questionId,
 			};
 			postErrorReport(errorReport);
 			this.scene.stop(CST.SCENES.REPORT_ERROR);
