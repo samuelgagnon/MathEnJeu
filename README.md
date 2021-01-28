@@ -38,7 +38,7 @@ We can also build the data base and the app separately (using dev mode as exampl
 ```
 
 
-### ORM Model generator
+### ORM Model generator (Only if we use Entities for our database schema)
 
 If you change the database schema, you'll have to change the ORM model so it matches the tables and their relationships.
 
