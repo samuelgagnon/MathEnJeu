@@ -15,11 +15,20 @@ export class Clock {
 	private static isSynchronised: boolean = false;
 	private static isSynchronizing: boolean = false;
 	private static stopSynchronization: boolean = false;
+	private static latency: number = 0;
 
 	private constructor() {}
 
 	public static getIsSynchronizedWithServer(): boolean {
 		return Clock.isSynchronised;
+	}
+
+	public static getLatency(): number {
+		return Clock.latency;
+	}
+
+	public static getDelta(): number {
+		return Clock.clockDelta;
 	}
 
 	public static getIsSynchronizingWithServer(): boolean {
@@ -60,9 +69,9 @@ export class Clock {
 	//This specific clockdelta is used to compute the clockDelta used in Clock.now().
 	private static computeClockDeltaFromTimeResponse(timeResponse: TimeResponseEvent): void {
 		const currentTime = Date.now();
-		const latency = (currentTime - timeResponse.clientCurrentLocalTime) / 2;
+		Clock.latency = (currentTime - timeResponse.clientCurrentLocalTime) / 2;
 		const clientServerTimeDelta = timeResponse.serverCurrentLocalTime - timeResponse.clientCurrentLocalTime;
-		const clockDelta = clientServerTimeDelta + latency;
+		const clockDelta = clientServerTimeDelta + Clock.latency;
 		Clock.synchClockDeltas.push(clockDelta);
 		Clock.computeUsedClockDelta();
 		while (Clock.synchClockDeltas.length >= Clock.TOTAL_SYNCH_STEP) {

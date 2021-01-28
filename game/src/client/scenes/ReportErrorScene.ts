@@ -1,4 +1,5 @@
 import ErrorReport from "../../communication/ErrorReport";
+import { Clock } from "../../gameCore/clock/Clock";
 import { CST } from "../CST";
 import { postErrorReport } from "../services/ReportErrorService";
 import { getUserInfo } from "../services/UserInformationService";
@@ -61,7 +62,10 @@ export default class ReportErrorScene extends Phaser.Scene {
 			const errorReport = <ErrorReport>{
 				languageShortName: userInfo.language,
 				errorDescription: (<HTMLInputElement>this.inputHtml.getChildByID("errorDetail")).value,
-				errorLog: "bla2",
+				errorLog: {
+					latency: Clock.getLatency(),
+					deltaSync: Clock.getDelta(),
+				},
 				username: userInfo.name,
 				questionId: this.questionId,
 			};

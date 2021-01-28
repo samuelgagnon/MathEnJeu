@@ -70,7 +70,7 @@ export class Server {
 		this.app.post("/errorReport", jsonParser, (req, res) => {
 			const body: ErrorReport = req.body;
 			console.log(body);
-			this.errorRepo.addReportedError(body.languageShortName, body.errorDescription, body.errorLog, body.username, body.questionId);
+			this.errorRepo.addReportedError(body.languageShortName, body.errorDescription, JSON.stringify(body.errorLog), body.username, body.questionId);
 		});
 	}
 
