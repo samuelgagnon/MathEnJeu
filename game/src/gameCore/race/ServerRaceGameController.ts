@@ -16,6 +16,7 @@ import {
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
+import UserInfo from "../../communication/user/UserInfo";
 import QuestionRepository from "../../server/data/QuestionRepository";
 import User from "../../server/data/User";
 import Room from "../../server/rooms/Room";
@@ -236,13 +237,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
+					const playerId = (<QuestionAnsweredEvent>inputData).playerId;
+					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
+					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
+					const userInfo: UserInfo = this.context.getUsers().find((user) => user.userId == playerId).userInfo;
 					super.playerAnsweredQuestion(
 						(<QuestionAnsweredEvent>inputData).questionId,
 						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,
 						(<QuestionAnsweredEvent>inputData).targetLocation,
 						(<QuestionAnsweredEvent>inputData).playerId,
-						(<QuestionAnsweredEvent>inputData).startTimestamp
+						startTimestamp
 					);
+					this.context.getStatsRepo().addAnsweredQuestionStats(userInfo, Date.now() - startTimestamp, Date.now(), questionId);
 					break;
 
 				default:
