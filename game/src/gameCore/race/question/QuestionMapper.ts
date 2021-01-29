@@ -16,7 +16,7 @@ export default class QuestionMapper {
 	private static mapAnswersFromDTO(answers: AnswerDTO[]): Answer[] {
 		return answers.map((answerDTO) => {
 			const isRight = answerDTO.isRight == 1 ? true : false;
-			return new Answer(answerDTO.label, isRight);
+			return new Answer(answerDTO.id, answerDTO.label, isRight);
 		});
 	}
 }

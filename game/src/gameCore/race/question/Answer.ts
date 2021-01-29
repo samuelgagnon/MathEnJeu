@@ -1,11 +1,17 @@
 import { AnswerDTO } from "../../../communication/race/DataInterfaces";
 
 export class Answer {
+	private id: number;
 	private label: string;
 	private _isRight: boolean;
-	constructor(label: string, isRight: boolean) {
+	constructor(id: number, label: string, isRight: boolean) {
+		this.id = id;
 		this.label = label;
 		this._isRight = isRight;
+	}
+
+	public getId(): number {
+		return this.id;
 	}
 
 	public isRight(): boolean {
@@ -26,6 +32,7 @@ export class Answer {
 	public getDTO(): AnswerDTO {
 		const isright = this._isRight ? 1 : 0;
 		return {
+			id: this.id,
 			label: this.label,
 			isRight: isright,
 		};
