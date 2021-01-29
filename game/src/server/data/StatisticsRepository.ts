@@ -10,6 +10,14 @@ export default interface StatisticsRepository {
 		answerText?: string,
 		answerId?: number
 	): void;
-	addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): number;
+	/**
+	 * Returns the created game stats id.
+	 * @param gameDuration Duration of the game (in milliseconds) as planned before starting the game
+	 */
+	addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): Promise<number>;
+	/**
+	 *
+	 * @param datetimeEnded Time when the game ends (whether it corresponds to the duration or not)
+	 */
 	updateEndGameStats(gameId: number, endPlayercount: number, datetimeEnded: Date): void;
 }
