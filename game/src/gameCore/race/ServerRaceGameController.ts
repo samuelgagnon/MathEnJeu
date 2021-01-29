@@ -240,7 +240,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					const playerId = (<QuestionAnsweredEvent>inputData).playerId;
 					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
 					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
-					const userInfo: UserInfo = this.context.getUsers().find((user) => user.userId == playerId).userInfo;
+					const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
 					super.playerAnsweredQuestion(
 						(<QuestionAnsweredEvent>inputData).questionId,
 						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,

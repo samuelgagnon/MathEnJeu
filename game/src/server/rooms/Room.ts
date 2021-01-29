@@ -47,6 +47,10 @@ export default class Room {
 		return this.users;
 	}
 
+	public getUserById(userId: string): User {
+		return this.users.find((user) => user.userId == userId);
+	}
+
 	public getRoomString(): string {
 		return this.roomString;
 	}
@@ -82,8 +86,6 @@ export default class Room {
 				userId: clientSocket.id,
 				userInfo: userInfo,
 				socket: clientSocket,
-				schoolGrade: userInfo.schoolGrade,
-				language: userInfo.language,
 			};
 
 			this.users.push(user);
