@@ -6,7 +6,12 @@ export default class StatisticsDbRepository implements StatisticsRepository {
 	readonly PLAYED_GAME_TABLE_NAME = `played_game`;
 	readonly GIVEN_ANSWER_TABLE_NAME = `given_answer`;
 
+	private getMySqlDatetimeFromDate(d: Date): string {
+		return d.toISOString().split("T")[0] + " " + d.toTimeString().split(" ")[0];
+	}
+
 	constructor() {}
+
 	addAnsweredQuestionStats(
 		gameId: number,
 		player: UserInfo,
@@ -16,11 +21,25 @@ export default class StatisticsDbRepository implements StatisticsRepository {
 		answerText?: string,
 		answerId?: number
 	): void {
-		return;
-	}
+		const answerTextString = answerText === undefined ? "NULL" : `'${answerText}'`;
+		const answerIdString = answerId === undefined ? "NULL" : String(answerId);
+		const playerNameString = `'${player.name}'`;
+		const datetimeCreatedString = `'${this.getMySqlDatetimeFromDate(datetimeCreated)}'`;
+		const timeWhenAnsweredString = `'${this.getMySqlDatetimeFromDate(timeWhenAnswered)}'`;
+		const queryString = `INSERT INTO ${this.GIVEN_ANSWER_TABLE_NAME} ( question_id, language_id, level_id, played_game_id, answer_id, answer_text, username, question_prompt_time, answer_time)
+		VALUES (${questionId},
+			(SELECT language_id
+			FROM \`language\`
+			WHERE \`language\`.short_name LIKE '${player.language}'),
+			${player.schoolGrade},
+			${gameId},
+			${answerIdString},
+			${answerTextString},
+			${playerNameString},
+			${datetimeCreatedString},
+			${timeWhenAnsweredString});`;
 
-	private getMySqlDatetimeFromDate(d: Date): string {
-		return d.toISOString().split("T")[0] + " " + d.toTimeString().split(" ")[0];
+		getConnection().query(queryString);
 	}
 
 	async addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): Promise<number> {
@@ -40,6 +59,11 @@ export default class StatisticsDbRepository implements StatisticsRepository {
 	}
 
 	updateEndGameStats(gameId: number, endPlayercount: number, datetimeEnded: Date): void {
-		return;
+		const datetimeEndedString = `'${this.getMySqlDatetimeFromDate(datetimeEnded)}'`;
+		const queryString = `UPDATE ${this.PLAYED_GAME_TABLE_NAME} 
+		SET end_player_count = ${endPlayercount}, datetime_ended = ${datetimeEndedString}
+		WHERE played_game_id = ${gameId}`;
+
+		getConnection().query(queryString);
 	}
 }
