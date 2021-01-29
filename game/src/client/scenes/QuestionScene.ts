@@ -2,6 +2,7 @@ import { QuestionFoundFromBookEvent } from "../../communication/race/DataInterfa
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { ItemType } from "../../gameCore/race/items/Item";
+import { Answer } from "../../gameCore/race/question/Answer";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
@@ -122,7 +123,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.correctAnswer.on("pointerup", () => {
-			this.destroyScene(true);
+			this.destroyScene(this.question.getRightAnswer());
 		});
 
 		this.reportProblemButton.on("pointerup", () => {
@@ -253,7 +254,7 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private answerQuestion(): void {
-		const isAnswerCorrect = this.question.IsAnswerRight((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+		const isAnswerCorrect = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
 		if (!isAnswerCorrect) {
 			this.inputHtml.setAlpha(0);
 			this.enterButton.setAlpha(0);
@@ -281,12 +282,12 @@ export default class QuestionScene extends Phaser.Scene {
 		}
 	}
 
-	private destroyScene(isAnswerCorrect: boolean): void {
+	private destroyScene(answer: Answer): void {
 		this.destroyImages();
 		this.clearQuestionTextures();
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), isAnswerCorrect, this.targetLocation);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), answer, this.targetLocation);
 	}
 
 	private useBook(): void {

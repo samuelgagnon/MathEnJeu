@@ -27,7 +27,9 @@ import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
+import { Answer } from "./question/Answer";
 import { Question } from "./question/Question";
+import QuestionMapper from "./question/QuestionMapper";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
@@ -160,11 +162,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			const lag = data.clientTimestamp - Clock.now();
 			const newData: QuestionAnsweredEvent = {
 				questionId: data.questionId,
-				isAnswerCorrect: data.isAnswerCorrect,
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
 				startTimestamp: data.startTimestamp + lag,
 				targetLocation: data.targetLocation,
+				answer: data.answer,
 			};
 			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: newData };
 			this.inputBuffer.push(newInput);
@@ -245,19 +247,30 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
-					const playerId = (<QuestionAnsweredEvent>inputData).playerId;
+					const clientTimestamp = (<QuestionAnsweredEvent>inputData).clientTimestamp;
 					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
 					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
 					const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+					const answer: Answer = QuestionMapper.mapAnswer((<QuestionAnsweredEvent>inputData).answer);
 					super.playerAnsweredQuestion(
-						(<QuestionAnsweredEvent>inputData).questionId,
-						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,
+						questionId,
+						answer.isRight(),
 						(<QuestionAnsweredEvent>inputData).targetLocation,
 						(<QuestionAnsweredEvent>inputData).playerId,
 						startTimestamp
 					);
 
-					//this.context.getStatsRepo().addAnsweredQuestionStats(this.gameDbId)
+					this.context
+						.getStatsRepo()
+						.addAnsweredQuestionStats(
+							this.gameDbId,
+							userInfo,
+							new Date(clientTimestamp),
+							new Date(startTimestamp),
+							questionId,
+							answer.getLabel(),
+							answer.getId()
+						);
 					break;
 
 				default:
