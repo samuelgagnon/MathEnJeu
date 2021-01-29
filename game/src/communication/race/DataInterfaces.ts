@@ -97,6 +97,7 @@ export interface QuestionDTO {
 }
 
 export interface AnswerDTO {
+	id: number;
 	label: string;
 	isRight: number;
 }

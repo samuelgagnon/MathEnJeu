@@ -29,7 +29,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 	}
 
 	async getQuestionById(questionId: number, languageShortName: string, schoolGradeId: number): Promise<GameQuestion> {
-		const queryString = `SELECT answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
+		const queryString = `SELECT answer.answer_id as answerId, answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
 		question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName, 
 		question_level.value as difficulty
 			FROM question
@@ -48,7 +48,11 @@ export default class QuestionDbRepository implements QuestionRepository {
 				FROM \`language\`
 				WHERE \`language\`.short_name LIKE '${languageShortName}')
 			AND question.question_id = ${questionId}
-			AND answer_info.answer_id = answer.answer_id;`;
+			AND answer_info.answer_id = answer.answer_id
+			AND answer_info.language_id IN
+			(SELECT language_id
+			FROM \`language\`
+			WHERE \`language\`.short_name LIKE '${languageShortName}');`;
 
 		const rows = await getConnection().query(queryString);
 
@@ -62,7 +66,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 		}
 
 		const gameAnswers: GameAnswer[] = rows.map(
-			(row) => new GameAnswer(row.answerType == "SHORT_ANSWER" ? row.answer_latex : row.answerLabel, row.answerIsRight)
+			(row) => new GameAnswer(row.answerId, row.answerType == "SHORT_ANSWER" ? row.answerString : row.answerLabel, row.answerIsRight)
 		);
 		//The number of row corresponds to the number of possible answers for the question.
 		//Information concerning the question can be fetched in any row. Here we take the first one.

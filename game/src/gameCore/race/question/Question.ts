@@ -34,6 +34,12 @@ export class Question {
 
 	public IsAnswerRight(answerString: string): boolean {
 		const correctAnswer = this.answers.find((answer) => answer.isRight());
+		//debug
+		this.answers.forEach((answer) => {
+			console.log(`Label: ${answer.getLabel()}, Id: ${answer.getId()}, IsRight: ${answer.isRight()}`);
+		});
+		//debug
+		console.log(`AnswerType:${this.answerType}, Given answer: ${answerString}, Correct answer: ${correctAnswer.getLabel()}`);
 		return correctAnswer.isEquivalentToAnswerString(answerString);
 	}
 
