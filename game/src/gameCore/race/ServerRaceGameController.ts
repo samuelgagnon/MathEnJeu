@@ -248,7 +248,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						(<QuestionAnsweredEvent>inputData).playerId,
 						startTimestamp
 					);
-					this.context.getStatsRepo().addAnsweredQuestionStats(userInfo, Date.now() - startTimestamp, Date.now(), questionId);
+					//this.context.getStatsRepo().addAnsweredQuestionStats(userInfo, Date.now() - startTimestamp, new Date(), questionId);
 					break;
 
 				default:

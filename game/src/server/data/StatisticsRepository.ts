@@ -2,12 +2,14 @@ import UserInfo from "../../communication/user/UserInfo";
 
 export default interface StatisticsRepository {
 	addAnsweredQuestionStats(
+		gameId: number,
 		player: UserInfo,
-		timeToAnswer: number,
-		datetimeCreated: number,
+		timeWhenAnswered: Date,
+		questionPromptTime: Date,
 		questionId: number,
-		answerId?: number,
-		answerText?: string
+		answerText?: string,
+		answerId?: number
 	): void;
-	addEndGameStats(gameDuration: number, startPlayerCount: number, endPlayercount: number, datetimeCreated: Date, datetimeEnded: Date): void;
+	addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): number;
+	updateEndGameStats(gameId: number, endPlayercount: number, datetimeEnded: Date): void;
 }

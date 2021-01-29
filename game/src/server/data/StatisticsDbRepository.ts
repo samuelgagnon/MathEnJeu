@@ -4,17 +4,22 @@ import StatisticsRepository from "./StatisticsRepository";
 export default class StatisticsDbRepository implements StatisticsRepository {
 	constructor() {}
 	addAnsweredQuestionStats(
+		gameId: number,
 		player: UserInfo,
-		timeToAnswer: number,
-		datetimeCreated: number,
+		timeWhenAnswered: Date,
+		datetimeCreated: Date,
 		questionId: number,
-		answerId?: number,
-		answerText?: string
+		answerText?: string,
+		answerId?: number
 	): void {
 		return;
 	}
 
-	addEndGameStats(gameDuration: number, startPlayerCount: number, endPlayercount: number, datetimeCreated: Date, datetimeEnded: Date): void {
+	addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): number {
+		return 1;
+	}
+
+	updateEndGameStats(gameId: number, endPlayercount: number, datetimeEnded: Date): void {
 		return;
 	}
 }
