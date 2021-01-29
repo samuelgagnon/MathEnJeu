@@ -36,6 +36,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
 	private gameId: string;
+	private gameDbId: number = null;
 	private itemPickUpTimestamps: Number[] = [];
 	private questionRepo: QuestionRepository;
 	private state: GameState = GameState.RaceGame;
@@ -71,6 +72,12 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private emitStartGameEvent(): void {
+		this.context
+			.getStatsRepo()
+			.addGameStats(this.gameTime, "RaceGame", this.players.length, new Date())
+			.then((res) => (this.gameDbId = res))
+			.catch((err) => console.log(err));
+
 		this.isGameStarted = true;
 		this.context
 			.getNamespace()
@@ -112,6 +119,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	protected gameFinished(): void {
+		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.players.length, new Date());
 		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
 			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
 		});
@@ -248,7 +256,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						(<QuestionAnsweredEvent>inputData).playerId,
 						startTimestamp
 					);
-					//this.context.getStatsRepo().addAnsweredQuestionStats(userInfo, Date.now() - startTimestamp, new Date(), questionId);
+
+					//this.context.getStatsRepo().addAnsweredQuestionStats(this.gameDbId)
 					break;
 
 				default:

@@ -15,8 +15,8 @@ export default class StatisticsDbRepository implements StatisticsRepository {
 		return;
 	}
 
-	addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): number {
-		return 1;
+	async addGameStats(gameDuration: number, gameType: string, startPlayerCount: number, datetimeCreated: Date): Promise<number> {
+		return await 9;
 	}
 
 	updateEndGameStats(gameId: number, endPlayercount: number, datetimeEnded: Date): void {
