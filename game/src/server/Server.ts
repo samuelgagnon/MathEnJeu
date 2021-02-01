@@ -79,6 +79,6 @@ export class Server {
 	}
 
 	public listen(callback: (port: number) => void): void {
-		this.httpServer.listen(this.DEFAULT_PORT, () => callback(this.DEFAULT_PORT));
+		this.httpServer.listen(this.DEFAULT_PORT, process.env.SERVER_API_URL, () => callback(this.DEFAULT_PORT));
 	}
 }
