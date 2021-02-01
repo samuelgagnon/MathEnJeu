@@ -12,6 +12,9 @@ module.exports = (env) => {
 	}
 
 	return {
+		devServer: {
+			allowedHosts: [process.env.SERVER_API_URL],
+		},
 		mode: mode,
 		//devtool: "inline-source-map", Verify use
 		target: "node",
