@@ -6,7 +6,7 @@
   "scripts": {
     "build:dev": "webpack --env.NODE_ENV=dev --config webpack/webpack.client.js && webpack --env.NODE_ENV=dev --config webpack/webpack.server.js && npm run server",
     "build:prod": "webpack --env.NODE_ENV=prod --config webpack/webpack.client.js && webpack --env.NODE_ENV=prod --config webpack/webpack.server.js && npm run server",
-    "server": "nodemon dist/server/server.js"
+    "server": "nodemon dist/server/server.js --host 0.0.0.0"
   },
   "author": "",
   "license": "ISC",
