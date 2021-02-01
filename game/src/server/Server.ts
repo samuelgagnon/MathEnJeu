@@ -31,8 +31,12 @@ export class Server {
 			res.sendFile(path.join(__dirname, "../", "/client/pages/construction.html"));
 		});
 
+		// this.app.get("/", (req, res) => {
+		// 	res.sendFile(path.join(__dirname, "../", "/client/index.html"));
+		// });
+
 		this.app.get("/", (req, res) => {
-			res.sendFile(path.join(__dirname, "../", "/client/index.html"));
+			res.send({ test: "test" });
 		});
 
 		this.app.get("/questionImage", async (req, res) => {
