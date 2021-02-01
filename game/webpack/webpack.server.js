@@ -13,8 +13,9 @@ module.exports = (env) => {
 
 	return {
 		devServer: {
+			inline: true,
 			port: 8080,
-			host: "0.0.0.0",
+			host: process.env.SERVER_API_URL,
 		},
 		mode: mode,
 		//devtool: "inline-source-map", Verify use
