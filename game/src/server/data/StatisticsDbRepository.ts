@@ -4,8 +4,8 @@ import InsertOrUpdateDbResponse from "./InsertOrUpdateDbResponse";
 import StatisticsRepository from "./StatisticsRepository";
 
 export default class StatisticsDbRepository implements StatisticsRepository {
-	readonly PLAYED_GAME_TABLE_NAME = `played_game`;
-	readonly GIVEN_ANSWER_TABLE_NAME = `given_answer`;
+	readonly PLAYED_GAME_TABLE_NAME = "played_game";
+	readonly GIVEN_ANSWER_TABLE_NAME = "given_answer";
 
 	private getMySqlDatetimeFromDate(d: Date): string {
 		return d.toISOString().split("T")[0] + " " + d.toTimeString().split(" ")[0];
