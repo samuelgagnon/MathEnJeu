@@ -16,8 +16,8 @@ export default class StatisticsDbRepository implements StatisticsRepository {
 	async addAnsweredQuestionStats(
 		gameId: number,
 		player: UserInfo,
-		timeWhenAnswered: Date,
 		questionPromptTime: Date,
+		timeWhenAnswered: Date,
 		questionId: number,
 		answerText?: string,
 		answerId?: number

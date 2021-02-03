@@ -213,7 +213,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					if (this.isMoveRequestValid(<MoveRequestEvent>inputData)) {
 						try {
 							player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
-							player.setIsAnsweringQuestion(true);
 							this.sendQuestionToPlayer(
 								player.getInfoForQuestion().language,
 								player.getInfoForQuestion().schoolGrade,
@@ -247,10 +246,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
-					const clientTimestamp = (<QuestionAnsweredEvent>inputData).clientTimestamp;
 					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
 					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
 					const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+					player = this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
 					const answer: Answer = QuestionMapper.mapAnswer((<QuestionAnsweredEvent>inputData).answer);
 					super.playerAnsweredQuestion(
 						questionId,
@@ -265,8 +264,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						.addAnsweredQuestionStats(
 							this.gameDbId,
 							userInfo,
-							new Date(clientTimestamp),
-							new Date(startTimestamp),
+							new Date(player.getLastQuestionPromptTimestamp()),
+							new Date(Clock.now()),
 							questionId,
 							answer.getLabel(),
 							answer.getId()
@@ -289,6 +288,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
 		this.findQuestionForPlayer(language, schoolGrade, player.getDifficulty(targetLocation))
 			.then((question) => {
+				player.promptQuestion(question);
 				this.context
 					.getNamespace()
 					.to(player.id)
@@ -331,7 +331,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
 		const player = this.findPlayer(moveRequestEvent.playerId);
-		if (!player.getIsAnsweringQuestion() && player.hasArrived()) {
+		if (!player.isAnsweringQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
 			if (
 				possibleTargetLocations.some(

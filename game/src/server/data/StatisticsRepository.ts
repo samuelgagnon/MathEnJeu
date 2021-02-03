@@ -4,8 +4,8 @@ export default interface StatisticsRepository {
 	addAnsweredQuestionStats(
 		gameId: number,
 		player: UserInfo,
-		timeWhenAnswered: Date,
 		questionPromptTime: Date,
+		timeWhenAnswered: Date,
 		questionId: number,
 		answerText?: string,
 		answerId?: number
