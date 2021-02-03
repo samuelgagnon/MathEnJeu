@@ -19,4 +19,9 @@ export default class QuestionMapper {
 			return new Answer(answerDTO.id, answerDTO.label, isRight);
 		});
 	}
+
+	public static mapAnswer(answerDTO: AnswerDTO): Answer {
+		const isRight = answerDTO.isRight == 1 ? true : false;
+		return new Answer(answerDTO.id, answerDTO.label, isRight);
+	}
 }

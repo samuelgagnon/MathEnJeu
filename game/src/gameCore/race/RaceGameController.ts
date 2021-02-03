@@ -5,7 +5,7 @@ import Item, { ItemType } from "./items/Item";
 import Player from "./player/Player";
 
 export default abstract class RaceGameController {
-	protected readonly gameTime: number;
+	protected readonly gameTime: number; //in milliseconds
 	protected timeRemaining: number;
 	protected readonly gameStartTimeStamp: number;
 	protected grid: RaceGrid;

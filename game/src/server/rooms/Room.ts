@@ -5,6 +5,7 @@ import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
+import StatisticsRepository from "../data/StatisticsRepository";
 import User from "../data/User";
 
 /**
@@ -21,13 +22,15 @@ export default class Room {
 	private users: User[] = [];
 	private nsp: SocketIO.Namespace;
 	private gameRepo: GameRepository;
+	private statsRepo: StatisticsRepository;
 	private host: User;
 
-	constructor(id: string, state: State, gameRepo: GameRepository, roomString: string, nsp: Namespace) {
+	constructor(id: string, state: State, gameRepo: GameRepository, statsRepo: StatisticsRepository, roomString: string, nsp: Namespace) {
 		this.id = id;
 		this.roomString = roomString;
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
+		this.statsRepo = statsRepo;
 		//setting up starting state
 		this.transitionTo(state);
 	}
@@ -36,8 +39,16 @@ export default class Room {
 		return this.id;
 	}
 
+	public getStatsRepo(): StatisticsRepository {
+		return this.statsRepo;
+	}
+
 	public getUsers(): User[] {
 		return this.users;
+	}
+
+	public getUserById(userId: string): User {
+		return this.users.find((user) => user.userId == userId);
 	}
 
 	public getRoomString(): string {
@@ -75,8 +86,6 @@ export default class Room {
 				userId: clientSocket.id,
 				userInfo: userInfo,
 				socket: clientSocket,
-				schoolGrade: userInfo.schoolGrade,
-				language: userInfo.language,
 			};
 
 			this.users.push(user);

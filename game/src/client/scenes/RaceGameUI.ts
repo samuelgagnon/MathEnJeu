@@ -283,7 +283,7 @@ export default class RaceGameUI extends Phaser.Scene {
 		const currentPlayer = raceScene.raceGame.getCurrentPlayer();
 		const currentPlayerStatus = currentPlayer.getCurrentStatus().toString();
 
-		if (currentPlayer.getIsAnsweringQuestion()) {
+		if (currentPlayer.isAnsweringQuestion()) {
 			this.disabledInteractionZone.setActive(true).setVisible(true);
 		} else {
 			this.disabledInteractionZone.setActive(false).setVisible(false);

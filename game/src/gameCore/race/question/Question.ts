@@ -32,9 +32,16 @@ export class Question {
 		return this.id;
 	}
 
-	public IsAnswerRight(answerString: string): boolean {
-		const correctAnswer = this.answers.find((answer) => answer.isRight());
-		return correctAnswer.isEquivalentToAnswerString(answerString);
+	public getAnswer(answerString: string): Answer {
+		let answer = this.answers.find((answer) => answer.isEquivalentToAnswerString(answerString));
+		if (answer === undefined) {
+			answer = new Answer(undefined, answerString, false);
+		}
+		return answer;
+	}
+
+	public getRightAnswer(): Answer {
+		return this.answers.find((answer) => answer.isRight());
 	}
 
 	public getAnswerType(): string {

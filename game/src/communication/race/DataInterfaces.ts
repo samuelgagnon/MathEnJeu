@@ -62,11 +62,11 @@ export interface HostChangeEvent {
 
 export interface QuestionAnsweredEvent {
 	questionId: number;
-	isAnswerCorrect: boolean;
 	playerId: string;
 	clientTimestamp: number;
 	startTimestamp: number;
 	targetLocation: Point;
+	answer: AnswerDTO;
 }
 
 export interface PlayerEndState {
