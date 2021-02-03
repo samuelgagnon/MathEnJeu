@@ -254,8 +254,8 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private answerQuestion(): void {
-		const isAnswerCorrect = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
-		if (!isAnswerCorrect) {
+		const answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+		if (!answer.isRight()) {
 			this.inputHtml.setAlpha(0);
 			this.enterButton.setAlpha(0);
 			this.answersList.setAlpha(0);
@@ -275,10 +275,10 @@ export default class QuestionScene extends Phaser.Scene {
 
 			this.showFeedbackTime = true;
 			setTimeout(() => {
-				this.destroyScene(isAnswerCorrect);
+				this.destroyScene(answer);
 			}, this.feedbackMaxTime);
 		} else {
-			this.destroyScene(isAnswerCorrect);
+			this.destroyScene(answer);
 		}
 	}
 
