@@ -7,7 +7,7 @@ import StatusFactory from "./playerStatus/StatusFactory";
 
 export default class PlayerFactory {
 	public static create(user: User, startLocation: Point, status: Status, inventory: Inventory): Player {
-		return new Player(user.userId, startLocation, user.userInfo.name, status, inventory, user.schoolGrade, user.language);
+		return new Player(user.userId, startLocation, user.userInfo.name, status, inventory, user.userInfo.schoolGrade, user.userInfo.language);
 	}
 
 	public static createFromPlayerState(playerState: PlayerState): Player {

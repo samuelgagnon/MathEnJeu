@@ -4,6 +4,7 @@ import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
 import { RACE_CST } from "../RACE_CST";
+import { Question } from "./../question/Question";
 import Inventory from "./Inventory";
 import Status from "./playerStatus/Status";
 import { StatusType } from "./playerStatus/StatusType";
@@ -23,7 +24,8 @@ export default class Player {
 	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
-	private isAnsweringQuestion: boolean = false;
+	private lastQuestionPromptTimestamp: number;
+	private activeQuestion: Question;
 	private name: string;
 	private points: number = 0;
 	private position: Point;
@@ -73,7 +75,7 @@ export default class Player {
 			points: this.points,
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
-			isAnsweringQuestion: this.isAnsweringQuestion,
+			isAnsweringQuestion: this.isAnsweringQuestion(),
 			missedQuestionsCount: this.missedQuestionsCount,
 			inventoryState: this.inventory.getInventoryState(),
 			schoolGrade: this.schoolGrade,
@@ -89,12 +91,8 @@ export default class Player {
 		return this.playerStatus.getRemainingTime();
 	}
 
-	public getIsAnsweringQuestion(): boolean {
-		return this.isAnsweringQuestion;
-	}
-
-	public setIsAnsweringQuestion(value: boolean) {
-		this.isAnsweringQuestion = value;
+	public isAnsweringQuestion(): boolean {
+		return this.activeQuestion !== undefined;
 	}
 
 	public getInventory(): Inventory {
@@ -135,10 +133,19 @@ export default class Player {
 		};
 	}
 
+	public promptQuestion(question: Question): void {
+		this.activeQuestion = question;
+		this.lastQuestionPromptTimestamp = Clock.now();
+	}
+
+	public getLastQuestionPromptTimestamp() {
+		return this.lastQuestionPromptTimestamp;
+	}
+
 	public answeredQuestion(questionId: number, isAnswerCorrect: boolean): void {
 		//add answered question to answeredQuestion list so you don't ask the player the same question again
 		this.answeredQuestionsId.push(questionId);
-		this.setIsAnsweringQuestion(false);
+		this.activeQuestion = undefined;
 		if (isAnswerCorrect) {
 			this.addToMoveDistance(this.MOVE_PER_QUESTION);
 		} else {
@@ -156,7 +163,7 @@ export default class Player {
 		if (this.move.getHasArrived() && !isMoveDiagonal) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 			this.addPoints(pointsCalculatorCallBack(this.move.getDistance()));
-			this.setIsAnsweringQuestion(false);
+			this.activeQuestion = undefined;
 		}
 	}
 
@@ -201,7 +208,7 @@ export default class Player {
 		const usedItem = this.inventory.getItem(itemType);
 
 		//if he's not anwsering a question and it's only usable during a question.
-		if (!this.isAnsweringQuestion && usedItem.isForAnsweringQuestion) throw new Error(itemType); //TODO: create specific error type
+		if (!this.isAnsweringQuestion() && usedItem.isForAnsweringQuestion) throw new Error(itemType); //TODO: create specific error type
 
 		usedItem.use(target, this);
 		this.inventory.removeItem(itemType);

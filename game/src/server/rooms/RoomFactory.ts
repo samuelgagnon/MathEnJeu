@@ -8,6 +8,13 @@ export default class RoomFactory {
 	public static create(nsp: SocketIO.Namespace): Room {
 		const roomId: string = uuidv4();
 		const roomString = `room-${roomId}`;
-		return new Room(roomId, PreGameFactory.createPreGame(), ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS), roomString, nsp);
+		return new Room(
+			roomId,
+			PreGameFactory.createPreGame(),
+			ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS),
+			ServiceLocator.resolve(serviceConstants.STATISTICS_REPOSITORY_CLASS),
+			roomString,
+			nsp
+		);
 	}
 }

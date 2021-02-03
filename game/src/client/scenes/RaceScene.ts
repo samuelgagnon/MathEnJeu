@@ -6,6 +6,7 @@ import { PossiblePositions } from "../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../gameCore/race/items/Item";
 import Move from "../../gameCore/race/Move";
 import Player from "../../gameCore/race/player/Player";
+import { Answer } from "../../gameCore/race/question/Answer";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { CST } from "../CST";
@@ -116,7 +117,7 @@ export default class RaceScene extends Phaser.Scene {
 							tileSprite.setTint(this.activeTileColor);
 
 							//TODO verify if has arrived logic should be moved to player
-							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().getIsAnsweringQuestion()) {
+							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().isAnsweringQuestion()) {
 								this.raceGame.playerMoveRequest({ x: x, y: y });
 							}
 						}
@@ -244,7 +245,7 @@ export default class RaceScene extends Phaser.Scene {
 			//If a player gets affected by a banana or any other state change without moving
 			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
 			this.playerHasArrived(currentPosition) &&
-			!currentPlayer.getIsAnsweringQuestion()
+			!currentPlayer.isAnsweringQuestion()
 		) {
 			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
 			this.activateAccessiblePositions();
@@ -292,12 +293,12 @@ export default class RaceScene extends Phaser.Scene {
 		this.scene.launch(CST.SCENES.QUESTION_WINDOW, questionWindowData);
 	}
 
-	answerQuestion(questionId: number, isAnswerCorrect: boolean, position: Point) {
+	answerQuestion(questionId: number, answer: Answer, position: Point) {
 		this.clearTileInteractions();
-		if (isAnswerCorrect) {
+		if (answer.isRight()) {
 			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
 		}
-		this.raceGame.playerAnsweredQuestion(questionId, isAnswerCorrect, <Point>{ x: position.x, y: position.y });
+		this.raceGame.clientPlayerAnsweredQuestion(questionId, answer, <Point>{ x: position.x, y: position.y });
 
 		this.isReadyToGetPossiblePositions = true;
 	}
@@ -322,8 +323,9 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
-			this.raceGame.getCurrentPlayer().setIsAnsweringQuestion(true);
-			this.createQuestionWindow(data.targetLocation, QuestionMapper.fromDTO(data.questionDTO));
+			const questionFound = QuestionMapper.fromDTO(data.questionDTO);
+			this.raceGame.getCurrentPlayer().promptQuestion(questionFound);
+			this.createQuestionWindow(data.targetLocation, questionFound);
 		});
 	}
 

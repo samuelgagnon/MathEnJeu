@@ -7,6 +7,7 @@ import { ClientGame } from "../Game";
 import RaceGrid, { PossiblePositions } from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
+import { Answer } from "./question/Answer";
 import RaceGameController from "./RaceGameController";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
@@ -65,16 +66,16 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	public playerAnsweredQuestion(questionId: number, isAnswerCorrect: boolean, targetLocation: Point): void {
+	public clientPlayerAnsweredQuestion(questionId: number, answer: Answer, targetLocation: Point): void {
 		let moveTimestamp = Clock.now();
-		super.playerAnsweredQuestion(questionId, isAnswerCorrect, targetLocation, this.currentPlayerId, moveTimestamp);
+		super.playerAnsweredQuestion(questionId, answer.isRight(), targetLocation, this.currentPlayerId, moveTimestamp);
 		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
 			questionId: questionId,
-			isAnswerCorrect: isAnswerCorrect,
 			playerId: this.currentPlayerId,
 			clientTimestamp: Clock.now(),
 			startTimestamp: moveTimestamp,
 			targetLocation: targetLocation,
+			answer: answer.getDTO(),
 		});
 	}
 

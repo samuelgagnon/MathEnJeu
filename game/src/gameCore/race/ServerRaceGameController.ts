@@ -16,6 +16,7 @@ import {
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
+import UserInfo from "../../communication/user/UserInfo";
 import QuestionRepository from "../../server/data/QuestionRepository";
 import User from "../../server/data/User";
 import Room from "../../server/rooms/Room";
@@ -26,7 +27,9 @@ import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
+import { Answer } from "./question/Answer";
 import { Question } from "./question/Question";
+import QuestionMapper from "./question/QuestionMapper";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
@@ -35,6 +38,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
 	private gameId: string;
+	private gameDbId: number = null;
 	private itemPickUpTimestamps: Number[] = [];
 	private questionRepo: QuestionRepository;
 	private state: GameState = GameState.RaceGame;
@@ -70,6 +74,12 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private emitStartGameEvent(): void {
+		this.context
+			.getStatsRepo()
+			.addGameStats(this.gameTime, "RaceGame", this.players.length, new Date())
+			.then((res) => (this.gameDbId = res))
+			.catch((err) => console.log(err));
+
 		this.isGameStarted = true;
 		this.context
 			.getNamespace()
@@ -111,6 +121,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	protected gameFinished(): void {
+		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.players.length, new Date());
 		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
 			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
 		});
@@ -151,11 +162,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			const lag = data.clientTimestamp - Clock.now();
 			const newData: QuestionAnsweredEvent = {
 				questionId: data.questionId,
-				isAnswerCorrect: data.isAnswerCorrect,
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
 				startTimestamp: data.startTimestamp + lag,
 				targetLocation: data.targetLocation,
+				answer: data.answer,
 			};
 			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: newData };
 			this.inputBuffer.push(newInput);
@@ -202,7 +213,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					if (this.isMoveRequestValid(<MoveRequestEvent>inputData)) {
 						try {
 							player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
-							player.setIsAnsweringQuestion(true);
 							this.sendQuestionToPlayer(
 								player.getInfoForQuestion().language,
 								player.getInfoForQuestion().schoolGrade,
@@ -236,13 +246,30 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
+					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
+					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
+					const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+					player = this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
+					const answer: Answer = QuestionMapper.mapAnswer((<QuestionAnsweredEvent>inputData).answer);
 					super.playerAnsweredQuestion(
-						(<QuestionAnsweredEvent>inputData).questionId,
-						(<QuestionAnsweredEvent>inputData).isAnswerCorrect,
+						questionId,
+						answer.isRight(),
 						(<QuestionAnsweredEvent>inputData).targetLocation,
 						(<QuestionAnsweredEvent>inputData).playerId,
-						(<QuestionAnsweredEvent>inputData).startTimestamp
+						startTimestamp
 					);
+
+					this.context
+						.getStatsRepo()
+						.addAnsweredQuestionStats(
+							this.gameDbId,
+							userInfo,
+							new Date(player.getLastQuestionPromptTimestamp()),
+							new Date(Clock.now()),
+							questionId,
+							answer.getLabel(),
+							answer.getId()
+						);
 					break;
 
 				default:
@@ -261,6 +288,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
 		this.findQuestionForPlayer(language, schoolGrade, player.getDifficulty(targetLocation))
 			.then((question) => {
+				player.promptQuestion(question);
 				this.context
 					.getNamespace()
 					.to(player.id)
@@ -303,7 +331,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
 		const player = this.findPlayer(moveRequestEvent.playerId);
-		if (!player.getIsAnsweringQuestion() && player.hasArrived()) {
+		if (!player.isAnsweringQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
 			if (
 				possibleTargetLocations.some(
