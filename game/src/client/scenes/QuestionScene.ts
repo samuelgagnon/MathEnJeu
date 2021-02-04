@@ -55,6 +55,7 @@ export default class QuestionScene extends Phaser.Scene {
 		this.showFeedbackTime = false;
 		this.questionImage = undefined;
 		this.feedbackImage = undefined;
+		this.feedbackStartTimeStamp = undefined;
 		this.feedbackConstant = "feedback";
 		this.questionConstant = "question";
 
@@ -268,7 +269,12 @@ export default class QuestionScene extends Phaser.Scene {
 		this.correctAnswer.setAlpha(0);
 		this.feedbackStartTimeStamp = Clock.now();
 		//Approximation of feedbackMaxTime by checking remaining time.
-		this.feedbackMaxTime = Math.ceil((raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now()) / 1000) * 1000;
+		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now();
+
+		//DEBUG
+		console.log(`this.feedbackMaxTime: ${this.feedbackMaxTime}`);
+		console.log(`raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp(): ${raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp()}`);
+		console.log(`Clock.now(): ${Clock.now()}`);
 
 		this.feedbackRemainingTime = this.add
 			.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {

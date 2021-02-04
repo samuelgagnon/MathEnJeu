@@ -88,7 +88,7 @@ export default class Player {
 	}
 
 	public isInPenaltyState(): boolean {
-		return Clock.now() >= this.endOfPenaltyTimestamp;
+		return Clock.now() < this.endOfPenaltyTimestamp;
 	}
 
 	public getEndOfPenaltyTimestamp(): number {
