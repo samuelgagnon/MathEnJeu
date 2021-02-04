@@ -22,7 +22,7 @@ export default class Player {
 	private readonly MIN_MOVEMENT = 1;
 	private readonly MOVE_PER_QUESTION = 1;
 	private readonly MAX_DIFFICULTY = 6;
-	private readonly PENALTY_DURATION = 10 * 1000; //in milliseconds
+	private readonly PENALTY_DURATION = 5 * 1000; //in milliseconds
 	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
