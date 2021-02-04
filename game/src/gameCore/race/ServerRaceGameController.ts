@@ -25,6 +25,7 @@ import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
+import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
 import { Answer } from "./question/Answer";
@@ -161,10 +162,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
 			const lag = data.clientTimestamp - Clock.now();
 			const newData: QuestionAnsweredEvent = {
-				questionId: data.questionId,
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
-				startTimestamp: data.startTimestamp + lag,
+				answerTimestamp: data.answerTimestamp + lag,
 				targetLocation: data.targetLocation,
 				answer: data.answer,
 			};
@@ -246,19 +246,35 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
-					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
-					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
+					const correctionStartTimestamp = Clock.now();
+
+					const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
 					const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
 					player = this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
 					const answer: Answer = QuestionMapper.mapAnswer((<QuestionAnsweredEvent>inputData).answer);
+					const answerIsRight =
+						player.getAnswerFromActiveQuestion(answer.getLabel()).isRight() ||
+						answer.getLabel() == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
+					const questionId = player.getActiveQuestion().getId();
+					const moveTimestamp = answerTimestamp + (Clock.now() - correctionStartTimestamp);
+
 					super.playerAnsweredQuestion(
-						questionId,
-						answer.isRight(),
+						answerIsRight,
 						(<QuestionAnsweredEvent>inputData).targetLocation,
 						(<QuestionAnsweredEvent>inputData).playerId,
-						startTimestamp
+						moveTimestamp
 					);
+					//Send answer correction to client
+					this.context
+						.getNamespace()
+						.to(player.id)
+						.emit(CE.ANSWER_CORRECTED, <AnswerCorrectedEvent>{
+							answerIsRight: answerIsRight,
+							targetLocation: (<QuestionAnsweredEvent>inputData).targetLocation,
+							correctionTimestamp: moveTimestamp,
+						});
 
+					//Save answer for stats
 					this.context
 						.getStatsRepo()
 						.addAnsweredQuestionStats(

@@ -2,11 +2,11 @@ import { QuestionFoundFromBookEvent } from "../../communication/race/DataInterfa
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { ItemType } from "../../gameCore/race/items/Item";
-import { Answer } from "../../gameCore/race/question/Answer";
 import { Question } from "../../gameCore/race/question/Question";
 import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
 import { getUserInfo } from "../services/UserInformationService";
+import { Answer } from "./../../gameCore/race/question/Answer";
 import { CST } from "./../CST";
 import RaceGameUI from "./RaceGameUI";
 import RaceScene from "./RaceScene";
@@ -52,7 +52,6 @@ export default class QuestionScene extends Phaser.Scene {
 	init(data: QuestionSceneData) {
 		this.question = data.question;
 		this.targetLocation = data.targetLocation;
-		this.feedbackMaxTime = 5000;
 		this.showFeedbackTime = false;
 		this.questionImage = undefined;
 		this.feedbackImage = undefined;
@@ -122,8 +121,12 @@ export default class QuestionScene extends Phaser.Scene {
 			this.answerQuestion();
 		});
 
+		//DEBUG
 		this.correctAnswer.on("pointerup", () => {
-			this.destroyScene(this.question.getRightAnswer());
+			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(
+				new Answer(undefined, "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"),
+				this.targetLocation
+			);
 		});
 
 		this.reportProblemButton.on("pointerup", () => {
@@ -218,6 +221,21 @@ export default class QuestionScene extends Phaser.Scene {
 		this.inputHtml.setActive(!isGamePaused).setVisible(!isGamePaused);
 		this.answersList.setActive(!isGamePaused).setVisible(!isGamePaused);
 		this.disabledInteractionZone.setActive(isGamePaused).setVisible(isGamePaused);
+		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
+
+		if (!raceGame.getCurrentPlayer().isAnsweringQuestion()) {
+			if (this.feedbackStartTimeStamp === undefined) {
+				if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
+					this.destroyScene(true);
+				} else {
+					this.startFeedback();
+				}
+			} else {
+				if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
+					this.destroyScene(false);
+				}
+			}
+		}
 
 		if (this.showFeedbackTime) {
 			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime) / 1000).toString());
@@ -237,9 +255,33 @@ export default class QuestionScene extends Phaser.Scene {
 			});
 		}
 
-		const inventoryState = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayer().getInventory().getInventoryState();
+		const inventoryState = raceGame.getCurrentPlayer().getInventory().getInventoryState();
 		this.bookCount.setText(inventoryState.bookCount.toString());
 		this.crystalBallCount.setText(inventoryState.crystalBallCount.toString());
+	}
+
+	private startFeedback() {
+		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
+		this.inputHtml.setAlpha(0);
+		this.enterButton.setAlpha(0);
+		this.answersList.setAlpha(0);
+		this.correctAnswer.setAlpha(0);
+		this.feedbackStartTimeStamp = Clock.now();
+		//Approximation of feedbackMaxTime by checking remaining time.
+		this.feedbackMaxTime = Math.ceil((raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now()) / 1000) * 1000;
+
+		this.feedbackRemainingTime = this.add
+			.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {
+				fontFamily: "Courier",
+				fontSize: "26px",
+				align: "center",
+				color: "#cc0000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+		this.feedbackImage.setAlpha(1);
+
+		this.showFeedbackTime = true;
 	}
 
 	private getTexturesForQuestion(): void {
@@ -255,39 +297,15 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private answerQuestion(): void {
 		const answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
-		if (!answer.isRight()) {
-			this.inputHtml.setAlpha(0);
-			this.enterButton.setAlpha(0);
-			this.answersList.setAlpha(0);
-			this.correctAnswer.setAlpha(0);
-			this.feedbackStartTimeStamp = Clock.now();
-
-			this.feedbackRemainingTime = this.add
-				.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {
-					fontFamily: "Courier",
-					fontSize: "26px",
-					align: "center",
-					color: "#cc0000",
-					fontStyle: "bold",
-				})
-				.setScrollFactor(0);
-			this.feedbackImage.setAlpha(1);
-
-			this.showFeedbackTime = true;
-			setTimeout(() => {
-				this.destroyScene(answer);
-			}, this.feedbackMaxTime);
-		} else {
-			this.destroyScene(answer);
-		}
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
 	}
 
-	private destroyScene(answer: Answer): void {
+	private destroyScene(answerIsRight: boolean): void {
 		this.destroyImages();
 		this.clearQuestionTextures();
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), answer, this.targetLocation);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).questionIsOver(answerIsRight, this.targetLocation);
 	}
 
 	private useBook(): void {

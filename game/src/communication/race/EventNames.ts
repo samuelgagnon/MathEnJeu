@@ -15,6 +15,7 @@ export const CLIENT_EVENT_NAMES = {
 	PLAYER_LEFT: "player-left",
 	QUESTION_FOUND: "question-found",
 	QUESTION_FOUND_WITH_BOOK: "question-found-with-book",
+	ANSWER_CORRECTED: "answer-corrected",
 };
 
 export const WAITING_ROOM_EVENT_NAMES = {

@@ -1,4 +1,11 @@
-import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/DataInterfaces";
+import {
+	AnswerCorrectedEvent,
+	BookUsedEvent,
+	ItemUsedEvent,
+	MoveRequestEvent,
+	PlayerLeftEvent,
+	QuestionAnsweredEvent,
+} from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
@@ -66,14 +73,12 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	public clientPlayerAnsweredQuestion(questionId: number, answer: Answer, targetLocation: Point): void {
-		let moveTimestamp = Clock.now();
-		super.playerAnsweredQuestion(questionId, answer.isRight(), targetLocation, this.currentPlayerId, moveTimestamp);
+	public clientPlayerAnswersQuestion(answer: Answer, targetLocation: Point): void {
+		const answerTimestamp = Clock.now();
 		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
-			questionId: questionId,
 			playerId: this.currentPlayerId,
 			clientTimestamp: Clock.now(),
-			startTimestamp: moveTimestamp,
+			answerTimestamp: answerTimestamp,
 			targetLocation: targetLocation,
 			answer: answer.getDTO(),
 		});
@@ -104,6 +109,10 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
 			this.removePlayer(data.playerId);
+		});
+
+		this.playerSocket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
+			this.playerAnsweredQuestion(data.answerIsRight, data.targetLocation, this.currentPlayerId, data.correctionTimestamp);
 		});
 	}
 

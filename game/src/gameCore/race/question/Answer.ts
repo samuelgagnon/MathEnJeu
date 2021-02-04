@@ -4,7 +4,7 @@ export class Answer {
 	private id: number;
 	private label: string;
 	private _isRight: boolean;
-	constructor(id: number, label: string, isRight: boolean) {
+	constructor(id: number, label: string, isRight?: boolean) {
 		this.id = id;
 		this.label = label;
 		this._isRight = isRight;
@@ -34,7 +34,6 @@ export class Answer {
 		return {
 			id: this.id,
 			label: this.label,
-			isRight: isright,
 		};
 	}
 }
