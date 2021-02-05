@@ -1,8 +1,8 @@
-import ErrorReport from "../../communication/ErrorReport";
-import { Clock } from "../../gameCore/clock/Clock";
-import { CST } from "../CST";
-import { postErrorReport } from "../services/ReportErrorService";
-import { getUserInfo } from "../services/UserInformationService";
+import ErrorReport from "../../../communication/ErrorReport";
+import { Clock } from "../../../gameCore/clock/Clock";
+import { CST } from "../../CST";
+import { postErrorReport } from "../../services/ReportErrorService";
+import { getUserInfo } from "../../services/UserInformationService";
 
 export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;

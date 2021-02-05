@@ -1,4 +1,4 @@
-import { CST } from "../CST";
+import { CST } from "../../CST";
 import RaceGameUI from "./RaceGameUI";
 import RaceScene from "./RaceScene";
 

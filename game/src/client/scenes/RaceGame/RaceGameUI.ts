@@ -1,5 +1,5 @@
-import { ItemType } from "../../gameCore/race/items/Item";
-import { CST } from "../CST";
+import { ItemType } from "../../../gameCore/race/items/Item";
+import { CST } from "../../CST";
 import RaceScene from "./RaceScene";
 
 export default class RaceGameUI extends Phaser.Scene {

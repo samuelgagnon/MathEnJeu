@@ -1,16 +1,16 @@
-import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
-import AffineTransform from "../../gameCore/race/AffineTransform";
-import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
-import { PossiblePositions } from "../../gameCore/race/grid/RaceGrid";
-import { ItemType } from "../../gameCore/race/items/Item";
-import Move from "../../gameCore/race/Move";
-import Player from "../../gameCore/race/player/Player";
-import { Answer } from "../../gameCore/race/question/Answer";
-import { Question } from "../../gameCore/race/question/Question";
-import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
-import { CST } from "../CST";
-import { updateUserHighScore } from "../services/UserInformationService";
+import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent } from "../../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import AffineTransform from "../../../gameCore/race/AffineTransform";
+import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
+import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
+import { ItemType } from "../../../gameCore/race/items/Item";
+import Move from "../../../gameCore/race/Move";
+import Player from "../../../gameCore/race/player/Player";
+import { Answer } from "../../../gameCore/race/question/Answer";
+import { Question } from "../../../gameCore/race/question/Question";
+import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
+import { CST } from "../../CST";
+import { updateUserHighScore } from "../../services/UserInformationService";
 import { QuestionSceneData } from "./QuestionScene";
 
 export default class RaceScene extends Phaser.Scene {

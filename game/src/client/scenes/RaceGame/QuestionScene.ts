@@ -1,13 +1,13 @@
-import { QuestionFoundFromBookEvent } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
-import { Clock } from "../../gameCore/clock/Clock";
-import { ItemType } from "../../gameCore/race/items/Item";
-import { Answer } from "../../gameCore/race/question/Answer";
-import { Question } from "../../gameCore/race/question/Question";
-import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
-import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
-import { getUserInfo } from "../services/UserInformationService";
-import { CST } from "./../CST";
+import { QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { Clock } from "../../../gameCore/clock/Clock";
+import { ItemType } from "../../../gameCore/race/items/Item";
+import { Answer } from "../../../gameCore/race/question/Answer";
+import { Question } from "../../../gameCore/race/question/Question";
+import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
+import { CST } from "../../CST";
+import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../../services/QuestionsService";
+import { getUserInfo } from "../../services/UserInformationService";
 import RaceGameUI from "./RaceGameUI";
 import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {

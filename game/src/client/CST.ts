@@ -12,6 +12,7 @@ export const CST = {
 		WAITING_ROOM: "waitingRoomScene",
 		IN_GAME_MENU: "inGameMenuScene",
 		REPORT_ERROR: "reportErrorScene",
+		RACE_GAME_SCENE_CONTROLLER: "raceGameSceneController",
 	},
 	IMAGES: {
 		BACKGROUD: "starfield.jpg",
