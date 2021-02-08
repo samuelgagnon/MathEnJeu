@@ -12,6 +12,7 @@ import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { updateUserHighScore } from "../../services/UserInformationService";
 import { QuestionSceneData } from "./QuestionScene";
+import { EventNames, sceneEvents } from "./RaceGameEvents";
 
 export default class RaceScene extends Phaser.Scene {
 	//Loops
@@ -131,6 +132,14 @@ export default class RaceScene extends Phaser.Scene {
 		this.activateAccessiblePositions();
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
+		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
+
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
+			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
+		});
 	}
 
 	phys(currentframe: number) {
@@ -390,6 +399,14 @@ export default class RaceScene extends Phaser.Scene {
 
 	public quitGame(): void {
 		this.raceGame.getCurrentPlayerSocket().close();
+	}
+
+	private pauseGame(): void {
+		this.input.enabled = false;
+	}
+
+	private resumeGame(): void {
+		this.input.enabled = true;
 	}
 }
 

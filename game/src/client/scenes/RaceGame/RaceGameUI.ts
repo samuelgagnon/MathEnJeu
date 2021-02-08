@@ -1,5 +1,6 @@
 import { ItemType } from "../../../gameCore/race/items/Item";
 import { CST } from "../../CST";
+import { EventNames, sceneEvents } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
 export default class RaceGameUI extends Phaser.Scene {
@@ -12,8 +13,6 @@ export default class RaceGameUI extends Phaser.Scene {
 	followPlayerText: Phaser.GameObjects.Text;
 	playerStatusText: Phaser.GameObjects.Text;
 	playerStatusTime: Phaser.GameObjects.Text;
-
-	isGamePaused: boolean;
 
 	//playerItems
 	bananaText: Phaser.GameObjects.Text;
@@ -35,7 +34,6 @@ export default class RaceGameUI extends Phaser.Scene {
 	create() {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		const currentPlayer = raceScene.raceGame.getCurrentPlayer();
-		this.isGamePaused = false;
 
 		this.playerStatusText = this.add
 			.text(50, 100, currentPlayer.getCurrentStatus().toString(), {
@@ -271,10 +269,17 @@ export default class RaceGameUI extends Phaser.Scene {
 		});
 
 		this.startOptionsButton.on("pointerup", () => {
-			this.isGamePaused = true;
 			this.startOptionsButton.clearTint();
-			this.startOptionsButton.disableInteractive();
+			sceneEvents.emit(EventNames.gamePaused);
 			this.scene.launch(CST.SCENES.IN_GAME_MENU);
+		});
+
+		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
+		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
+
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
+			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
 		});
 	}
 
@@ -284,12 +289,6 @@ export default class RaceGameUI extends Phaser.Scene {
 		const currentPlayerStatus = currentPlayer.getCurrentStatus().toString();
 
 		if (currentPlayer.isAnsweringQuestion()) {
-			this.disabledInteractionZone.setActive(true).setVisible(true);
-		} else {
-			this.disabledInteractionZone.setActive(false).setVisible(false);
-		}
-
-		if (this.isGamePaused) {
 			this.disabledInteractionZone.setActive(true).setVisible(true);
 		} else {
 			this.disabledInteractionZone.setActive(false).setVisible(false);
@@ -315,8 +314,11 @@ export default class RaceGameUI extends Phaser.Scene {
 		this.pointsTotal.setText(currentPlayer.getPoints().toString());
 	}
 
-	resumeGame() {
-		this.isGamePaused = false;
-		this.startOptionsButton.setInteractive();
+	private resumeGame() {
+		this.input.enabled = true;
+	}
+
+	private pauseGame() {
+		this.input.enabled = false;
 	}
 }

@@ -1,5 +1,5 @@
 import { CST } from "../../CST";
-import RaceGameUI from "./RaceGameUI";
+import { EventNames, sceneEvents } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
 export default class InGameMenuScene extends Phaser.Scene {
@@ -109,6 +109,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.reportProblemText.on("pointerup", () => {
+			sceneEvents.emit(EventNames.errorWindowOpened);
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
 				questionId: null,
 			});
@@ -125,6 +126,14 @@ export default class InGameMenuScene extends Phaser.Scene {
 		this.reportProblemText.setInteractive({
 			useHandCursor: true,
 		});
+
+		sceneEvents.on(EventNames.errorWindowOpened, this.errorWindowOpened, this);
+		sceneEvents.on(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			sceneEvents.off(EventNames.errorWindowOpened, this.errorWindowOpened, this);
+			sceneEvents.off(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+		});
 	}
 
 	private quitGame(): void {
@@ -137,7 +146,15 @@ export default class InGameMenuScene extends Phaser.Scene {
 	}
 
 	private resumeGame(): void {
-		(<RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI)).resumeGame();
+		sceneEvents.emit(EventNames.gameResumed);
 		this.scene.stop(CST.SCENES.IN_GAME_MENU);
+	}
+
+	private errorWindowOpened(): void {
+		this.input.enabled = false;
+	}
+
+	private errorWindowClosed(): void {
+		this.input.enabled = true;
 	}
 }

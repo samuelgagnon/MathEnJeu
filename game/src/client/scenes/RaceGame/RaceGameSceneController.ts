@@ -3,7 +3,9 @@ import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameContr
 import { CST } from "../../CST";
 
 export default class RaceGameSceneController extends Phaser.Scene {
-	private raceGameController: ClientRaceGameController;
+	private raceGame: ClientRaceGameController;
+	private lag: number;
+	private physTimestep: number;
 
 	constructor() {
 		const sceneConfig = {
@@ -12,25 +14,33 @@ export default class RaceGameSceneController extends Phaser.Scene {
 		super(sceneConfig);
 	}
 
-	init(data: any) {}
+	init(data: any) {
+		this.raceGame = data.gameController;
+	}
 
-	create() {}
+	create() {
+		this.startGame();
+	}
 
 	update() {}
+
+	public getRaceGame(): ClientRaceGameController {
+		return this.raceGame;
+	}
 
 	/**
 	 *
 	 * @param sceneKey The key of the scene you want to close
 	 * @param data Data that you want to send to the other scene (may be null)
 	 */
-	public openScene(sceneKey: string, data?: any): void {
+	public launch(sceneKey: string, data?: any): void {
 		const activeScenes: Scene[] = this.scene.manager.getScenes(true);
 
 		activeScenes.forEach((scene: Scene) => {
 			scene.input.enabled = false;
 		});
 
-		this.scene.launch(sceneKey);
+		this.scene.launch(sceneKey, data);
 	}
 
 	/**
@@ -53,4 +63,6 @@ export default class RaceGameSceneController extends Phaser.Scene {
 			});
 		}
 	}
+
+	private startGame(): void {}
 }

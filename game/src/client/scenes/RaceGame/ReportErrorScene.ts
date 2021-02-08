@@ -3,6 +3,7 @@ import { Clock } from "../../../gameCore/clock/Clock";
 import { CST } from "../../CST";
 import { postErrorReport } from "../../services/ReportErrorService";
 import { getUserInfo } from "../../services/UserInformationService";
+import { EventNames, sceneEvents } from "./RaceGameEvents";
 
 export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;
@@ -70,11 +71,11 @@ export default class ReportErrorScene extends Phaser.Scene {
 				questionId: this.questionId,
 			};
 			postErrorReport(errorReport);
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
+			this.destroyScene();
 		});
 
 		this.cancelButton.on("pointerup", () => {
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
+			this.destroyScene();
 		});
 
 		this.reportButton.setInteractive({
@@ -84,5 +85,10 @@ export default class ReportErrorScene extends Phaser.Scene {
 		this.cancelButton.setInteractive({
 			useHandCursor: true,
 		});
+	}
+
+	private destroyScene(): void {
+		sceneEvents.emit(EventNames.errorWindowClosed, this.questionId !== null);
+		this.scene.stop(CST.SCENES.REPORT_ERROR);
 	}
 }

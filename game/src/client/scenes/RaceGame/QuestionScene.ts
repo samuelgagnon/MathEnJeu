@@ -8,11 +8,9 @@ import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../../services/QuestionsService";
 import { getUserInfo } from "../../services/UserInformationService";
-import RaceGameUI from "./RaceGameUI";
+import { EventNames, sceneEvents } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 export default class QuestionScene extends Phaser.Scene {
-	disabledInteractionZone: Phaser.GameObjects.Zone;
-
 	position: Point;
 	width: number;
 	height: number;
@@ -36,8 +34,6 @@ export default class QuestionScene extends Phaser.Scene {
 	crystalBallIcon: Phaser.GameObjects.Sprite;
 	bookCount: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
-
-	raceGameUI: RaceGameUI;
 
 	feedbackMaxTime: number;
 	feedbackStartTimeStamp: number;
@@ -69,7 +65,6 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	create() {
-		this.raceGameUI = <RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
 
@@ -127,6 +122,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.reportProblemButton.on("pointerup", () => {
+			sceneEvents.emit(EventNames.errorWindowOpened);
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
 				questionId: this.question.getId(),
 			});
@@ -204,21 +200,20 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.getTexturesForQuestion();
 
-		this.disabledInteractionZone = this.add
-			.zone(0, 0, Number(this.game.config.width), Number(this.game.config.height))
-			.setInteractive()
-			.setOrigin(0)
-			.setScrollFactor(0)
-			.setActive(false)
-			.setVisible(false);
+		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
+		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
+		sceneEvents.on(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+		sceneEvents.on(EventNames.errorWindowOpened, this.pauseGame, this);
+
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
+			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
+			sceneEvents.off(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+			sceneEvents.off(EventNames.errorWindowOpened, this.pauseGame, this);
+		});
 	}
 
 	update() {
-		const isGamePaused = this.raceGameUI.isGamePaused;
-		this.inputHtml.setActive(!isGamePaused).setVisible(!isGamePaused);
-		this.answersList.setActive(!isGamePaused).setVisible(!isGamePaused);
-		this.disabledInteractionZone.setActive(isGamePaused).setVisible(isGamePaused);
-
 		if (this.showFeedbackTime) {
 			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime) / 1000).toString());
 		}
@@ -334,6 +329,25 @@ export default class QuestionScene extends Phaser.Scene {
 		this.feedbackImage.destroy();
 		this.questionImage = undefined;
 		this.feedbackImage = undefined;
+	}
+
+	private pauseGame() {
+		this.inputHtml.setActive(false).setVisible(false);
+		this.answersList.setActive(false).setVisible(false);
+		this.input.enabled = false;
+	}
+
+	private resumeGame() {
+		console.log("test ?");
+		this.inputHtml.setActive(true).setVisible(true);
+		this.answersList.setActive(true).setVisible(true);
+		this.input.enabled = true;
+	}
+
+	private errorWindowClosed(isFromQuestionScene: boolean) {
+		this.inputHtml.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
+		this.answersList.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
+		this.input.enabled = isFromQuestionScene;
 	}
 }
 
