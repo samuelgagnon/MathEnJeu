@@ -338,7 +338,6 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private resumeGame() {
-		console.log("test ?");
 		this.inputHtml.setActive(true).setVisible(true);
 		this.answersList.setActive(true).setVisible(true);
 		this.input.enabled = true;
