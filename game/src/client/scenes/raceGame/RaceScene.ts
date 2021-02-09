@@ -25,7 +25,7 @@ export default class RaceScene extends Phaser.Scene {
 	boardPosition: Point;
 	keyboardInputs;
 	background: Phaser.GameObjects.TileSprite;
-	followPlayer: boolean;
+	isFollowingPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
 
@@ -60,7 +60,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.pointsForPosition = [];
-		this.followPlayer = false;
+		this.isFollowingPlayer = false;
 		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
 		this.activeTileColor = 0xadff2f;
@@ -135,6 +135,8 @@ export default class RaceScene extends Phaser.Scene {
 
 		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
 		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
+		sceneEvents.on(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+		sceneEvents.on(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
@@ -149,7 +151,7 @@ export default class RaceScene extends Phaser.Scene {
 	render() {
 		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
 
-		if (!this.followPlayer) {
+		if (!this.isFollowingPlayer) {
 			if (this.keyboardInputs.left.isDown) {
 				this.cameras.main.scrollX -= 4;
 			} else if (this.keyboardInputs.right.isDown) {
@@ -285,6 +287,7 @@ export default class RaceScene extends Phaser.Scene {
 		try {
 			this.raceGame.itemUsed(itemType, targetPlayerId);
 		} catch (e) {
+			sceneEvents.emit(EventNames.error, e);
 			console.log(e);
 			throw e;
 		}
@@ -404,6 +407,19 @@ export default class RaceScene extends Phaser.Scene {
 
 	private resumeGame(): void {
 		this.input.enabled = true;
+	}
+
+	private handleFollowPlayerToggle(isFollowingPlayer: boolean) {
+		this.isFollowingPlayer = isFollowingPlayer;
+		if (isFollowingPlayer) {
+			this.cameras.main.startFollow(this.currentPlayerSprite, false, 0.09, 0.09);
+		} else {
+			this.cameras.main.stopFollow();
+		}
+	}
+
+	private handleThrowingBananaToogle(isThrowingBanana: boolean) {
+		this.isThrowingBanana = isThrowingBanana;
 	}
 }
 
