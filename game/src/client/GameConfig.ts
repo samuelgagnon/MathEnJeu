@@ -3,7 +3,6 @@ import LoadScene from "./scenes/LoadScene";
 import MenuScene from "./scenes/MenuScene";
 import InGameMenuScene from "./scenes/raceGame/InGameMenuScene";
 import QuestionScene from "./scenes/raceGame/QuestionScene";
-import RaceGameSceneController from "./scenes/raceGame/RaceGameSceneController";
 import RaceGameUI from "./scenes/raceGame/RaceGameUI";
 import RaceScene from "./scenes/raceGame/RaceScene";
 import ReportErrorScene from "./scenes/raceGame/ReportErrorScene";
@@ -34,7 +33,6 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		UsersSettingScene,
 		InGameMenuScene,
 		ReportErrorScene,
-		RaceGameSceneController,
 	],
 	plugins: {
 		scene: [
