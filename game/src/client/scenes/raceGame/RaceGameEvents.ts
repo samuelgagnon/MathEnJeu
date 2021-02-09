@@ -7,4 +7,5 @@ export const EventNames = {
 	gamePaused: "game-pause",
 	errorWindowOpened: "error-window-opened",
 	errorWindowClosed: "error-window-closed",
+	error: "error",
 };
