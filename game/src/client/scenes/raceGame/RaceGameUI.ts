@@ -1,4 +1,3 @@
-import { ItemType } from "../../../gameCore/race/items/Item";
 import { CST } from "../../CST";
 import { EventNames, sceneEvents } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
@@ -22,7 +21,6 @@ export default class RaceGameUI extends Phaser.Scene {
 	crystalBallText: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
 	throwBananaText: Phaser.GameObjects.Text;
-	positionButton: Phaser.GameObjects.Text;
 	pointsText: Phaser.GameObjects.Text;
 	pointsTotal: Phaser.GameObjects.Text;
 
@@ -180,38 +178,11 @@ export default class RaceGameUI extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
-		this.positionButton = this.add
-			.text(50, 550, "position", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
-
-		this.bookText.setInteractive({
-			useHandCursor: true,
-		});
-		this.crystalBallText.setInteractive({
-			useHandCursor: true,
-		});
 		this.throwBananaText.setInteractive({
 			useHandCursor: true,
 		});
 		this.followPlayerText.setInteractive({
 			useHandCursor: true,
-		});
-
-		this.positionButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.bookText.on("pointerup", () => {
-			raceScene.useItem(ItemType.Book);
-		});
-		this.crystalBallText.on("pointerup", () => {
-			raceScene.useItem(ItemType.CrystalBall);
 		});
 
 		this.throwBananaText.on("pointerup", () => {
@@ -232,10 +203,6 @@ export default class RaceGameUI extends Phaser.Scene {
 				this.followPlayerText.setText("Camera follow: On");
 				raceScene.cameras.main.startFollow(raceScene.currentPlayerSprite, false, 0.09, 0.09);
 			}
-		});
-
-		this.positionButton.on("pointerup", () => {
-			console.log(raceScene.raceGame.getCurrentPlayer());
 		});
 
 		this.disabledInteractionZone = this.add
@@ -276,6 +243,7 @@ export default class RaceGameUI extends Phaser.Scene {
 
 		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
 		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
+		sceneEvents.on(EventNames.error, this.handleErrors, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
@@ -320,5 +288,9 @@ export default class RaceGameUI extends Phaser.Scene {
 
 	private pauseGame() {
 		this.input.enabled = false;
+	}
+
+	private handleErrors(errorType: string): void {
+		console.error(errorType);
 	}
 }
