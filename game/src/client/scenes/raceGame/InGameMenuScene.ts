@@ -11,8 +11,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 	reportProblemText: Phaser.GameObjects.Text;
 	quitText: Phaser.GameObjects.Text;
 
-	disabledInteractionZone: Phaser.GameObjects.Zone;
-
 	constructor() {
 		const sceneConfig = {
 			key: CST.SCENES.IN_GAME_MENU,
@@ -30,7 +28,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 	}
 
 	create() {
-		const raceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0x808080);
 
@@ -111,7 +108,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 		this.reportProblemText.on("pointerup", () => {
 			sceneEvents.emit(EventNames.errorWindowOpened);
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
-				questionId: null,
+				questionId: null, //Send null because the error report isn't tied to a question
 			});
 		});
 
