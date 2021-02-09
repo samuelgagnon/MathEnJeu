@@ -79,7 +79,10 @@ export default class QuestionScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.correctAnswer = this.add
 			.text(this.width * 0.8, this.height * 0.85, "correct answer", {
@@ -89,7 +92,10 @@ export default class QuestionScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportProblemButton = this.add
 			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
@@ -99,19 +105,10 @@ export default class QuestionScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
-
-		this.enterButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.correctAnswer.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.reportProblemButton.setInteractive({
-			useHandCursor: true,
-		});
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.enterButton.on("pointerup", () => {
 			this.answerQuestion();

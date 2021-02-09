@@ -166,6 +166,9 @@ export default class RaceGameUI extends Phaser.Scene {
 				color: "#FDFFB5",
 				fontStyle: "bold",
 			})
+			.setInteractive({
+				useHandCursor: true,
+			})
 			.setScrollFactor(0);
 
 		this.followPlayerText = this.add
@@ -176,14 +179,10 @@ export default class RaceGameUI extends Phaser.Scene {
 				color: "#FDFFB5",
 				fontStyle: "bold",
 			})
+			.setInteractive({
+				useHandCursor: true,
+			})
 			.setScrollFactor(0);
-
-		this.throwBananaText.setInteractive({
-			useHandCursor: true,
-		});
-		this.followPlayerText.setInteractive({
-			useHandCursor: true,
-		});
 
 		this.throwBananaText.on("pointerup", () => {
 			if (raceScene.isThrowingBanana) {

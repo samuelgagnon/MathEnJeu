@@ -48,7 +48,10 @@ export default class ReportErrorScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.cancelButton = this.add
 			.text((this.width * 3) / 4, this.height * 0.8, "Cancel", {
@@ -58,7 +61,10 @@ export default class ReportErrorScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportButton.on("pointerup", () => {
 			const userInfo = getUserInfo();
@@ -78,14 +84,6 @@ export default class ReportErrorScene extends Phaser.Scene {
 
 		this.cancelButton.on("pointerup", () => {
 			this.destroyScene();
-		});
-
-		this.reportButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.cancelButton.setInteractive({
-			useHandCursor: true,
 		});
 	}
 

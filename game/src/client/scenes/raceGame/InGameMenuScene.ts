@@ -39,7 +39,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportProblemText = this.add
 			.text(this.width / 2 - 75, this.height * 0.5, "Report problem", {
@@ -49,7 +52,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.quitText = this.add
 			.text(this.width / 2 - 75, this.height * 0.7, "Quit", {
@@ -59,7 +65,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.resumeText.on("pointerover", () => {
 			this.quitText.setTint(0xffff66);
@@ -110,18 +119,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
 				questionId: null, //Send null because the error report isn't tied to a question
 			});
-		});
-
-		this.resumeText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.quitText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.reportProblemText.setInteractive({
-			useHandCursor: true,
 		});
 
 		sceneEvents.on(EventNames.errorWindowOpened, this.errorWindowOpened, this);
