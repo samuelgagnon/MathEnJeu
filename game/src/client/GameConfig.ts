@@ -16,12 +16,8 @@ const DEFAULT_HEIGHT = 900;
 const gameConfig: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
 	backgroundColor: "#FFFFFF",
-	scale: {
-		parent: "phaser-game",
-		mode: Phaser.Scale.NONE,
-		width: DEFAULT_WIDTH,
-		height: DEFAULT_HEIGHT,
-	},
+	width: DEFAULT_WIDTH,
+	height: DEFAULT_HEIGHT,
 	scene: [
 		LoadScene,
 		MenuScene,
@@ -34,6 +30,11 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		InGameMenuScene,
 		ReportErrorScene,
 	],
+	scale: {
+		parent: "phaser-game",
+		mode: Phaser.Scale.FIT,
+		autoCenter: Phaser.Scale.Center.CENTER_BOTH,
+	},
 	plugins: {
 		scene: [
 			{
