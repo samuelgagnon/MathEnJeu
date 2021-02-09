@@ -7,6 +7,7 @@ export class Answer {
 	constructor(id: number, label: string, isRight?: boolean) {
 		this.id = id;
 		this.label = label;
+		//TODO: rethink implementation (maybe seperate client answers from server answers)
 		if (isRight !== undefined && isRight != null) {
 			this.knownAsRight = isRight;
 		} else {
