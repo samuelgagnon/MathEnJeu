@@ -25,11 +25,10 @@ import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
+import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
-import { Answer } from "./question/Answer";
 import { Question } from "./question/Question";
-import QuestionMapper from "./question/QuestionMapper";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
@@ -161,10 +160,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
 			const lag = data.clientTimestamp - Clock.now();
 			const newData: QuestionAnsweredEvent = {
-				questionId: data.questionId,
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
-				startTimestamp: data.startTimestamp + lag,
+				answerTimestamp: data.answerTimestamp + lag,
 				targetLocation: data.targetLocation,
 				answer: data.answer,
 			};
@@ -246,30 +244,55 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
-					const questionId = (<QuestionAnsweredEvent>inputData).questionId;
-					const startTimestamp = (<QuestionAnsweredEvent>inputData).startTimestamp;
-					const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+					const correctionStartTimestamp = Clock.now();
 					player = this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
-					const answer: Answer = QuestionMapper.mapAnswer((<QuestionAnsweredEvent>inputData).answer);
-					super.playerAnsweredQuestion(
-						questionId,
-						answer.isRight(),
-						(<QuestionAnsweredEvent>inputData).targetLocation,
-						(<QuestionAnsweredEvent>inputData).playerId,
-						startTimestamp
-					);
+					if (player.isAnsweringQuestion()) {
+						const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
+						const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+						const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
+						const clientAnswerId = (<QuestionAnsweredEvent>inputData).answer.id;
+						const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswerLabel);
+						let answerIsRight = false;
+						if (correspondingAnswer !== undefined) {
+							answerIsRight =
+								correspondingAnswer.isKnownAsRight() ||
+								clientAnswerLabel == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
+						}
+						const questionId = player.getActiveQuestion().getId();
+						const moveTimestamp = answerTimestamp + (Clock.now() - correctionStartTimestamp);
 
-					this.context
-						.getStatsRepo()
-						.addAnsweredQuestionStats(
-							this.gameDbId,
-							userInfo,
-							new Date(player.getLastQuestionPromptTimestamp()),
-							new Date(Clock.now()),
-							questionId,
-							answer.getLabel(),
-							answer.getId()
+						super.playerAnsweredQuestion(
+							answerIsRight,
+							(<QuestionAnsweredEvent>inputData).targetLocation,
+							(<QuestionAnsweredEvent>inputData).playerId,
+							moveTimestamp
 						);
+						//Send answer correction to client
+						this.context
+							.getNamespace()
+							.to(player.id)
+							.emit(CE.ANSWER_CORRECTED, <AnswerCorrectedEvent>{
+								answerIsRight: answerIsRight,
+								targetLocation: (<QuestionAnsweredEvent>inputData).targetLocation,
+								correctionTimestamp: moveTimestamp,
+							});
+
+						//Save answer for stats
+						this.context
+							.getStatsRepo()
+							.addAnsweredQuestionStats(
+								this.gameDbId,
+								userInfo,
+								new Date(player.getLastQuestionPromptTimestamp()),
+								new Date(Clock.now()),
+								questionId,
+								clientAnswerLabel,
+								clientAnswerId
+							);
+					} else {
+						console.log(`Error: Player tried to give an answer while not having active question.`);
+					}
+
 					break;
 
 				default:

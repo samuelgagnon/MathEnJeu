@@ -51,6 +51,12 @@ export interface QuestionFoundFromBookEvent {
 	questionDTO: QuestionDTO;
 }
 
+export interface AnswerCorrectedEvent {
+	answerIsRight: boolean;
+	correctionTimestamp: number;
+	targetLocation: Point;
+}
+
 export interface UsersInfoSentEvent {
 	usersInfo: UserInfo[];
 	hostName: string;
@@ -61,10 +67,9 @@ export interface HostChangeEvent {
 }
 
 export interface QuestionAnsweredEvent {
-	questionId: number;
 	playerId: string;
 	clientTimestamp: number;
-	startTimestamp: number;
+	answerTimestamp: number;
 	targetLocation: Point;
 	answer: AnswerDTO;
 }
@@ -99,7 +104,6 @@ export interface QuestionDTO {
 export interface AnswerDTO {
 	id: number;
 	label: string;
-	isRight: number;
 }
 
 export interface InfoForQuestion {

@@ -3,7 +3,7 @@ import { Answer } from "./Answer";
 
 export class Question {
 	private id: number;
-	private answers: Answer[]; //Contains the possible answers including at least one right answer.
+	private answers: Answer[]; //Contains the possible answers (including at least one right answer on server side).
 	private answerType: string;
 	private schoolGradeId: number; //The school level this question is aimed for
 	private difficulty: number; //The difficulty of this question depending on the level
@@ -41,7 +41,7 @@ export class Question {
 	}
 
 	public getRightAnswer(): Answer {
-		return this.answers.find((answer) => answer.isRight());
+		return this.answers.find((answer) => answer.isKnownAsRight());
 	}
 
 	public getAnswerType(): string {
@@ -62,8 +62,8 @@ export class Question {
 
 	//returns true if there was a wrong question remaining and false if there was none
 	public removeWrongAnswer(): void {
-		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.isRight());
-		const wrongAnswers: Answer[] = this.answers.filter((answer) => !answer.isRight());
+		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.isKnownAsRight());
+		const wrongAnswers: Answer[] = this.answers.filter((answer) => !answer.isKnownAsRight());
 		wrongAnswers.splice(Math.floor(Math.random() * wrongAnswers.length), 1);
 		this.answers = wrongAnswers.concat(rightAnswers);
 	}
