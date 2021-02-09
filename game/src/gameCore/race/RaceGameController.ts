@@ -94,12 +94,9 @@ export default abstract class RaceGameController {
 	}
 
 	public playerAnsweredQuestion(isAnswerCorrect: boolean, targetLocation: Point, playerId: string, timestamp: number): void {
-		const player = this.findPlayer(playerId);
-		player.answeredQuestion(isAnswerCorrect);
+		this.findPlayer(playerId).answeredQuestion(isAnswerCorrect);
 		if (isAnswerCorrect) {
 			this.movePlayerTo(playerId, timestamp, targetLocation);
-		} else {
-			player.givePenalty();
 		}
 	}
 

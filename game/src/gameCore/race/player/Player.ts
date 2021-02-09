@@ -95,7 +95,7 @@ export default class Player {
 		return this.endOfPenaltyTimestamp;
 	}
 
-	public givePenalty(): void {
+	private givePenalty(): void {
 		this.endOfPenaltyTimestamp = Clock.now() + this.PENALTY_DURATION;
 	}
 
@@ -176,6 +176,8 @@ export default class Player {
 		if (isAnswerCorrect) {
 			this.addToMoveDistance(this.MOVE_PER_QUESTION);
 		} else {
+			//When player answers incorrectly, a penalty is given
+			this.givePenalty();
 			this.addToMoveDistance(-this.MOVE_PER_QUESTION);
 		}
 	}
