@@ -291,9 +291,6 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private createQuestionWindow(targetLocation: Point, question: Question): void {
-		var x = Number(this.game.config.width) * 0.05;
-		var y = Number(this.game.config.height) * 0.05;
-
 		const questionWindowData: QuestionSceneData = {
 			question: question,
 			targetLocation: targetLocation,
