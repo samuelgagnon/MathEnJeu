@@ -9,6 +9,8 @@ export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
+
+	//questionId is null if the error isn't tied to a question
 	questionId: number;
 
 	errorType: string;
@@ -88,6 +90,7 @@ export default class ReportErrorScene extends Phaser.Scene {
 	}
 
 	private destroyScene(): void {
+		// parameter is to notify other scenes if it was an error tied to a question or a general error
 		sceneEvents.emit(EventNames.errorWindowClosed, this.questionId !== null);
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 	}
