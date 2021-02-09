@@ -1,4 +1,4 @@
-import { QuestionFoundFromBookEvent } from "../../communication/race/DataInterfaces";
+import { AnswerCorrectedEvent, QuestionFoundFromBookEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { ItemType } from "../../gameCore/race/items/Item";
@@ -41,7 +41,7 @@ export default class QuestionScene extends Phaser.Scene {
 
 	feedbackMaxTime: number;
 	feedbackStartTimeStamp: number;
-	feedbackRemainingTime: Phaser.GameObjects.Text;
+	feedbackRemainingTimeTxt: Phaser.GameObjects.Text;
 	showFeedbackTime: boolean;
 
 	constructor() {
@@ -215,6 +215,8 @@ export default class QuestionScene extends Phaser.Scene {
 			.setScrollFactor(0)
 			.setActive(false)
 			.setVisible(false);
+
+		this.handleSocketEvents((<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket());
 	}
 
 	update() {
@@ -224,22 +226,13 @@ export default class QuestionScene extends Phaser.Scene {
 		this.disabledInteractionZone.setActive(isGamePaused).setVisible(isGamePaused);
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
 
-		if (!raceGame.getCurrentPlayer().isAnsweringQuestion()) {
-			if (this.feedbackStartTimeStamp === undefined) {
-				if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
-					this.destroyScene(true);
-				} else {
-					this.startFeedback();
-				}
-			} else {
-				if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
-					this.destroyScene(false);
-				}
-			}
-		}
-
 		if (this.showFeedbackTime) {
-			this.feedbackRemainingTime.setText(Math.ceil((this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime) / 1000).toString());
+			const feedbackRemainingTime = this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime;
+			if (feedbackRemainingTime > 0) {
+				this.feedbackRemainingTimeTxt.setText(Math.ceil(feedbackRemainingTime / 1000).toString());
+			} else if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
+				this.endPenalty();
+			}
 		}
 
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
@@ -261,6 +254,23 @@ export default class QuestionScene extends Phaser.Scene {
 		this.crystalBallCount.setText(inventoryState.crystalBallCount.toString());
 	}
 
+	private endPenalty(): void {
+		//TODO: Instead of destroying this scene instantly, show a button used to quit the feedback (at this scene in general).
+		this.destroyScene(false);
+	}
+
+	private handleSocketEvents(socket: SocketIOClient.Socket): void {
+		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
+			const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
+			raceGame.playerAnsweredQuestion(data.answerIsRight, data.targetLocation, raceGame.getCurrentPlayer().id, data.correctionTimestamp);
+			if (data.answerIsRight) {
+				this.destroyScene(true);
+			} else {
+				this.startFeedback();
+			}
+		});
+	}
+
 	private startFeedback() {
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
 		this.inputHtml.setAlpha(0);
@@ -271,12 +281,7 @@ export default class QuestionScene extends Phaser.Scene {
 		//Approximation of feedbackMaxTime by checking remaining time.
 		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now();
 
-		//DEBUG
-		console.log(`this.feedbackMaxTime: ${this.feedbackMaxTime}`);
-		console.log(`raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp(): ${raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp()}`);
-		console.log(`Clock.now(): ${Clock.now()}`);
-
-		this.feedbackRemainingTime = this.add
+		this.feedbackRemainingTimeTxt = this.add
 			.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {
 				fontFamily: "Courier",
 				fontSize: "26px",

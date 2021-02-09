@@ -1,11 +1,4 @@
-import {
-	AnswerCorrectedEvent,
-	BookUsedEvent,
-	ItemUsedEvent,
-	MoveRequestEvent,
-	PlayerLeftEvent,
-	QuestionAnsweredEvent,
-} from "../../communication/race/DataInterfaces";
+import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
@@ -109,10 +102,6 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
 			this.removePlayer(data.playerId);
-		});
-
-		this.playerSocket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			this.playerAnsweredQuestion(data.answerIsRight, data.targetLocation, this.currentPlayerId, data.correctionTimestamp);
 		});
 	}
 

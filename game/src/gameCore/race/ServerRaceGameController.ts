@@ -28,9 +28,7 @@ import PreGameFactory from "../gameState/StateFactory";
 import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
-import { Answer } from "./question/Answer";
 import { Question } from "./question/Question";
-import QuestionMapper from "./question/QuestionMapper";
 import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
@@ -251,13 +249,14 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					if (player.isAnsweringQuestion()) {
 						const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
 						const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
-						const clientAnswer: Answer = QuestionMapper.mapAnswer((<QuestionAnsweredEvent>inputData).answer);
-						const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswer.getLabel());
+						const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
+						const clientAnswerId = (<QuestionAnsweredEvent>inputData).answer.id;
+						const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswerLabel);
 						let answerIsRight = false;
 						if (correspondingAnswer !== undefined) {
 							answerIsRight =
-								correspondingAnswer.isRight() ||
-								clientAnswer.getLabel() == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
+								correspondingAnswer.isKnownAsRight() ||
+								clientAnswerLabel == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
 						}
 						const questionId = player.getActiveQuestion().getId();
 						const moveTimestamp = answerTimestamp + (Clock.now() - correctionStartTimestamp);
@@ -287,8 +286,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 								new Date(player.getLastQuestionPromptTimestamp()),
 								new Date(Clock.now()),
 								questionId,
-								clientAnswer.getLabel(),
-								clientAnswer.getId()
+								clientAnswerLabel,
+								clientAnswerId
 							);
 					} else {
 						console.log(`Error: Player tried to give an answer while not having active question.`);
