@@ -93,6 +93,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.distanceBetweenTwoTiles = 66;
 		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
 
+		//creating game board
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
@@ -152,27 +153,30 @@ export default class RaceScene extends Phaser.Scene {
 		});
 	}
 
-	phys(currentframe: number) {
-		this.raceGame.update();
+	update(timestamp: number, elapsed: number) {
+		this.cameraControls();
+
+		//(i.e time, delta)
+		this.lag += elapsed;
+		while (this.lag >= this.physTimestep) {
+			this.raceGame.update();
+			this.lag -= this.physTimestep;
+		}
+		this.render();
 	}
 
 	render() {
+		this.renderBackground();
+		this.renderPlayerSprites();
+		this.renderGameBoard();
+		this.renderAccessiblePositions();
+	}
+
+	private renderBackground() {
 		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
+	}
 
-		if (!this.isFollowingPlayer) {
-			if (this.keyboardInputs.left.isDown) {
-				this.cameras.main.scrollX -= 4;
-			} else if (this.keyboardInputs.right.isDown) {
-				this.cameras.main.scrollX += 4;
-			}
-
-			if (this.keyboardInputs.up.isDown) {
-				this.cameras.main.scrollY -= 4;
-			} else if (this.keyboardInputs.down.isDown) {
-				this.cameras.main.scrollY += 4;
-			}
-		}
-
+	private renderPlayerSprites() {
 		this.raceGame.getPlayers().forEach((player: Player) => {
 			let characterSpriteIndex: number = this.getCharacterSpriteIndex(player.id);
 			const currentPosition = player.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
@@ -215,7 +219,9 @@ export default class RaceScene extends Phaser.Scene {
 				newCharacterSprite.disableInteractive();
 			}
 		});
+	}
 
+	private renderGameBoard() {
 		this.items.clear(true, true);
 		const gameGrid = this.raceGame.getGrid();
 
@@ -255,7 +261,9 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
+	}
 
+	private renderAccessiblePositions() {
 		const currentPlayer = this.raceGame.getCurrentPlayer();
 		const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
 		if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
@@ -269,16 +277,6 @@ export default class RaceScene extends Phaser.Scene {
 			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
 			this.activateAccessiblePositions();
 		}
-	}
-
-	update(timestamp: number, elapsed: number) {
-		//(i.e time, delta)
-		this.lag += elapsed;
-		while (this.lag >= this.physTimestep) {
-			this.phys(this.physTimestep);
-			this.lag -= this.physTimestep;
-		}
-		this.render();
 	}
 
 	private getCharacterSpriteIndex(playerId: string): number {
@@ -318,10 +316,6 @@ export default class RaceScene extends Phaser.Scene {
 		this.raceGame.clientPlayerAnsweredQuestion(questionId, answer, <Point>{ x: position.x, y: position.y });
 
 		this.isReadyToGetPossiblePositions = true;
-	}
-
-	getPlayerPosition(): Point {
-		return this.raceGame.getCurrentPlayer().getPosition();
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
@@ -401,7 +395,7 @@ export default class RaceScene extends Phaser.Scene {
 		return this.tiles.getChildren().find((tile) => tile.getData("position").x === x && tile.getData("position").y === y);
 	}
 
-	private playerHasArrived(phaserCurrentPosition): boolean {
+	private playerHasArrived(phaserCurrentPosition: Point): boolean {
 		return phaserCurrentPosition.x === this.targetLocation.x && phaserCurrentPosition.y === this.targetLocation.y;
 	}
 
@@ -428,6 +422,22 @@ export default class RaceScene extends Phaser.Scene {
 
 	private handleThrowingBananaToogle(isThrowingBanana: boolean) {
 		this.isThrowingBanana = isThrowingBanana;
+	}
+
+	private cameraControls(): void {
+		if (!this.isFollowingPlayer) {
+			if (this.keyboardInputs.left.isDown) {
+				this.cameras.main.scrollX -= 4;
+			} else if (this.keyboardInputs.right.isDown) {
+				this.cameras.main.scrollX += 4;
+			}
+
+			if (this.keyboardInputs.up.isDown) {
+				this.cameras.main.scrollY -= 4;
+			} else if (this.keyboardInputs.down.isDown) {
+				this.cameras.main.scrollY += 4;
+			}
+		}
 	}
 }
 
