@@ -3,6 +3,7 @@ import Phaser from "phaser";
 export const sceneEvents = new Phaser.Events.EventEmitter();
 
 export const EventNames = {
+	quitGame: "quit-game",
 	gameResumed: "game-resume",
 	gamePaused: "game-pause",
 	followPlayerToggle: "follow-player-toggle",

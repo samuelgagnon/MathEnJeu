@@ -144,6 +144,7 @@ export default class RaceScene extends Phaser.Scene {
 
 		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
 		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
+		sceneEvents.on(EventNames.quitGame, this.quitGame, this);
 		sceneEvents.on(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 		sceneEvents.on(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 
@@ -400,7 +401,12 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	public quitGame(): void {
+		this.scene.stop(CST.SCENES.IN_GAME_MENU);
+		this.scene.stop(CST.SCENES.RACE_GAME_UI);
+		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
+		this.scene.stop(CST.SCENES.RACE_GAME);
+		this.scene.start(CST.SCENES.ROOM_SELECTION);
 	}
 
 	private pauseGame(): void {

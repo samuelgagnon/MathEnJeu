@@ -1,6 +1,5 @@
 import { CST } from "../../CST";
 import { EventNames, sceneEvents } from "./RaceGameEvents";
-import RaceScene from "./RaceScene";
 
 export default class InGameMenuScene extends Phaser.Scene {
 	position: Point;
@@ -99,7 +98,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.quitText.on("pointerup", () => {
-			this.quitGame();
+			sceneEvents.emit(EventNames.quitGame);
 		});
 
 		this.reportProblemText.on("pointerover", () => {
@@ -128,15 +127,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 			sceneEvents.off(EventNames.errorWindowOpened, this.errorWindowOpened, this);
 			sceneEvents.off(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 		});
-	}
-
-	private quitGame(): void {
-		this.scene.stop(CST.SCENES.IN_GAME_MENU);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).quitGame();
-		this.scene.stop(CST.SCENES.RACE_GAME);
-		this.scene.start(CST.SCENES.ROOM_SELECTION);
 	}
 
 	private resumeGame(): void {
