@@ -148,6 +148,7 @@ export default class RaceScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 		sceneEvents.on(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 		sceneEvents.on(EventNames.useBook, this.useBook, this);
+		sceneEvents.on(EventNames.useCrystalBall, this.useItem, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
@@ -156,6 +157,7 @@ export default class RaceScene extends Phaser.Scene {
 			sceneEvents.off(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 			sceneEvents.off(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 			sceneEvents.off(EventNames.useBook, this.useBook, this);
+			sceneEvents.off(EventNames.useCrystalBall, this.useItem, this);
 		});
 	}
 
