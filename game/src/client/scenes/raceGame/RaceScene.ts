@@ -70,6 +70,14 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	create() {
+		//Enables players to drag their pointer to move the camera
+		this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
+			if (!p.isDown || this.isFollowingPlayer) return;
+
+			this.cameras.main.scrollX -= (p.x - p.prevPosition.x) / this.cameras.main.zoom;
+			this.cameras.main.scrollY -= (p.y - p.prevPosition.y) / this.cameras.main.zoom;
+		});
+
 		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
 		this.background.setScrollFactor(0);
 
