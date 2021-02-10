@@ -1,5 +1,4 @@
 import { QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
 import { Clock } from "../../../gameCore/clock/Clock";
 import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";
@@ -142,7 +141,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 		this.bookIcon.on("pointerup", () => {
 			this.bookIcon.clearTint();
-			this.useBook();
+			sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
 		});
 
 		this.crystalBallIcon.on("pointerdown", () => {
@@ -201,12 +200,15 @@ export default class QuestionScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
 		sceneEvents.on(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 		sceneEvents.on(EventNames.errorWindowOpened, this.pauseGame, this);
+		sceneEvents.on(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			this.clearQuestionTextures();
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
 			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
 			sceneEvents.off(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 			sceneEvents.off(EventNames.errorWindowOpened, this.pauseGame, this);
+			sceneEvents.off(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
 		});
 	}
 
@@ -275,24 +277,9 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private destroyScene(answer: Answer): void {
-		this.destroyImages();
-		this.clearQuestionTextures();
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), answer, this.targetLocation);
-	}
-
-	private useBook(): void {
-		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
-		try {
-			raceScene.useItem(ItemType.Book);
-			raceScene.raceGame.bookUsed(this.question.getDifficulty(), this.targetLocation);
-			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
-				this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
-			});
-		} catch (err) {
-			console.log(err);
-		}
 	}
 
 	private useCrystalBall(): void {
@@ -317,8 +304,8 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private clearQuestionTextures(): void {
-		this.textures.remove(this.questionConstant);
-		this.textures.remove(this.feedbackConstant);
+		if (this.textures.exists(this.questionConstant)) this.textures.remove(this.questionConstant);
+		if (this.textures.exists(this.feedbackConstant)) this.textures.remove(this.feedbackConstant);
 	}
 
 	private destroyImages(): void {
@@ -344,6 +331,10 @@ export default class QuestionScene extends Phaser.Scene {
 		this.inputHtml.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
 		this.answersList.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
 		this.input.enabled = isFromQuestionScene;
+	}
+
+	private handleNewQuestionFound(data: QuestionFoundFromBookEvent) {
+		this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
 	}
 }
 

@@ -4,6 +4,8 @@ export const sceneEvents = new Phaser.Events.EventEmitter();
 
 export const EventNames = {
 	quitGame: "quit-game",
+	useBook: "use-book",
+	newQuestionFound: "new-question-found",
 	gameResumed: "game-resume",
 	gamePaused: "game-pause",
 	followPlayerToggle: "follow-player-toggle",

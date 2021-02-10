@@ -1,4 +1,4 @@
-import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent } from "../../../communication/race/DataInterfaces";
+import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
@@ -147,10 +147,15 @@ export default class RaceScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.quitGame, this.quitGame, this);
 		sceneEvents.on(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 		sceneEvents.on(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+		sceneEvents.on(EventNames.useBook, this.useBook, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
 			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
+			sceneEvents.off(EventNames.quitGame, this.quitGame, this);
+			sceneEvents.off(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+			sceneEvents.off(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+			sceneEvents.off(EventNames.useBook, this.useBook, this);
 		});
 	}
 
@@ -428,6 +433,14 @@ export default class RaceScene extends Phaser.Scene {
 
 	private handleThrowingBananaToogle(isThrowingBanana: boolean) {
 		this.isThrowingBanana = isThrowingBanana;
+	}
+
+	private useBook(questionDifficulty: number, targetLocation: Point): void {
+		this.useItem(ItemType.Book);
+		this.raceGame.bookUsed(questionDifficulty, targetLocation);
+		this.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
+			sceneEvents.emit(EventNames.newQuestionFound, data);
+		});
 	}
 
 	private cameraControls(): void {
