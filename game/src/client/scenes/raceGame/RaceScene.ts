@@ -149,6 +149,7 @@ export default class RaceScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 		sceneEvents.on(EventNames.useBook, this.useBook, this);
 		sceneEvents.on(EventNames.useCrystalBall, this.useItem, this);
+		sceneEvents.on(EventNames.answerQuestion, this.answerQuestion, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);

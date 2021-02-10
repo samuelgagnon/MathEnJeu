@@ -3,14 +3,18 @@ import Phaser from "phaser";
 export const sceneEvents = new Phaser.Events.EventEmitter();
 
 export const EventNames = {
-	quitGame: "quit-game",
+	answerQuestion: "answer-question",
 	useBook: "use-book",
 	useCrystalBall: "use-crystal-ball",
 	newQuestionFound: "new-question-found",
-	gameResumed: "game-resume",
+
 	gamePaused: "game-pause",
+	gameResumed: "game-resume",
+	quitGame: "quit-game",
+
 	followPlayerToggle: "follow-player-toggle",
 	throwingBananaToggle: "throwing-banana-toggle",
+
 	errorWindowOpened: "error-window-opened",
 	errorWindowClosed: "error-window-closed",
 	error: "error",

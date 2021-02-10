@@ -278,7 +278,7 @@ export default class QuestionScene extends Phaser.Scene {
 	private destroyScene(answer: Answer): void {
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(this.question.getId(), answer, this.targetLocation);
+		sceneEvents.emit(EventNames.answerQuestion, this.question.getId(), answer, this.targetLocation);
 	}
 
 	private useCrystalBall(): void {
