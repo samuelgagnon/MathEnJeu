@@ -208,6 +208,7 @@ export default class QuestionScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket().removeEventListener(CE.ANSWER_CORRECTED);
 			this.clearQuestionTextures();
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
 			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
