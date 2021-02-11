@@ -150,6 +150,8 @@ export default class RaceScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.useBook, this.useBook, this);
 		sceneEvents.on(EventNames.useCrystalBall, this.useItem, this);
 		sceneEvents.on(EventNames.answerQuestion, this.answerQuestion, this);
+		sceneEvents.on(EventNames.questionCorrected, this.questionCorrected, this);
+		sceneEvents.on(EventNames.questionIsOver, this.questionIsOver, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
@@ -159,6 +161,9 @@ export default class RaceScene extends Phaser.Scene {
 			sceneEvents.off(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 			sceneEvents.off(EventNames.useBook, this.useBook, this);
 			sceneEvents.off(EventNames.useCrystalBall, this.useItem, this);
+			sceneEvents.off(EventNames.answerQuestion, this.answerQuestion, this);
+			sceneEvents.off(EventNames.questionCorrected, this.questionCorrected, this);
+			sceneEvents.off(EventNames.questionIsOver, this.questionIsOver, this);
 		});
 	}
 
@@ -317,14 +322,20 @@ export default class RaceScene extends Phaser.Scene {
 		this.scene.launch(CST.SCENES.QUESTION_WINDOW, questionWindowData);
 	}
 
-	answerQuestion(questionId: number, answer: Answer, position: Point) {
+	answerQuestion(answer: Answer, position: Point) {
+		this.raceGame.clientPlayerAnswersQuestion(answer, <Point>{ x: position.x, y: position.y });
+	}
+
+	questionIsOver(answerIsRight: boolean, position: Point): void {
 		this.clearTileInteractions();
-		if (answer.isRight()) {
+		if (answerIsRight) {
 			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
 		}
-		this.raceGame.clientPlayerAnsweredQuestion(questionId, answer, <Point>{ x: position.x, y: position.y });
-
 		this.isReadyToGetPossiblePositions = true;
+	}
+
+	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number): void {
+		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {

@@ -3,19 +3,24 @@ import { AnswerDTO } from "../../../communication/race/DataInterfaces";
 export class Answer {
 	private id: number;
 	private label: string;
-	private _isRight: boolean;
-	constructor(id: number, label: string, isRight: boolean) {
+	private knownAsRight: boolean;
+	constructor(id: number, label: string, isRight?: boolean) {
 		this.id = id;
 		this.label = label;
-		this._isRight = isRight;
+		//TODO: rethink implementation (maybe seperate client answers from server answers)
+		if (isRight !== undefined && isRight != null) {
+			this.knownAsRight = isRight;
+		} else {
+			this.knownAsRight = false;
+		}
 	}
 
 	public getId(): number {
 		return this.id;
 	}
 
-	public isRight(): boolean {
-		return this._isRight;
+	public isKnownAsRight(): boolean {
+		return this.knownAsRight;
 	}
 
 	public getLabel(): string {
@@ -30,11 +35,9 @@ export class Answer {
 	}
 
 	public getDTO(): AnswerDTO {
-		const isright = this._isRight ? 1 : 0;
 		return {
 			id: this.id,
 			label: this.label,
-			isRight: isright,
 		};
 	}
 }
