@@ -258,8 +258,6 @@ export default class QuestionScene extends Phaser.Scene {
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
 		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
 			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight, data.correctionTimestamp);
-			// const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
-			// raceGame.playerAnsweredQuestion(data.answerIsRight, data.targetLocation, raceGame.getCurrentPlayer().id, data.correctionTimestamp);
 			if (data.answerIsRight) {
 				this.destroyScene(true);
 			} else {
@@ -306,7 +304,6 @@ export default class QuestionScene extends Phaser.Scene {
 	private answerQuestion(): void {
 		const answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
 		sceneEvents.emit(EventNames.answerQuestion, answer, this.targetLocation);
-		//(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
 	}
 
 	private destroyScene(isAnswerRight: boolean): void {
