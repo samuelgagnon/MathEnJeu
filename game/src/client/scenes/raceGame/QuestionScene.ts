@@ -253,14 +253,14 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private endPenalty(): void {
 		//TODO: Instead of destroying this scene instantly, show a button used to quit the feedback (at this scene in general).
-		this.destroyScene(false);
+		this.destroyScene();
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
 		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight, data.correctionTimestamp);
+			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight, data.correctionTimestamp, this.targetLocation);
 			if (data.answerIsRight) {
-				this.destroyScene(true);
+				this.destroyScene();
 			} else {
 				this.startFeedback();
 			}
@@ -307,10 +307,9 @@ export default class QuestionScene extends Phaser.Scene {
 		sceneEvents.emit(EventNames.answerQuestion, answer, this.targetLocation);
 	}
 
-	private destroyScene(isAnswerRight: boolean): void {
+	private destroyScene(): void {
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		sceneEvents.emit(EventNames.questionIsOver, isAnswerRight, this.targetLocation);
 	}
 
 	private useCrystalBall(): void {

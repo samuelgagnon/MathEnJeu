@@ -151,7 +151,6 @@ export default class RaceScene extends Phaser.Scene {
 		sceneEvents.on(EventNames.useCrystalBall, this.useItem, this);
 		sceneEvents.on(EventNames.answerQuestion, this.answerQuestion, this);
 		sceneEvents.on(EventNames.questionCorrected, this.questionCorrected, this);
-		sceneEvents.on(EventNames.questionIsOver, this.questionIsOver, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
@@ -163,7 +162,6 @@ export default class RaceScene extends Phaser.Scene {
 			sceneEvents.off(EventNames.useCrystalBall, this.useItem, this);
 			sceneEvents.off(EventNames.answerQuestion, this.answerQuestion, this);
 			sceneEvents.off(EventNames.questionCorrected, this.questionCorrected, this);
-			sceneEvents.off(EventNames.questionIsOver, this.questionIsOver, this);
 		});
 	}
 
@@ -326,16 +324,13 @@ export default class RaceScene extends Phaser.Scene {
 		this.raceGame.clientPlayerAnswersQuestion(answer, <Point>{ x: position.x, y: position.y });
 	}
 
-	questionIsOver(answerIsRight: boolean, position: Point): void {
+	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number, position: Point): void {
+		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
 		this.clearTileInteractions();
-		if (answerIsRight) {
+		if (isAnswerRight) {
 			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
 		}
 		this.isReadyToGetPossiblePositions = true;
-	}
-
-	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number): void {
-		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
