@@ -152,6 +152,7 @@ export default class RaceScene extends Phaser.Scene {
 		//(i.e time, delta)
 		this.lag += elapsed;
 		while (this.lag >= this.physTimestep) {
+			this.raceGame.update();
 			this.lag -= this.physTimestep;
 		}
 		this.render();
