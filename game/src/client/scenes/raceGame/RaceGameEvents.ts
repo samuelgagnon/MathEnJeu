@@ -21,7 +21,7 @@ export const EventNames = {
 	error: "error",
 };
 
-export const subscribeToEvent = (eventName: string, callBack: any, context: any) => {
+export const subscribeToEvent = (eventName: string, callBack: Function, context: any) => {
 	sceneEvents.on(eventName, callBack, context);
 	context.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 		sceneEvents.off(eventName, callBack, context);
