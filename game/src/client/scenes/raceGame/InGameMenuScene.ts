@@ -1,5 +1,5 @@
 import { CST } from "../../CST";
-import { EventNames, sceneEvents } from "./RaceGameEvents";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class InGameMenuScene extends Phaser.Scene {
 	position: Point;
@@ -120,13 +120,8 @@ export default class InGameMenuScene extends Phaser.Scene {
 			});
 		});
 
-		sceneEvents.on(EventNames.errorWindowOpened, this.errorWindowOpened, this);
-		sceneEvents.on(EventNames.errorWindowClosed, this.errorWindowClosed, this);
-
-		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			sceneEvents.off(EventNames.errorWindowOpened, this.errorWindowOpened, this);
-			sceneEvents.off(EventNames.errorWindowClosed, this.errorWindowClosed, this);
-		});
+		subscribeToEvent(EventNames.errorWindowOpened, this.errorWindowOpened, this);
+		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 	}
 
 	private resumeGame(): void {

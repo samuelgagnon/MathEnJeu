@@ -7,7 +7,7 @@ import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../../services/QuestionsService";
 import { getUserInfo } from "../../services/UserInformationService";
-import { EventNames, sceneEvents } from "./RaceGameEvents";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
 export default class QuestionScene extends Phaser.Scene {
@@ -201,20 +201,15 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.getTexturesForQuestion();
 
-		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
-		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
-		sceneEvents.on(EventNames.errorWindowClosed, this.errorWindowClosed, this);
-		sceneEvents.on(EventNames.errorWindowOpened, this.pauseGame, this);
-		sceneEvents.on(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+		subscribeToEvent(EventNames.errorWindowOpened, this.pauseGame, this);
+		subscribeToEvent(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket().removeEventListener(CE.ANSWER_CORRECTED);
 			this.clearQuestionTextures();
-			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
-			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
-			sceneEvents.off(EventNames.errorWindowClosed, this.errorWindowClosed, this);
-			sceneEvents.off(EventNames.errorWindowOpened, this.pauseGame, this);
-			sceneEvents.off(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
 		});
 
 		this.handleSocketEvents((<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket());

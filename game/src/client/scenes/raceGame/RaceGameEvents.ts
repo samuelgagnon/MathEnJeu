@@ -20,3 +20,10 @@ export const EventNames = {
 	errorWindowClosed: "error-window-closed",
 	error: "error",
 };
+
+export const subscribeToEvent = (eventName: string, callBack: any, context: any) => {
+	sceneEvents.on(eventName, callBack, context);
+	context.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+		sceneEvents.off(eventName, callBack, context);
+	});
+};

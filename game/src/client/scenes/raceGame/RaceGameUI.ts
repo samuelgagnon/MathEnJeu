@@ -1,5 +1,5 @@
 import { CST } from "../../CST";
-import { EventNames, sceneEvents } from "./RaceGameEvents";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
 export default class RaceGameUI extends Phaser.Scene {
@@ -240,14 +240,9 @@ export default class RaceGameUI extends Phaser.Scene {
 			this.scene.launch(CST.SCENES.IN_GAME_MENU);
 		});
 
-		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
-		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
-		sceneEvents.on(EventNames.error, this.handleErrors, this);
-
-		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
-			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
-		});
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.error, this.handleErrors, this);
 	}
 
 	update() {

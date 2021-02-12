@@ -12,7 +12,7 @@ import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { updateUserHighScore } from "../../services/UserInformationService";
 import { QuestionSceneData } from "./QuestionScene";
-import { EventNames, sceneEvents } from "./RaceGameEvents";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class RaceScene extends Phaser.Scene {
 	//Loops
@@ -142,27 +142,15 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
 
-		sceneEvents.on(EventNames.gameResumed, this.resumeGame, this);
-		sceneEvents.on(EventNames.gamePaused, this.pauseGame, this);
-		sceneEvents.on(EventNames.quitGame, this.quitGame, this);
-		sceneEvents.on(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
-		sceneEvents.on(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
-		sceneEvents.on(EventNames.useBook, this.useBook, this);
-		sceneEvents.on(EventNames.useCrystalBall, this.useItem, this);
-		sceneEvents.on(EventNames.answerQuestion, this.answerQuestion, this);
-		sceneEvents.on(EventNames.questionCorrected, this.questionCorrected, this);
-
-		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			sceneEvents.off(EventNames.gameResumed, this.resumeGame, this);
-			sceneEvents.off(EventNames.gamePaused, this.pauseGame, this);
-			sceneEvents.off(EventNames.quitGame, this.quitGame, this);
-			sceneEvents.off(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
-			sceneEvents.off(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
-			sceneEvents.off(EventNames.useBook, this.useBook, this);
-			sceneEvents.off(EventNames.useCrystalBall, this.useItem, this);
-			sceneEvents.off(EventNames.answerQuestion, this.answerQuestion, this);
-			sceneEvents.off(EventNames.questionCorrected, this.questionCorrected, this);
-		});
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
+		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+		subscribeToEvent(EventNames.useBook, this.useBook, this);
+		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
+		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
 	}
 
 	update(timestamp: number, elapsed: number) {
