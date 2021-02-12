@@ -70,13 +70,7 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	create() {
-		//Enables players to drag their pointer to move the camera
-		this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
-			if (!p.isDown || this.isFollowingPlayer) return;
-
-			this.cameras.main.scrollX -= (p.x - p.prevPosition.x) / this.cameras.main.zoom;
-			this.cameras.main.scrollY -= (p.y - p.prevPosition.y) / this.cameras.main.zoom;
-		});
+		this.draggableCameraControls();
 
 		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
 		this.background.setScrollFactor(0);
@@ -154,12 +148,10 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	update(timestamp: number, elapsed: number) {
-		this.cameraControls();
-
+		this.cameraKeyboardControls();
 		//(i.e time, delta)
 		this.lag += elapsed;
 		while (this.lag >= this.physTimestep) {
-			this.raceGame.update();
 			this.lag -= this.physTimestep;
 		}
 		this.render();
@@ -440,7 +432,19 @@ export default class RaceScene extends Phaser.Scene {
 		});
 	}
 
-	private cameraControls(): void {
+	private draggableCameraControls(): void {
+		const p = this.input.activePointer;
+
+		this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
+			if (!p.isDown || this.isFollowingPlayer) return;
+
+			const cam = this.cameras.main;
+			cam.scrollX -= (p.x - p.prevPosition.x) / cam.zoom;
+			cam.scrollY -= (p.y - p.prevPosition.y) / cam.zoom;
+		});
+	}
+
+	private cameraKeyboardControls(): void {
 		if (!this.isFollowingPlayer) {
 			if (this.keyboardInputs.left.isDown) {
 				this.cameras.main.scrollX -= 4;
