@@ -1,4 +1,10 @@
-import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import {
+	AnswerCorrectedEvent,
+	GameEndEvent,
+	PlayerLeftEvent,
+	QuestionFoundEvent,
+	QuestionFoundFromBookEvent,
+} from "../../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
@@ -122,7 +128,7 @@ export default class RaceScene extends Phaser.Scene {
 
 							//TODO verify if has arrived logic should be moved to player
 							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().isAnsweringQuestion()) {
-								this.raceGame.playerMoveRequest({ x: x, y: y });
+								this.playerRequestMove(<Point>{ x: x, y: y });
 							}
 						}
 					});
@@ -144,7 +150,12 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
 		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
-		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
+	}
+
+	playerRequestMove(targetLocation: Point) {
+		//To keep target location in memory when we get the answer from question scene
+		this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(targetLocation);
+		this.raceGame.playerMoveRequest(targetLocation);
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -305,11 +316,11 @@ export default class RaceScene extends Phaser.Scene {
 		this.raceGame.clientPlayerAnswersQuestion(answer, <Point>{ x: position.x, y: position.y });
 	}
 
-	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number, position: Point): void {
+	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number): void {
 		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
 		this.clearTileInteractions();
-		if (isAnswerRight) {
-			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
+		if (!isAnswerRight) {
+			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(this.raceGame.getCurrentPlayer().getPosition());
 		}
 		this.isReadyToGetPossiblePositions = true;
 	}
@@ -333,6 +344,11 @@ export default class RaceScene extends Phaser.Scene {
 			const questionFound = QuestionMapper.fromDTO(data.questionDTO);
 			this.raceGame.getCurrentPlayer().promptQuestion(questionFound);
 			this.createQuestionWindow(data.targetLocation, questionFound);
+		});
+
+		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
+			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
+			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
 		});
 	}
 
