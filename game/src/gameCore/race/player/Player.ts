@@ -4,6 +4,7 @@ import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
 import { RACE_CST } from "../RACE_CST";
+import { Answer } from "./../question/Answer";
 import { Question } from "./../question/Question";
 import Inventory from "./Inventory";
 import Status from "./playerStatus/Status";
@@ -21,6 +22,7 @@ export default class Player {
 	private readonly MIN_MOVEMENT = 1;
 	private readonly MOVE_PER_QUESTION = 1;
 	private readonly MAX_DIFFICULTY = 6;
+	private readonly PENALTY_DURATION = 5 * 1000; //in milliseconds
 	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
@@ -35,6 +37,7 @@ export default class Player {
 	private lastValidCheckpoint: number = 0;
 	private schoolGrade: number;
 	private language: string;
+	private endOfPenaltyTimestamp: number;
 
 	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory, schoolGrade: number, language: string) {
 		this.id = id;
@@ -44,6 +47,7 @@ export default class Player {
 		this.inventory = inventory;
 		this.schoolGrade = schoolGrade;
 		this.language = language;
+		this.endOfPenaltyTimestamp = 0;
 		this.transitionTo(status);
 	}
 
@@ -81,6 +85,18 @@ export default class Player {
 			schoolGrade: this.schoolGrade,
 			language: this.language,
 		};
+	}
+
+	public isInPenaltyState(): boolean {
+		return Clock.now() < this.endOfPenaltyTimestamp;
+	}
+
+	public getEndOfPenaltyTimestamp(): number {
+		return this.endOfPenaltyTimestamp;
+	}
+
+	private givePenalty(): void {
+		this.endOfPenaltyTimestamp = Clock.now() + this.PENALTY_DURATION;
 	}
 
 	public getCurrentStatus(): StatusType {
@@ -138,17 +154,30 @@ export default class Player {
 		this.lastQuestionPromptTimestamp = Clock.now();
 	}
 
+	public getActiveQuestion(): Question {
+		return this.activeQuestion;
+	}
+
+	public getAnswerFromActiveQuestion(answerString: string): Answer {
+		if (this.isAnsweringQuestion()) {
+			return this.activeQuestion.getAnswer(answerString);
+		}
+		return undefined;
+	}
+
 	public getLastQuestionPromptTimestamp() {
 		return this.lastQuestionPromptTimestamp;
 	}
 
-	public answeredQuestion(questionId: number, isAnswerCorrect: boolean): void {
+	public answeredQuestion(isAnswerCorrect: boolean): void {
 		//add answered question to answeredQuestion list so you don't ask the player the same question again
-		this.answeredQuestionsId.push(questionId);
+		this.answeredQuestionsId.push(this.activeQuestion.getId());
 		this.activeQuestion = undefined;
 		if (isAnswerCorrect) {
 			this.addToMoveDistance(this.MOVE_PER_QUESTION);
 		} else {
+			//When player answers incorrectly, a penalty is given
+			this.givePenalty();
 			this.addToMoveDistance(-this.MOVE_PER_QUESTION);
 		}
 	}
@@ -160,10 +189,9 @@ export default class Player {
 	public moveTo(startTimestamp: number, targetLocation: Point, pointsCalculatorCallBack: (moveDistance: number) => number): void {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		//diagonal movement is not permitted
-		if (this.move.getHasArrived() && !isMoveDiagonal) {
+		if (this.move.getHasArrived() && !isMoveDiagonal && !this.isInPenaltyState()) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 			this.addPoints(pointsCalculatorCallBack(this.move.getDistance()));
-			this.activeQuestion = undefined;
 		}
 	}
 

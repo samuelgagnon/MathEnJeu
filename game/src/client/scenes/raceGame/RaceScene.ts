@@ -1,17 +1,18 @@
-import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
-import AffineTransform from "../../gameCore/race/AffineTransform";
-import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
-import { PossiblePositions } from "../../gameCore/race/grid/RaceGrid";
-import { ItemType } from "../../gameCore/race/items/Item";
-import Move from "../../gameCore/race/Move";
-import Player from "../../gameCore/race/player/Player";
-import { Answer } from "../../gameCore/race/question/Answer";
-import { Question } from "../../gameCore/race/question/Question";
-import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
-import { CST } from "../CST";
-import { updateUserHighScore } from "../services/UserInformationService";
+import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import AffineTransform from "../../../gameCore/race/AffineTransform";
+import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
+import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
+import { ItemType } from "../../../gameCore/race/items/Item";
+import Move from "../../../gameCore/race/Move";
+import Player from "../../../gameCore/race/player/Player";
+import { Answer } from "../../../gameCore/race/question/Answer";
+import { Question } from "../../../gameCore/race/question/Question";
+import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
+import { CST } from "../../CST";
+import { updateUserHighScore } from "../../services/UserInformationService";
 import { QuestionSceneData } from "./QuestionScene";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class RaceScene extends Phaser.Scene {
 	//Loops
@@ -24,7 +25,7 @@ export default class RaceScene extends Phaser.Scene {
 	boardPosition: Point;
 	keyboardInputs;
 	background: Phaser.GameObjects.TileSprite;
-	followPlayer: boolean;
+	isFollowingPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
 
@@ -59,7 +60,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.pointsForPosition = [];
-		this.followPlayer = false;
+		this.isFollowingPlayer = false;
 		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
 		this.activeTileColor = 0xadff2f;
@@ -69,6 +70,8 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	create() {
+		this.draggableCameraControls();
+
 		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
 		this.background.setScrollFactor(0);
 
@@ -84,6 +87,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.distanceBetweenTwoTiles = 66;
 		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
 
+		//creating game board
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
@@ -131,29 +135,40 @@ export default class RaceScene extends Phaser.Scene {
 		this.activateAccessiblePositions();
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
+		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+		subscribeToEvent(EventNames.useBook, this.useBook, this);
+		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
+		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
 	}
 
-	phys(currentframe: number) {
-		this.raceGame.update();
+	update(timestamp: number, elapsed: number) {
+		this.cameraKeyboardControls();
+		//(i.e time, delta)
+		this.lag += elapsed;
+		while (this.lag >= this.physTimestep) {
+			this.lag -= this.physTimestep;
+		}
+		this.render();
 	}
 
 	render() {
+		this.renderBackground();
+		this.renderPlayerSprites();
+		this.renderGameBoard();
+		this.renderAccessiblePositions();
+	}
+
+	private renderBackground() {
 		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
+	}
 
-		if (!this.followPlayer) {
-			if (this.keyboardInputs.left.isDown) {
-				this.cameras.main.scrollX -= 4;
-			} else if (this.keyboardInputs.right.isDown) {
-				this.cameras.main.scrollX += 4;
-			}
-
-			if (this.keyboardInputs.up.isDown) {
-				this.cameras.main.scrollY -= 4;
-			} else if (this.keyboardInputs.down.isDown) {
-				this.cameras.main.scrollY += 4;
-			}
-		}
-
+	private renderPlayerSprites() {
 		this.raceGame.getPlayers().forEach((player: Player) => {
 			let characterSpriteIndex: number = this.getCharacterSpriteIndex(player.id);
 			const currentPosition = player.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
@@ -196,7 +211,9 @@ export default class RaceScene extends Phaser.Scene {
 				newCharacterSprite.disableInteractive();
 			}
 		});
+	}
 
+	private renderGameBoard() {
 		this.items.clear(true, true);
 		const gameGrid = this.raceGame.getGrid();
 
@@ -236,7 +253,9 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
+	}
 
+	private renderAccessiblePositions() {
 		const currentPlayer = this.raceGame.getCurrentPlayer();
 		const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
 		if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
@@ -250,16 +269,6 @@ export default class RaceScene extends Phaser.Scene {
 			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
 			this.activateAccessiblePositions();
 		}
-	}
-
-	update(timestamp: number, elapsed: number) {
-		//(i.e time, delta)
-		this.lag += elapsed;
-		while (this.lag >= this.physTimestep) {
-			this.phys(this.physTimestep);
-			this.lag -= this.physTimestep;
-		}
-		this.render();
 	}
 
 	private getCharacterSpriteIndex(playerId: string): number {
@@ -276,15 +285,13 @@ export default class RaceScene extends Phaser.Scene {
 		try {
 			this.raceGame.itemUsed(itemType, targetPlayerId);
 		} catch (e) {
+			sceneEvents.emit(EventNames.error, e);
 			console.log(e);
 			throw e;
 		}
 	}
 
 	private createQuestionWindow(targetLocation: Point, question: Question): void {
-		var x = Number(this.game.config.width) * 0.05;
-		var y = Number(this.game.config.height) * 0.05;
-
 		const questionWindowData: QuestionSceneData = {
 			question: question,
 			targetLocation: targetLocation,
@@ -293,18 +300,17 @@ export default class RaceScene extends Phaser.Scene {
 		this.scene.launch(CST.SCENES.QUESTION_WINDOW, questionWindowData);
 	}
 
-	answerQuestion(questionId: number, answer: Answer, position: Point) {
-		this.clearTileInteractions();
-		if (answer.isRight()) {
-			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
-		}
-		this.raceGame.clientPlayerAnsweredQuestion(questionId, answer, <Point>{ x: position.x, y: position.y });
-
-		this.isReadyToGetPossiblePositions = true;
+	answerQuestion(answer: Answer, position: Point) {
+		this.raceGame.clientPlayerAnswersQuestion(answer, <Point>{ x: position.x, y: position.y });
 	}
 
-	getPlayerPosition(): Point {
-		return this.raceGame.getCurrentPlayer().getPosition();
+	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number, position: Point): void {
+		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
+		this.clearTileInteractions();
+		if (isAnswerRight) {
+			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
+		}
+		this.isReadyToGetPossiblePositions = true;
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
@@ -384,12 +390,74 @@ export default class RaceScene extends Phaser.Scene {
 		return this.tiles.getChildren().find((tile) => tile.getData("position").x === x && tile.getData("position").y === y);
 	}
 
-	private playerHasArrived(phaserCurrentPosition): boolean {
+	private playerHasArrived(phaserCurrentPosition: Point): boolean {
 		return phaserCurrentPosition.x === this.targetLocation.x && phaserCurrentPosition.y === this.targetLocation.y;
 	}
 
 	public quitGame(): void {
+		this.scene.stop(CST.SCENES.IN_GAME_MENU);
+		this.scene.stop(CST.SCENES.RACE_GAME_UI);
+		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
+		this.scene.stop(CST.SCENES.RACE_GAME);
+		this.scene.start(CST.SCENES.ROOM_SELECTION);
+	}
+
+	private pauseGame(): void {
+		this.input.enabled = false;
+	}
+
+	private resumeGame(): void {
+		this.input.enabled = true;
+	}
+
+	private handleFollowPlayerToggle(isFollowingPlayer: boolean) {
+		this.isFollowingPlayer = isFollowingPlayer;
+		if (isFollowingPlayer) {
+			this.cameras.main.startFollow(this.currentPlayerSprite, false, 0.09, 0.09);
+		} else {
+			this.cameras.main.stopFollow();
+		}
+	}
+
+	private handleThrowingBananaToogle(isThrowingBanana: boolean) {
+		this.isThrowingBanana = isThrowingBanana;
+	}
+
+	private useBook(questionDifficulty: number, targetLocation: Point): void {
+		this.useItem(ItemType.Book);
+		this.raceGame.bookUsed(questionDifficulty, targetLocation);
+		this.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
+			sceneEvents.emit(EventNames.newQuestionFound, data);
+		});
+	}
+
+	private draggableCameraControls(): void {
+		const p = this.input.activePointer;
+
+		this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
+			if (!p.isDown || this.isFollowingPlayer) return;
+
+			const cam = this.cameras.main;
+			cam.scrollX -= (p.x - p.prevPosition.x) / cam.zoom;
+			cam.scrollY -= (p.y - p.prevPosition.y) / cam.zoom;
+		});
+	}
+
+	private cameraKeyboardControls(): void {
+		if (!this.isFollowingPlayer) {
+			if (this.keyboardInputs.left.isDown) {
+				this.cameras.main.scrollX -= 4;
+			} else if (this.keyboardInputs.right.isDown) {
+				this.cameras.main.scrollX += 4;
+			}
+
+			if (this.keyboardInputs.up.isDown) {
+				this.cameras.main.scrollY -= 4;
+			} else if (this.keyboardInputs.down.isDown) {
+				this.cameras.main.scrollY += 4;
+			}
+		}
 	}
 }
 

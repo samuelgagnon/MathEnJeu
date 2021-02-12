@@ -1,6 +1,5 @@
-import { CST } from "../CST";
-import RaceGameUI from "./RaceGameUI";
-import RaceScene from "./RaceScene";
+import { CST } from "../../CST";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class InGameMenuScene extends Phaser.Scene {
 	position: Point;
@@ -10,8 +9,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 	resumeText: Phaser.GameObjects.Text;
 	reportProblemText: Phaser.GameObjects.Text;
 	quitText: Phaser.GameObjects.Text;
-
-	disabledInteractionZone: Phaser.GameObjects.Zone;
 
 	constructor() {
 		const sceneConfig = {
@@ -30,7 +27,6 @@ export default class InGameMenuScene extends Phaser.Scene {
 	}
 
 	create() {
-		const raceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0x808080);
 
@@ -42,7 +38,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportProblemText = this.add
 			.text(this.width / 2 - 75, this.height * 0.5, "Report problem", {
@@ -52,7 +51,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.quitText = this.add
 			.text(this.width / 2 - 75, this.height * 0.7, "Quit", {
@@ -62,7 +64,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.resumeText.on("pointerover", () => {
 			this.quitText.setTint(0xffff66);
@@ -93,7 +98,7 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.quitText.on("pointerup", () => {
-			this.quitGame();
+			sceneEvents.emit(EventNames.quitGame);
 		});
 
 		this.reportProblemText.on("pointerover", () => {
@@ -109,35 +114,26 @@ export default class InGameMenuScene extends Phaser.Scene {
 		});
 
 		this.reportProblemText.on("pointerup", () => {
+			sceneEvents.emit(EventNames.errorWindowOpened);
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
-				questionId: null,
+				questionId: null, //Send null because the error report isn't tied to a question
 			});
 		});
 
-		this.resumeText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.quitText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.reportProblemText.setInteractive({
-			useHandCursor: true,
-		});
-	}
-
-	private quitGame(): void {
-		this.scene.stop(CST.SCENES.IN_GAME_MENU);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).quitGame();
-		this.scene.stop(CST.SCENES.RACE_GAME);
-		this.scene.start(CST.SCENES.ROOM_SELECTION);
+		subscribeToEvent(EventNames.errorWindowOpened, this.errorWindowOpened, this);
+		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 	}
 
 	private resumeGame(): void {
-		(<RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI)).resumeGame();
+		sceneEvents.emit(EventNames.gameResumed);
 		this.scene.stop(CST.SCENES.IN_GAME_MENU);
+	}
+
+	private errorWindowOpened(): void {
+		this.input.enabled = false;
+	}
+
+	private errorWindowClosed(): void {
+		this.input.enabled = true;
 	}
 }
