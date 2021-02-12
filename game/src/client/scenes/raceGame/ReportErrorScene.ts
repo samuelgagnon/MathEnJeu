@@ -1,13 +1,16 @@
-import ErrorReport from "../../communication/ErrorReport";
-import { Clock } from "../../gameCore/clock/Clock";
-import { CST } from "../CST";
-import { postErrorReport } from "../services/ReportErrorService";
-import { getUserInfo } from "../services/UserInformationService";
+import ErrorReport from "../../../communication/ErrorReport";
+import { Clock } from "../../../gameCore/clock/Clock";
+import { CST } from "../../CST";
+import { postErrorReport } from "../../services/ReportErrorService";
+import { getUserInfo } from "../../services/UserInformationService";
+import { EventNames, sceneEvents } from "./RaceGameEvents";
 
 export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
+
+	//questionId is null if the error isn't tied to a question
 	questionId: number;
 
 	errorType: string;
@@ -45,7 +48,10 @@ export default class ReportErrorScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.cancelButton = this.add
 			.text((this.width * 3) / 4, this.height * 0.8, "Cancel", {
@@ -55,7 +61,10 @@ export default class ReportErrorScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportButton.on("pointerup", () => {
 			const userInfo = getUserInfo();
@@ -70,19 +79,17 @@ export default class ReportErrorScene extends Phaser.Scene {
 				questionId: this.questionId,
 			};
 			postErrorReport(errorReport);
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
+			this.destroyScene();
 		});
 
 		this.cancelButton.on("pointerup", () => {
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
+			this.destroyScene();
 		});
+	}
 
-		this.reportButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.cancelButton.setInteractive({
-			useHandCursor: true,
-		});
+	private destroyScene(): void {
+		// parameter is to notify other scenes if it was an error tied to a question or a general error
+		sceneEvents.emit(EventNames.errorWindowClosed, this.questionId !== null);
+		this.scene.stop(CST.SCENES.REPORT_ERROR);
 	}
 }

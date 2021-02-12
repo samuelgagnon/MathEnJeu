@@ -1,18 +1,16 @@
-import { AnswerCorrectedEvent, QuestionFoundFromBookEvent } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../communication/race/EventNames";
-import { Clock } from "../../gameCore/clock/Clock";
-import { ItemType } from "../../gameCore/race/items/Item";
-import { Question } from "../../gameCore/race/question/Question";
-import QuestionMapper from "../../gameCore/race/question/QuestionMapper";
-import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../services/QuestionsService";
-import { getUserInfo } from "../services/UserInformationService";
-import { Answer } from "./../../gameCore/race/question/Answer";
-import { CST } from "./../CST";
-import RaceGameUI from "./RaceGameUI";
+import { AnswerCorrectedEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { Clock } from "../../../gameCore/clock/Clock";
+import { Answer } from "../../../gameCore/race/question/Answer";
+import { Question } from "../../../gameCore/race/question/Question";
+import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
+import { CST } from "../../CST";
+import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../../services/QuestionsService";
+import { getUserInfo } from "../../services/UserInformationService";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
-export default class QuestionScene extends Phaser.Scene {
-	disabledInteractionZone: Phaser.GameObjects.Zone;
 
+export default class QuestionScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
@@ -36,8 +34,6 @@ export default class QuestionScene extends Phaser.Scene {
 	crystalBallIcon: Phaser.GameObjects.Sprite;
 	bookCount: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
-
-	raceGameUI: RaceGameUI;
 
 	feedbackMaxTime: number;
 	feedbackStartTimeStamp: number;
@@ -69,7 +65,6 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	create() {
-		this.raceGameUI = <RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI);
 		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0xffffff);
 
@@ -84,7 +79,10 @@ export default class QuestionScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.correctAnswer = this.add
 			.text(this.width * 0.8, this.height * 0.85, "correct answer", {
@@ -94,7 +92,10 @@ export default class QuestionScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportProblemButton = this.add
 			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
@@ -104,19 +105,10 @@ export default class QuestionScene extends Phaser.Scene {
 				color: "#000000",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
-
-		this.enterButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.correctAnswer.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.reportProblemButton.setInteractive({
-			useHandCursor: true,
-		});
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.enterButton.on("pointerup", () => {
 			this.answerQuestion();
@@ -131,6 +123,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.reportProblemButton.on("pointerup", () => {
+			sceneEvents.emit(EventNames.errorWindowOpened);
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
 				questionId: this.question.getId(),
 			});
@@ -153,7 +146,7 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 		this.bookIcon.on("pointerup", () => {
 			this.bookIcon.clearTint();
-			this.useBook();
+			sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
 		});
 
 		this.crystalBallIcon.on("pointerdown", () => {
@@ -208,22 +201,21 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.getTexturesForQuestion();
 
-		this.disabledInteractionZone = this.add
-			.zone(0, 0, Number(this.game.config.width), Number(this.game.config.height))
-			.setInteractive()
-			.setOrigin(0)
-			.setScrollFactor(0)
-			.setActive(false)
-			.setVisible(false);
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+		subscribeToEvent(EventNames.errorWindowOpened, this.pauseGame, this);
+		subscribeToEvent(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
+
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket().removeEventListener(CE.ANSWER_CORRECTED);
+			this.clearQuestionTextures();
+		});
 
 		this.handleSocketEvents((<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket());
 	}
 
 	update() {
-		const isGamePaused = this.raceGameUI.isGamePaused;
-		this.inputHtml.setActive(!isGamePaused).setVisible(!isGamePaused);
-		this.answersList.setActive(!isGamePaused).setVisible(!isGamePaused);
-		this.disabledInteractionZone.setActive(isGamePaused).setVisible(isGamePaused);
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
 
 		if (this.showFeedbackTime) {
@@ -256,15 +248,14 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private endPenalty(): void {
 		//TODO: Instead of destroying this scene instantly, show a button used to quit the feedback (at this scene in general).
-		this.destroyScene(false);
+		this.destroyScene();
 	}
 
 	private handleSocketEvents(socket: SocketIOClient.Socket): void {
 		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
-			raceGame.playerAnsweredQuestion(data.answerIsRight, data.targetLocation, raceGame.getCurrentPlayer().id, data.correctionTimestamp);
+			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight, data.correctionTimestamp, this.targetLocation);
 			if (data.answerIsRight) {
-				this.destroyScene(true);
+				this.destroyScene();
 			} else {
 				this.startFeedback();
 			}
@@ -308,35 +299,19 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private answerQuestion(): void {
 		const answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(answer, this.targetLocation);
+		sceneEvents.emit(EventNames.answerQuestion, answer, this.targetLocation);
 	}
 
-	private destroyScene(answerIsRight: boolean): void {
-		this.destroyImages();
-		this.clearQuestionTextures();
+	private destroyScene(): void {
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).questionIsOver(answerIsRight, this.targetLocation);
-	}
-
-	private useBook(): void {
-		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
-		try {
-			raceScene.useItem(ItemType.Book);
-			raceScene.raceGame.bookUsed(this.question.getDifficulty(), this.targetLocation);
-			raceScene.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
-				this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
-			});
-		} catch (err) {
-			console.log(err);
-		}
 	}
 
 	private useCrystalBall(): void {
 		//TODO: Make constants of the types
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
 			try {
-				(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).useItem(ItemType.CrystalBall);
+				sceneEvents.emit(EventNames.useCrystalBall);
 				this.question.removeWrongAnswer();
 			} catch (error) {
 				console.log(error);
@@ -354,8 +329,8 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private clearQuestionTextures(): void {
-		this.textures.remove(this.questionConstant);
-		this.textures.remove(this.feedbackConstant);
+		if (this.textures.exists(this.questionConstant)) this.textures.remove(this.questionConstant);
+		if (this.textures.exists(this.feedbackConstant)) this.textures.remove(this.feedbackConstant);
 	}
 
 	private destroyImages(): void {
@@ -363,6 +338,28 @@ export default class QuestionScene extends Phaser.Scene {
 		this.feedbackImage.destroy();
 		this.questionImage = undefined;
 		this.feedbackImage = undefined;
+	}
+
+	private pauseGame() {
+		this.inputHtml.setActive(false).setVisible(false);
+		this.answersList.setActive(false).setVisible(false);
+		this.input.enabled = false;
+	}
+
+	private resumeGame() {
+		this.inputHtml.setActive(true).setVisible(true);
+		this.answersList.setActive(true).setVisible(true);
+		this.input.enabled = true;
+	}
+
+	private errorWindowClosed(isFromQuestionScene: boolean) {
+		this.inputHtml.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
+		this.answersList.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
+		this.input.enabled = isFromQuestionScene;
+	}
+
+	private handleNewQuestionFound(data: QuestionFoundFromBookEvent) {
+		this.newQuestionFound(QuestionMapper.fromDTO(data.questionDTO));
 	}
 }
 

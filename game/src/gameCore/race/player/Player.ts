@@ -192,7 +192,6 @@ export default class Player {
 		if (this.move.getHasArrived() && !isMoveDiagonal && !this.isInPenaltyState()) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 			this.addPoints(pointsCalculatorCallBack(this.move.getDistance()));
-			this.activeQuestion = undefined;
 		}
 	}
 

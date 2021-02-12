@@ -1,5 +1,5 @@
-import { ItemType } from "../../gameCore/race/items/Item";
-import { CST } from "../CST";
+import { CST } from "../../CST";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
 export default class RaceGameUI extends Phaser.Scene {
@@ -9,11 +9,12 @@ export default class RaceGameUI extends Phaser.Scene {
 	remainingTimeText: Phaser.GameObjects.Text;
 	startOptionsButton: Phaser.GameObjects.Image;
 
+	isFollowingPlayer: boolean;
+	isThrowingBanana: boolean;
+
 	followPlayerText: Phaser.GameObjects.Text;
 	playerStatusText: Phaser.GameObjects.Text;
 	playerStatusTime: Phaser.GameObjects.Text;
-
-	isGamePaused: boolean;
 
 	//playerItems
 	bananaText: Phaser.GameObjects.Text;
@@ -23,7 +24,6 @@ export default class RaceGameUI extends Phaser.Scene {
 	crystalBallText: Phaser.GameObjects.Text;
 	crystalBallCount: Phaser.GameObjects.Text;
 	throwBananaText: Phaser.GameObjects.Text;
-	positionButton: Phaser.GameObjects.Text;
 	pointsText: Phaser.GameObjects.Text;
 	pointsTotal: Phaser.GameObjects.Text;
 
@@ -35,7 +35,9 @@ export default class RaceGameUI extends Phaser.Scene {
 	create() {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		const currentPlayer = raceScene.raceGame.getCurrentPlayer();
-		this.isGamePaused = false;
+
+		this.isFollowingPlayer = false;
+		this.isThrowingBanana = false;
 
 		this.playerStatusText = this.add
 			.text(50, 100, currentPlayer.getCurrentStatus().toString(), {
@@ -150,6 +152,9 @@ export default class RaceGameUI extends Phaser.Scene {
 				color: "#FDFFB5",
 				fontStyle: "bold",
 			})
+			.setInteractive({
+				useHandCursor: true,
+			})
 			.setScrollFactor(0);
 
 		this.pointsText = this.add
@@ -180,64 +185,23 @@ export default class RaceGameUI extends Phaser.Scene {
 				color: "#FDFFB5",
 				fontStyle: "bold",
 			})
-			.setScrollFactor(0);
-
-		this.positionButton = this.add
-			.text(50, 550, "position", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
+			.setInteractive({
+				useHandCursor: true,
 			})
 			.setScrollFactor(0);
 
-		this.bookText.setInteractive({
-			useHandCursor: true,
-		});
-		this.crystalBallText.setInteractive({
-			useHandCursor: true,
-		});
-		this.throwBananaText.setInteractive({
-			useHandCursor: true,
-		});
-		this.followPlayerText.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.positionButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		this.bookText.on("pointerup", () => {
-			raceScene.useItem(ItemType.Book);
-		});
-		this.crystalBallText.on("pointerup", () => {
-			raceScene.useItem(ItemType.CrystalBall);
-		});
-
 		this.throwBananaText.on("pointerup", () => {
-			if (raceScene.isThrowingBanana) {
-				raceScene.isThrowingBanana = false;
-			} else {
-				raceScene.isThrowingBanana = true;
-			}
+			const newLabel = this.isThrowingBanana ? "Throwing banana: Off" : "Throwing banana: On";
+			this.throwBananaText.setText(newLabel);
+			this.isThrowingBanana = !this.isThrowingBanana;
+			sceneEvents.emit(EventNames.throwingBananaToggle, this.isThrowingBanana);
 		});
 
 		this.followPlayerText.on("pointerup", () => {
-			if (raceScene.followPlayer) {
-				raceScene.followPlayer = false;
-				this.followPlayerText.setText("Camera follow: Off");
-				raceScene.cameras.main.stopFollow();
-			} else {
-				raceScene.followPlayer = true;
-				this.followPlayerText.setText("Camera follow: On");
-				raceScene.cameras.main.startFollow(raceScene.currentPlayerSprite, false, 0.09, 0.09);
-			}
-		});
-
-		this.positionButton.on("pointerup", () => {
-			console.log(raceScene.raceGame.getCurrentPlayer());
+			const newLabel = this.isFollowingPlayer ? "Camera follow: Off" : "Camera follow: On";
+			this.followPlayerText.setText(newLabel);
+			this.isFollowingPlayer = !this.isFollowingPlayer;
+			sceneEvents.emit(EventNames.followPlayerToggle, this.isFollowingPlayer);
 		});
 
 		this.disabledInteractionZone = this.add
@@ -252,11 +216,10 @@ export default class RaceGameUI extends Phaser.Scene {
 			.image(this.game.renderer.width * 0.97, this.game.renderer.height * 0.1, CST.IMAGES.START_OPTIONS)
 			.setDepth(1)
 			.setScrollFactor(0)
-			.setScale(0.025);
-
-		this.startOptionsButton.setInteractive({
-			useHandCursor: true,
-		});
+			.setScale(0.025)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.startOptionsButton.on("pointerover", () => {
 			this.startOptionsButton.setTint(0xffff66);
@@ -271,11 +234,14 @@ export default class RaceGameUI extends Phaser.Scene {
 		});
 
 		this.startOptionsButton.on("pointerup", () => {
-			this.isGamePaused = true;
 			this.startOptionsButton.clearTint();
-			this.startOptionsButton.disableInteractive();
+			sceneEvents.emit(EventNames.gamePaused);
 			this.scene.launch(CST.SCENES.IN_GAME_MENU);
 		});
+
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.error, this.handleErrors, this);
 	}
 
 	update() {
@@ -288,15 +254,6 @@ export default class RaceGameUI extends Phaser.Scene {
 		} else {
 			this.disabledInteractionZone.setActive(false).setVisible(false);
 		}
-
-		if (this.isGamePaused) {
-			this.disabledInteractionZone.setActive(true).setVisible(true);
-		} else {
-			this.disabledInteractionZone.setActive(false).setVisible(false);
-		}
-
-		const throwBananaText = raceScene.isThrowingBanana ? "Throwing banana: On" : "Throwing banana: Off";
-		this.throwBananaText.setText(throwBananaText);
 
 		//setting remaining time
 		this.remainingTime.setText(Math.floor(raceScene.raceGame.getTimeRemaining() / 1000).toString());
@@ -315,8 +272,16 @@ export default class RaceGameUI extends Phaser.Scene {
 		this.pointsTotal.setText(currentPlayer.getPoints().toString());
 	}
 
-	resumeGame() {
-		this.isGamePaused = false;
-		this.startOptionsButton.setInteractive();
+	private resumeGame() {
+		this.input.enabled = true;
+	}
+
+	private pauseGame() {
+		this.input.enabled = false;
+	}
+
+	private handleErrors(errorType: string): void {
+		alert(errorType);
+		console.error(errorType);
 	}
 }
