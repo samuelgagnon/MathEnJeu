@@ -216,11 +216,10 @@ export default class RaceGameUI extends Phaser.Scene {
 			.image(this.game.renderer.width * 0.97, this.game.renderer.height * 0.1, CST.IMAGES.START_OPTIONS)
 			.setDepth(1)
 			.setScrollFactor(0)
-			.setScale(0.025);
-
-		this.startOptionsButton.setInteractive({
-			useHandCursor: true,
-		});
+			.setScale(0.025)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.startOptionsButton.on("pointerover", () => {
 			this.startOptionsButton.setTint(0xffff66);
