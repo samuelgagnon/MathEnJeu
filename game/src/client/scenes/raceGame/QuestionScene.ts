@@ -208,7 +208,6 @@ export default class QuestionScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			//(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket().removeEventListener(CE.ANSWER_CORRECTED);
 			this.clearQuestionTextures();
 		});
 	}
