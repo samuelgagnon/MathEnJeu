@@ -1,5 +1,6 @@
 import { QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
 import { Clock } from "../../../gameCore/clock/Clock";
+import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
@@ -305,7 +306,7 @@ export default class QuestionScene extends Phaser.Scene {
 		//TODO: Make constants of the types
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
 			try {
-				sceneEvents.emit(EventNames.useCrystalBall);
+				sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
 				this.question.removeWrongAnswer();
 			} catch (error) {
 				console.log(error);
