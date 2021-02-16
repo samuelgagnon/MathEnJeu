@@ -29,7 +29,7 @@ export default class Room {
 
 	constructor(
 		id: string,
-		// isPrivate: boolean,
+		isPrivate: boolean,
 		state: State,
 		gameRepo: GameRepository,
 		statsRepo: StatisticsRepository,
@@ -38,7 +38,7 @@ export default class Room {
 		password?: number
 	) {
 		this.id = id;
-		// this.isPrivate = isPrivate;
+		this.isPrivate = isPrivate;
 		this.roomString = roomString;
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
@@ -101,7 +101,10 @@ export default class Room {
 		this.gameRepo.deleteGameById(game.getGameId());
 	}
 
-	public joinRoom(clientSocket: Socket, userInfo: UserInfo, password?: number): void {
+	/**
+	 * Returns the userId from the user who joined the room
+	 */
+	public joinRoom(clientSocket: Socket, userInfo: UserInfo, password?: number): string {
 		if (this.password && this.password !== password) {
 			throw new Error("Wrong password for room");
 		}
@@ -128,17 +131,18 @@ export default class Room {
 				this.changeHost(user.userId);
 			}
 			this.emitUsersInRoom();
+			return user.userId;
 		} else {
 			throw new RoomNotFoundError(`Room ${this.id} is currently in progress. You cannot join right now.`);
 		}
 	}
 
-	public leaveRoom(clientSocket: Socket): void {
-		const userLeaving = this.users.find((user) => user.userId === clientSocket.id);
-		this.users = this.users.filter((user) => user.userId !== clientSocket.id);
+	public leaveRoom(userId: string): void {
+		const userLeaving = this.users.find((user) => user.userId === userId);
+		this.users = this.users.filter((user) => user.userId !== userId);
 		this.state.userLeft(userLeaving);
-		this.removeListeners(clientSocket);
-		clientSocket.leave(this.roomString);
+		this.removeListeners(userLeaving.socket);
+		userLeaving.socket.leave(this.roomString);
 		this.emitUsersInRoom();
 
 		//change host there are people remaining and if host left

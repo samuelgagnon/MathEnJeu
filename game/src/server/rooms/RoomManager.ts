@@ -42,12 +42,12 @@ export default class RoomManager {
 
 			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
 				try {
-					const newRoom = RoomFactory.create(this.nsp);
-					newRoom.joinRoom(socket, userInfo);
+					const newRoom = RoomFactory.create(this.nsp, false);
+					const userId = newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getId();
-					this.handleDisconnection(socket, roomId);
+					this.handleDisconnection(socket, roomId, userId);
 				} catch (err) {
 					socket.error({
 						type: 400,
@@ -64,8 +64,8 @@ export default class RoomManager {
 						throw new RoomNotFoundError(`Room ${roomId} was not found`);
 					}
 
-					currentRoom.joinRoom(socket, userInfo);
-					this.handleDisconnection(socket, roomId);
+					const userId = currentRoom.joinRoom(socket, userInfo);
+					this.handleDisconnection(socket, roomId, userId);
 				} catch (err) {
 					socket.error({
 						type: 400,
@@ -82,16 +82,16 @@ export default class RoomManager {
 		}
 	}
 
-	private removeUserFromRoom(roomId: string, socket: Socket) {
+	private removeUserFromRoom(roomId: string, userId: string) {
 		const currentRoom = this.roomRepo.getRoomById(roomId);
-		currentRoom.leaveRoom(socket);
+		currentRoom.leaveRoom(userId);
 
 		this.deleteRoomIfEmpty(roomId);
 	}
 
-	private handleDisconnection(socket: Socket, roomId: string): void {
+	private handleDisconnection(socket: Socket, roomId: string, userId: string): void {
 		socket.on("disconnect", () => {
-			this.removeUserFromRoom(roomId, socket);
+			this.removeUserFromRoom(roomId, userId);
 		});
 	}
 }
