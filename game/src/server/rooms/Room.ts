@@ -29,7 +29,7 @@ export default class Room {
 
 	constructor(
 		id: string,
-		isPrivate: boolean,
+		// isPrivate: boolean,
 		state: State,
 		gameRepo: GameRepository,
 		statsRepo: StatisticsRepository,
@@ -38,7 +38,7 @@ export default class Room {
 		password?: number
 	) {
 		this.id = id;
-		this.isPrivate = isPrivate;
+		// this.isPrivate = isPrivate;
 		this.roomString = roomString;
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
