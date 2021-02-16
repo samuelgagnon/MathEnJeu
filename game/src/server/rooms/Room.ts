@@ -17,7 +17,6 @@ export default class Room {
 	private max_player_count = 8;
 	private readonly id: string;
 	private isPrivate: boolean;
-	private password?: number;
 	private state: State;
 	//Room string is used to distinguish rooms from each other and directly emit events to specific rooms with socket.io
 	private readonly roomString: string;
@@ -34,8 +33,7 @@ export default class Room {
 		gameRepo: GameRepository,
 		statsRepo: StatisticsRepository,
 		roomString: string,
-		nsp: Namespace,
-		password?: number
+		nsp: Namespace
 	) {
 		this.id = id;
 		this.isPrivate = isPrivate;
@@ -43,7 +41,6 @@ export default class Room {
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
 		this.statsRepo = statsRepo;
-		this.password = password;
 		//setting up starting state
 		this.transitionTo(state);
 	}
@@ -58,10 +55,6 @@ export default class Room {
 
 	public setIsPrivate(isPrivate: boolean): void {
 		this.isPrivate = isPrivate;
-	}
-
-	public hasPassword(): boolean {
-		return !!this.password;
 	}
 
 	public getStatsRepo(): StatisticsRepository {
@@ -104,11 +97,7 @@ export default class Room {
 	/**
 	 * Returns the userId from the user who joined the room
 	 */
-	public joinRoom(clientSocket: Socket, userInfo: UserInfo, password?: number): string {
-		if (this.password && this.password !== password) {
-			throw new Error("Wrong password for room");
-		}
-
+	public joinRoom(clientSocket: Socket, userInfo: UserInfo): string {
 		if (this.users.length >= this.max_player_count) {
 			throw new RoomFullError(`Room ${this.id} is currently full. You cannot join right now.`);
 		}
