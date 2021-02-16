@@ -14,7 +14,7 @@ import User from "../data/User";
  * on the state it is currently using.
  */
 export default class Room {
-	private max_player_count = 50;
+	private max_player_count = 51;
 	private readonly id: string;
 	private state: State;
 	//Room string is used to distinguish rooms from each other and directly emit events to specific rooms with socket.io
