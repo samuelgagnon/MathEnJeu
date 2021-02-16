@@ -16,6 +16,8 @@ import User from "../data/User";
 export default class Room {
 	private max_player_count = 8;
 	private readonly id: string;
+	private isPrivate: boolean;
+	private password?: number;
 	private state: State;
 	//Room string is used to distinguish rooms from each other and directly emit events to specific rooms with socket.io
 	private readonly roomString: string;
@@ -25,18 +27,41 @@ export default class Room {
 	private statsRepo: StatisticsRepository;
 	private host: User;
 
-	constructor(id: string, state: State, gameRepo: GameRepository, statsRepo: StatisticsRepository, roomString: string, nsp: Namespace) {
+	constructor(
+		id: string,
+		isPrivate: boolean,
+		state: State,
+		gameRepo: GameRepository,
+		statsRepo: StatisticsRepository,
+		roomString: string,
+		nsp: Namespace,
+		password?: number
+	) {
 		this.id = id;
+		this.isPrivate = isPrivate;
 		this.roomString = roomString;
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
 		this.statsRepo = statsRepo;
+		this.password = password;
 		//setting up starting state
 		this.transitionTo(state);
 	}
 
 	public getId(): string {
 		return this.id;
+	}
+
+	public getIsPrivate(): boolean {
+		return this.isPrivate;
+	}
+
+	public setIsPrivate(isPrivate: boolean): void {
+		this.isPrivate = isPrivate;
+	}
+
+	public hasPassword(): boolean {
+		return !!this.password;
 	}
 
 	public getStatsRepo(): StatisticsRepository {
@@ -76,7 +101,11 @@ export default class Room {
 		this.gameRepo.deleteGameById(game.getGameId());
 	}
 
-	public joinRoom(clientSocket: Socket, userInfo: UserInfo): void {
+	public joinRoom(clientSocket: Socket, userInfo: UserInfo, password?: number): void {
+		if (this.password && this.password !== password) {
+			throw new Error("Wrong password for room");
+		}
+
 		if (this.users.length >= this.max_player_count) {
 			throw new RoomFullError(`Room ${this.id} is currently full. You cannot join right now.`);
 		}
