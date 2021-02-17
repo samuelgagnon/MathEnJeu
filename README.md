@@ -37,6 +37,13 @@ We can also build the data base and the app separately (using dev mode as exampl
 - docker-compose -f docker-compose.yml -f docker-compose.dev.yml up app
 ```
 
+To build the app and run it in background in a production environment (use these commands to completly restart the server application if it crashes)
+
+```
+- docker-compose -f docker-compose.yml -f docker-compose.prod.yml build app
+
+- docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d app
+```
 
 ### ORM Model generator (Only if we use Entities for our database schema)
 

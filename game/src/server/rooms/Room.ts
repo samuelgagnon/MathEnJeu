@@ -15,7 +15,7 @@ import User from "../data/User";
  * on the state it is currently using.
  */
 export default class Room {
-	private max_player_count = 8;
+	private max_player_count = 51;
 	private readonly id: string;
 	private isPrivate: boolean;
 	private state: State;
