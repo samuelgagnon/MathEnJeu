@@ -1,12 +1,13 @@
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { CST } from "../CST";
-import { connectToGameNamespace } from "../services/RoomService";
+import { connectToGameNamespace, joinRoom } from "../services/RoomService";
 import { getUserInfo } from "../services/UserInformationService";
 
 export default class GameSelection extends Phaser.Scene {
 	private createRoomButton: Phaser.GameObjects.Text;
-	private joinRoomButton: Phaser.GameObjects.Text;
+	private publicRoomsButton: Phaser.GameObjects.Text;
+	private joinPrivateRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
 
 	private privateRoomCodeInput: Phaser.GameObjects.DOMElement;
@@ -35,12 +36,12 @@ export default class GameSelection extends Phaser.Scene {
 	}
 
 	create() {
-		this.privateRoomCodeInput = this.add.dom(this.game.renderer.height * 0.5, this.game.renderer.height * 0.8).createFromCache(CST.HTML.ROOM_INPUT);
+		this.privateRoomCodeInput = this.add.dom(this.game.renderer.width * 0.4, this.game.renderer.height * 0.7).createFromCache(CST.HTML.ROOM_INPUT);
 
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
 		this.createRoomButton = this.add
-			.text(this.game.renderer.height * 0.5, this.game.renderer.height * 0.2, "Create Room", {
+			.text(this.game.renderer.width * 0.38, this.game.renderer.height * 0.2, "Create Room", {
 				fontFamily: "Courier",
 				fontSize: "64px",
 				align: "center",
@@ -49,8 +50,18 @@ export default class GameSelection extends Phaser.Scene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.joinRoomButton = this.add
-			.text(this.game.renderer.height * 0.5, this.game.renderer.height * 0.4, "Join Room", {
+		this.publicRoomsButton = this.add
+			.text(this.game.renderer.width * 0.38, this.game.renderer.height * 0.4, "Public Rooms", {
+				fontFamily: "Courier",
+				fontSize: "64px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
+
+		this.joinPrivateRoomButton = this.add
+			.text(this.game.renderer.width * 0.6, this.game.renderer.height * 0.66, "Join Room", {
 				fontFamily: "Courier",
 				fontSize: "64px",
 				align: "center",
@@ -86,21 +97,39 @@ export default class GameSelection extends Phaser.Scene {
 			this.scene.start(CST.SCENES.ROOM_CREATION, { socket: this.gameSocket });
 		});
 
-		this.joinRoomButton.on("pointerover", () => {
-			this.joinRoomButton.setTint(0xffff66);
+		this.publicRoomsButton.on("pointerover", () => {
+			this.publicRoomsButton.setTint(0xffff66);
 		});
 
-		this.joinRoomButton.on("pointerout", () => {
-			this.joinRoomButton.clearTint();
+		this.publicRoomsButton.on("pointerout", () => {
+			this.publicRoomsButton.clearTint();
 		});
 
-		this.joinRoomButton.on("pointerdown", () => {
-			this.joinRoomButton.setTint(0x86bfda);
+		this.publicRoomsButton.on("pointerdown", () => {
+			this.publicRoomsButton.setTint(0x86bfda);
 		});
 
-		this.joinRoomButton.on("pointerup", () => {
-			this.joinRoomButton.clearTint();
+		this.publicRoomsButton.on("pointerup", () => {
+			this.publicRoomsButton.clearTint();
 			this.scene.start(CST.SCENES.ROOM_SELECTION, { socket: this.gameSocket });
+		});
+
+		this.joinPrivateRoomButton.on("pointerover", () => {
+			this.joinPrivateRoomButton.setTint(0xffff66);
+		});
+
+		this.joinPrivateRoomButton.on("pointerout", () => {
+			this.joinPrivateRoomButton.clearTint();
+		});
+
+		this.joinPrivateRoomButton.on("pointerdown", () => {
+			this.joinPrivateRoomButton.setTint(0x86bfda);
+		});
+
+		this.joinPrivateRoomButton.on("pointerup", () => {
+			this.joinPrivateRoomButton.clearTint();
+			const roomId = (<HTMLInputElement>this.privateRoomCodeInput.getChildByName("roomField")).value;
+			joinRoom(this.gameSocket, roomId);
 		});
 
 		this.backButton.on("pointerover", () => {
