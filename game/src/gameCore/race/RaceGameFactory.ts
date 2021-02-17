@@ -4,7 +4,6 @@ import User from "../../server/data/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
-import Item, { ItemType } from "./items/Item";
 import ItemFactory from "./items/ItemFactory";
 import Inventory from "./player/Inventory";
 import Player from "./player/Player";
@@ -30,7 +29,6 @@ export default class RaceGameFactory {
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
 	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string, isSinglePlayer: boolean): RaceGrid {
 		let tiles: Tile[] = [];
-		let itemsState: ItemState[] = [];
 		for (let y = 0; y < gridHeight; y++) {
 			for (let x = 0; x < gridWidth; x++) {
 				const tileSymbol = grid.charAt(gridWidth * y + x);
@@ -43,18 +41,9 @@ export default class RaceGameFactory {
 				} else if (tileSymbol === "|") {
 					tiles.push(new Tile(<Point>{ x, y }, true, true, true));
 				} else {
-					let item: Item = undefined;
-					if ((gridWidth * y + x) % 4 == 0) {
-						let itemType: ItemType = ItemFactory.generateItemType(isSinglePlayer);
-						const itemState: ItemState = { type: itemType, location: <Point>{ x, y } };
-						itemsState.push(itemState);
-
-						item = ItemFactory.create(itemType, <Point>{ x, y });
-					}
-
 					//Tile is Walkable
 					if (tileSymbol == ".") {
-						tiles.push(new Tile(<Point>{ x, y }, true, false, false, item));
+						tiles.push(new Tile(<Point>{ x, y }, true, false, false));
 
 						//Tile is Checkpoint
 					} else {
@@ -63,7 +52,7 @@ export default class RaceGameFactory {
 							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
 						} else {
 							if (checkpointGroup >= 1 && checkpointGroup <= RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
-								tiles.push(new Tile(<Point>{ x, y }, true, false, false, item, Number(tileSymbol)));
+								tiles.push(new Tile(<Point>{ x, y }, true, false, false, undefined, Number(tileSymbol)));
 							} else {
 								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
 							}
@@ -72,8 +61,11 @@ export default class RaceGameFactory {
 				}
 			}
 		}
-
-		return new RaceGrid(tiles, gridWidth, gridHeight, itemsState);
+		let raceGrid = new RaceGrid(tiles, gridWidth, gridHeight, []);
+		for (let i = 0; i < RACE_CST.CIRCUIT.NUMBER_OF_ITEMS; i++) {
+			raceGrid.generateNewItem([], isSinglePlayer);
+		}
+		return raceGrid;
 	}
 
 	public static generatePlayers(users: User[], startingPositions: Point[]): Player[] {
