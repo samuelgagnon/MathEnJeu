@@ -169,6 +169,14 @@ export default class Player {
 		return this.lastQuestionPromptTimestamp;
 	}
 
+	public getAnsweredQuestionsId(): number[] {
+		return this.answeredQuestionsId;
+	}
+
+	public resetAnsweredQuestionsId(): void {
+		this.answeredQuestionsId = [];
+	}
+
 	public answeredQuestion(isAnswerCorrect: boolean): void {
 		//add answered question to answeredQuestion list so you don't ask the player the same question again
 		this.answeredQuestionsId.push(this.activeQuestion.getId());
