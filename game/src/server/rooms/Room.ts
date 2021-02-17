@@ -162,7 +162,7 @@ export default class Room {
 
 			//Notify the user that created the room that he is the host
 			if (clientSocket.id == this.host.socket.id) {
-				clientSocket.emit("is-host");
+				clientSocket.emit(ROOM_EVENT_NAMES.IS_HOST);
 			}
 		});
 	}
@@ -171,7 +171,7 @@ export default class Room {
 		const newHost = this.users.find((user) => user.userId == newHostId);
 		this.host = newHost;
 
-		this.nsp.to(this.roomString).emit("host-change", <HostChangeEvent>{ newHostName: newHost.userInfo.name });
-		newHost.socket.emit("is-host");
+		this.nsp.to(this.roomString).emit(ROOM_EVENT_NAMES.HOST_CHANGE, <HostChangeEvent>{ newHostName: newHost.userInfo.name });
+		newHost.socket.emit(ROOM_EVENT_NAMES.IS_HOST);
 	}
 }
