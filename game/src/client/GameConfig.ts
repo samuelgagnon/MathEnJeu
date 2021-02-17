@@ -1,4 +1,5 @@
 import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
+import GameSelection from "./scenes/GameSelectionScene";
 import LoadScene from "./scenes/LoadScene";
 import MenuScene from "./scenes/MenuScene";
 import InGameMenuScene from "./scenes/raceGame/InGameMenuScene";
@@ -6,6 +7,7 @@ import QuestionScene from "./scenes/raceGame/QuestionScene";
 import RaceGameUI from "./scenes/raceGame/RaceGameUI";
 import RaceScene from "./scenes/raceGame/RaceScene";
 import ReportErrorScene from "./scenes/raceGame/ReportErrorScene";
+import RoomCreation from "./scenes/RoomCreationScene";
 import RoomSelection from "./scenes/RoomSelectionScene";
 import UsersSettingScene from "./scenes/UsersSettingScene";
 import WaitingRoomScene from "./scenes/WaitingRoomScene";
@@ -21,6 +23,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 	scene: [
 		LoadScene,
 		MenuScene,
+		GameSelection,
 		RoomSelection,
 		WaitingRoomScene,
 		RaceScene,
@@ -29,6 +32,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		UsersSettingScene,
 		InGameMenuScene,
 		ReportErrorScene,
+		RoomCreation,
 	],
 	scale: {
 		parent: "phaser-game",

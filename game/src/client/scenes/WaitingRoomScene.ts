@@ -155,7 +155,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.quitButton.clearTint();
 			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
 			this.gameSocket.close();
-			this.scene.start(CST.SCENES.ROOM_SELECTION);
+			this.scene.start(CST.SCENES.GAME_SELECTION);
 		});
 
 		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {

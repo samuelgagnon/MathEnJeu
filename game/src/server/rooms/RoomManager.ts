@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
+import { RoomSettings } from "../../communication/room/RoomSettings";
 import UserInfo from "../../communication/user/UserInfo";
 import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";
@@ -40,15 +41,16 @@ export default class RoomManager {
 				});
 			});
 
-			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
+			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, (roomSettings: RoomSettings) => {
 				try {
-					const newRoom = RoomFactory.create(this.nsp, false);
+					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate);
 					const userId = newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getId();
 					this.handleDisconnection(socket, roomId, userId);
 				} catch (err) {
+					console.log(err);
 					socket.error({
 						type: 400,
 						msg: err.message,
@@ -67,6 +69,7 @@ export default class RoomManager {
 					const userId = currentRoom.joinRoom(socket, userInfo);
 					this.handleDisconnection(socket, roomId, userId);
 				} catch (err) {
+					console.log(err);
 					socket.error({
 						type: 400,
 						msg: err.message,

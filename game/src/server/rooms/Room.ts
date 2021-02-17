@@ -1,6 +1,7 @@
 import { Namespace, Socket } from "socket.io";
 import { HostChangeEvent, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
@@ -113,7 +114,7 @@ export default class Room {
 			clientSocket.join(this.roomString);
 			this.handleSocketEvents(clientSocket);
 			this.state.userJoined(user);
-			clientSocket.emit("room-joined");
+			clientSocket.emit(ROOM_EVENT_NAMES.ROOM_JOINED);
 
 			//make user host when they're the first joining the room
 			if (this.users.length == 1) {

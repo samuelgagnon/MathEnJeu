@@ -1,5 +1,6 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import RoomRepository from "../data/RoomRepository";
+import Room from "../rooms/Room";
 
 export default class RoomSelectionNamespace {
 	private io: SocketIOServer;
@@ -19,7 +20,10 @@ export default class RoomSelectionNamespace {
 		this.nsp.on("connection", (socket: Socket) => {
 			this.nsp.emit(
 				"room-update",
-				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
+				this.roomRepo
+					.getAllRooms()
+					.filter((room: Room) => !room.getIsPrivate())
+					.map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
 			);
 
 			this.sendRoomsToClient(socket);
@@ -30,7 +34,10 @@ export default class RoomSelectionNamespace {
 		setTimeout(() => {
 			socket.emit(
 				"room-update",
-				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
+				this.roomRepo
+					.getAllRooms()
+					.filter((room: Room) => !room.getIsPrivate())
+					.map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
 			);
 			this.sendRoomsToClient(socket);
 		}, this.ROOM_UPDATE_TIME_INTERVAL);
