@@ -104,6 +104,7 @@ export interface QuestionDTO {
 export interface AnswerDTO {
 	id: number;
 	label: string;
+	isKnownAsRight: boolean;
 }
 
 export interface InfoForQuestion {

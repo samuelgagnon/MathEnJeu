@@ -15,11 +15,11 @@ export default class QuestionMapper {
 
 	private static mapAnswersFromDTO(answers: AnswerDTO[]): Answer[] {
 		return answers.map((answerDTO) => {
-			return new Answer(answerDTO.id, answerDTO.label);
+			return new Answer(answerDTO.id, answerDTO.label, answerDTO.isKnownAsRight);
 		});
 	}
 
 	public static mapAnswer(answerDTO: AnswerDTO): Answer {
-		return new Answer(answerDTO.id, answerDTO.label);
+		return new Answer(answerDTO.id, answerDTO.label, answerDTO.isKnownAsRight);
 	}
 }

@@ -38,6 +38,7 @@ export class Answer {
 		return {
 			id: this.id,
 			label: this.label,
+			isKnownAsRight: this.isKnownAsRight(),
 		};
 	}
 }

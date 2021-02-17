@@ -305,11 +305,13 @@ export default class QuestionScene extends Phaser.Scene {
 	private useCrystalBall(): void {
 		//TODO: Make constants of the types
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
-			try {
-				sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
-				this.question.removeWrongAnswer();
-			} catch (error) {
-				console.log(error);
+			if (!this.question.areAllAnswersRight()) {
+				try {
+					sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
+					this.question.removeWrongAnswer();
+				} catch (error) {
+					console.log(error);
+				}
 			}
 		} else {
 			alert("must be a multiple choice question");

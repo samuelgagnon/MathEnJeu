@@ -60,7 +60,10 @@ export class Question {
 		return this.difficulty;
 	}
 
-	//returns true if there was a wrong question remaining and false if there was none
+	public areAllAnswersRight(): boolean {
+		return this.answers.every((answer) => answer.isKnownAsRight());
+	}
+
 	public removeWrongAnswer(): void {
 		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.isKnownAsRight());
 		const wrongAnswers: Answer[] = this.answers.filter((answer) => !answer.isKnownAsRight());
