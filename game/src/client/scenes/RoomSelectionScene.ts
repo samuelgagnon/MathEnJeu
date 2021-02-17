@@ -18,9 +18,13 @@ export default class RoomSelection extends Phaser.Scene {
 
 	init(data: any) {
 		this.gameSocket = data.socket;
-		this.roomSelectionSocket = connectToRoomSelectionNamespace();
+		this.gameSocket.once(ROOM_EVENT_NAMES.ROOM_JOINED, () => {
+			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
+		});
 
+		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.ROOM_JOINED);
 			this.roomSelectionSocket.close();
 		});
 	}
@@ -41,10 +45,6 @@ export default class RoomSelection extends Phaser.Scene {
 				li.appendChild(document.createTextNode(room));
 				roomList.appendChild(li);
 			});
-		});
-
-		this.gameSocket.once(ROOM_EVENT_NAMES.JOIN_ROOM, () => {
-			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
 		});
 
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);

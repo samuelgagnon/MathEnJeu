@@ -1,3 +1,4 @@
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { CST } from "../CST";
 import { createRoom } from "../services/RoomService";
 
@@ -15,6 +16,12 @@ export default class RoomCreation extends Phaser.Scene {
 
 	init(data: any) {
 		this.gameSocket = data.socket;
+		this.gameSocket.once(ROOM_EVENT_NAMES.ROOM_JOINED, () => {
+			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
+		});
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.ROOM_JOINED);
+		});
 	}
 
 	create() {
@@ -58,7 +65,6 @@ export default class RoomCreation extends Phaser.Scene {
 			const numberOfPlayers = Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value);
 			const isPrivate = (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked;
 			createRoom(this.gameSocket, { isPrivate, numberOfPlayers });
-			this.scene.stop();
 		});
 
 		this.backButton.on("pointerover", () => {

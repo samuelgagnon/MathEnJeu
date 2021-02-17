@@ -24,6 +24,9 @@ export default class GameSelection extends Phaser.Scene {
 			this.gameSocket.once(ROOM_EVENT_NAMES.ROOM_JOINED, () => {
 				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
 			});
+			this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+				this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.ROOM_JOINED);
+			});
 
 			if (!Clock.getIsSynchronizedWithServer()) {
 				Clock.startSynchronizationWithServer(this.gameSocket);
