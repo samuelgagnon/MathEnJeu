@@ -255,7 +255,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						let answerIsRight = false;
 						if (correspondingAnswer !== undefined) {
 							answerIsRight =
-								correspondingAnswer.isKnownAsRight() ||
+								correspondingAnswer.getIsRight() ||
 								clientAnswerLabel == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
 						}
 						const questionId = player.getActiveQuestion().getId();
