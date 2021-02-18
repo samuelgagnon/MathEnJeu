@@ -417,7 +417,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
 		this.scene.stop(CST.SCENES.RACE_GAME);
-		this.scene.start(CST.SCENES.ROOM_SELECTION);
+		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
 
 	private pauseGame(): void {
