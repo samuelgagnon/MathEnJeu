@@ -320,21 +320,17 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				if (actualDifficulty <= requestedDifficulty) {
 					if (actualDifficulty != this.MIN_QUESTION_DIFFICULTY) {
 						actualDifficulty--;
+					} else if (requestedDifficulty != this.MAX_QUESTION_DIFFICULTY) {
+						actualDifficulty = requestedDifficulty + 1;
 					} else {
-						if (requestedDifficulty != this.MAX_QUESTION_DIFFICULTY) {
-							actualDifficulty = requestedDifficulty + 1;
-						} else {
-							player.resetAnsweredQuestionsId();
-							actualDifficulty = requestedDifficulty;
-						}
-					}
-				} else {
-					if (actualDifficulty == this.MAX_QUESTION_DIFFICULTY) {
 						player.resetAnsweredQuestionsId();
 						actualDifficulty = requestedDifficulty;
-					} else {
-						actualDifficulty++;
 					}
+				} else if (actualDifficulty == this.MAX_QUESTION_DIFFICULTY) {
+					player.resetAnsweredQuestionsId();
+					actualDifficulty = requestedDifficulty;
+				} else {
+					actualDifficulty++;
 				}
 			}
 		}
