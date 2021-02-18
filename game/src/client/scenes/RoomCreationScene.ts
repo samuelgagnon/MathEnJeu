@@ -1,10 +1,12 @@
 import { CST } from "../CST";
 import { createRoom } from "../services/RoomService";
-import BaseScene from "./BaseSocketScene";
+import BaseScene from "./BaseScene";
 
 export default class RoomCreation extends BaseScene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
+
+	private gameSocket: SocketIOClient.Socket;
 
 	private roomSettings: Phaser.GameObjects.DOMElement;
 
@@ -14,7 +16,7 @@ export default class RoomCreation extends BaseScene {
 	}
 
 	init(data: any) {
-		this.initializeSocket();
+		this.gameSocket = this.initializeSocket();
 	}
 
 	create() {

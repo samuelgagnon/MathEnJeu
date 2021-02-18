@@ -1,5 +1,5 @@
 import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
-import BaseScene from "./scenes/BaseSocketScene";
+import BaseScene from "./scenes/BaseScene";
 import GameSelection from "./scenes/GameSelectionScene";
 import LoadScene from "./scenes/LoadScene";
 import MenuScene from "./scenes/MenuScene";
