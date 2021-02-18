@@ -33,6 +33,8 @@ import RaceGameController from "./RaceGameController";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
+	private readonly MAX_QUESTION_DIFFICULTY: number = 6;
+	private readonly MIN_QUESTION_DIFFICULTY: number = 1;
 	private context: Room;
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
@@ -228,7 +230,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
 						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
 						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
-						this.findQuestionForPlayer(player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
+						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
 							(question) => {
 								this.context
 									.getNamespace()
@@ -302,14 +304,42 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.inputBuffer = [];
 	}
 
-	private async findQuestionForPlayer(language: string, schoolGrade: number, difficulty: number): Promise<Question> {
-		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, difficulty);
+	private async findQuestionForPlayer(player: Player, language: string, schoolGrade: number, requestedDifficulty: number): Promise<Question> {
+		let questionIdArray: number[];
+		let actualDifficulty = requestedDifficulty;
+		while (!questionIdArray || !questionIdArray.length) {
+			questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, actualDifficulty);
+			//Remove questions already answered by the player
+			questionIdArray = questionIdArray.filter(
+				(questionId) => !player.getAnsweredQuestionsId().some((answeredQuestionId) => answeredQuestionId == questionId)
+			);
+			//Basically, if there are no unanswered question left of the given difficulty, we lower the difficulty.
+			//If it's not possible, we increase the difficulty
+			//If it's not possible, we simply reset the player answered questions id
+			if (!questionIdArray || !questionIdArray.length) {
+				if (actualDifficulty <= requestedDifficulty) {
+					if (actualDifficulty != this.MIN_QUESTION_DIFFICULTY) {
+						actualDifficulty--;
+					} else if (requestedDifficulty != this.MAX_QUESTION_DIFFICULTY) {
+						actualDifficulty = requestedDifficulty + 1;
+					} else {
+						player.resetAnsweredQuestionsId();
+						actualDifficulty = requestedDifficulty;
+					}
+				} else if (actualDifficulty == this.MAX_QUESTION_DIFFICULTY) {
+					player.resetAnsweredQuestionsId();
+					actualDifficulty = requestedDifficulty;
+				} else {
+					actualDifficulty++;
+				}
+			}
+		}
 		const randomPosition = Math.floor(Math.random() * questionIdArray.length);
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
 	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
-		this.findQuestionForPlayer(language, schoolGrade, player.getDifficulty(targetLocation))
+		this.findQuestionForPlayer(player, language, schoolGrade, player.getDifficulty(targetLocation))
 			.then((question) => {
 				player.promptQuestion(question);
 				this.context
