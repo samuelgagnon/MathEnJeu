@@ -1,11 +1,10 @@
-import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { CST } from "../CST";
 import { createRoom } from "../services/RoomService";
+import BaseSocketScene from "./BaseSocketScene";
 
-export default class RoomCreation extends Phaser.Scene {
+export default class RoomCreation extends BaseSocketScene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
-	private gameSocket: SocketIOClient.Socket;
 
 	private roomSettings: Phaser.GameObjects.DOMElement;
 
@@ -15,13 +14,7 @@ export default class RoomCreation extends Phaser.Scene {
 	}
 
 	init(data: any) {
-		this.gameSocket = data.socket;
-		this.gameSocket.once(ROOM_EVENT_NAMES.ROOM_JOINED, () => {
-			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
-		});
-		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.ROOM_JOINED);
-		});
+		super.init(data);
 	}
 
 	create() {
@@ -81,7 +74,7 @@ export default class RoomCreation extends Phaser.Scene {
 
 		this.backButton.on("pointerup", () => {
 			this.backButton.clearTint();
-			this.scene.start(CST.SCENES.GAME_SELECTION, { socket: this.gameSocket });
+			this.scene.start(CST.SCENES.GAME_SELECTION);
 		});
 	}
 

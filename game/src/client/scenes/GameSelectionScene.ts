@@ -1,10 +1,8 @@
-import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
-import { Clock } from "../../gameCore/clock/Clock";
 import { CST } from "../CST";
-import { connectToGameNamespace, joinRoom } from "../services/RoomService";
-import { getUserInfo } from "../services/UserInformationService";
+import { joinRoom } from "../services/RoomService";
+import BaseSocketScene from "./BaseSocketScene";
 
-export default class GameSelection extends Phaser.Scene {
+export default class GameSelection extends BaseSocketScene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private publicRoomsButton: Phaser.GameObjects.Text;
 	private joinPrivateRoomButton: Phaser.GameObjects.Text;
@@ -12,27 +10,13 @@ export default class GameSelection extends Phaser.Scene {
 
 	private privateRoomCodeInput: Phaser.GameObjects.DOMElement;
 
-	private gameSocket: SocketIOClient.Socket;
-
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.GAME_SELECTION };
 		super(sceneConfig);
 	}
 
 	init(data: any) {
-		if (!!!data.socket) {
-			this.gameSocket = connectToGameNamespace(getUserInfo());
-			this.gameSocket.once(ROOM_EVENT_NAMES.ROOM_JOINED, () => {
-				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
-			});
-			this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-				this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.ROOM_JOINED);
-			});
-
-			if (!Clock.getIsSynchronizedWithServer()) {
-				Clock.startSynchronizationWithServer(this.gameSocket);
-			}
-		}
+		super.init(data);
 	}
 
 	create() {
@@ -94,7 +78,7 @@ export default class GameSelection extends Phaser.Scene {
 
 		this.createRoomButton.on("pointerup", () => {
 			this.createRoomButton.clearTint();
-			this.scene.start(CST.SCENES.ROOM_CREATION, { socket: this.gameSocket });
+			this.scene.start(CST.SCENES.ROOM_CREATION);
 		});
 
 		this.publicRoomsButton.on("pointerover", () => {
@@ -111,7 +95,7 @@ export default class GameSelection extends Phaser.Scene {
 
 		this.publicRoomsButton.on("pointerup", () => {
 			this.publicRoomsButton.clearTint();
-			this.scene.start(CST.SCENES.ROOM_SELECTION, { socket: this.gameSocket });
+			this.scene.start(CST.SCENES.ROOM_SELECTION);
 		});
 
 		this.joinPrivateRoomButton.on("pointerover", () => {

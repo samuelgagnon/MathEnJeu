@@ -1,15 +1,15 @@
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { CST } from "../CST";
 import { connectToRoomSelectionNamespace } from "../services/RoomService";
+import BaseSocketScene from "./BaseSocketScene";
 
-export default class RoomSelection extends Phaser.Scene {
+export default class RoomSelection extends BaseSocketScene {
 	private joinRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
 	private inputHtml: Phaser.GameObjects.DOMElement;
 	private roomsListHtml: Phaser.GameObjects.DOMElement;
 
 	private roomSelectionSocket: SocketIOClient.Socket;
-	private gameSocket: SocketIOClient.Socket;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.ROOM_SELECTION };
@@ -17,14 +17,10 @@ export default class RoomSelection extends Phaser.Scene {
 	}
 
 	init(data: any) {
-		this.gameSocket = data.socket;
-		this.gameSocket.once(ROOM_EVENT_NAMES.ROOM_JOINED, () => {
-			this.scene.start(CST.SCENES.WAITING_ROOM, { socket: this.gameSocket });
-		});
+		super.init(data);
 
 		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.ROOM_JOINED);
 			this.roomSelectionSocket.close();
 		});
 	}
@@ -97,7 +93,7 @@ export default class RoomSelection extends Phaser.Scene {
 
 		this.backButton.on("pointerup", () => {
 			this.backButton.clearTint();
-			this.scene.start(CST.SCENES.GAME_SELECTION, { socket: this.gameSocket });
+			this.scene.start(CST.SCENES.GAME_SELECTION);
 		});
 	}
 
