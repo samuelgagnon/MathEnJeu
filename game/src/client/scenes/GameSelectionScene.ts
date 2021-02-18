@@ -1,8 +1,8 @@
 import { CST } from "../CST";
 import { joinRoom } from "../services/RoomService";
-import BaseSocketScene from "./BaseSocketScene";
+import BaseScene from "./BaseSocketScene";
 
-export default class GameSelection extends BaseSocketScene {
+export default class GameSelection extends BaseScene {
 	private createRoomButton: Phaser.GameObjects.Text;
 	private publicRoomsButton: Phaser.GameObjects.Text;
 	private joinPrivateRoomButton: Phaser.GameObjects.Text;
@@ -16,7 +16,7 @@ export default class GameSelection extends BaseSocketScene {
 	}
 
 	init(data: any) {
-		super.init(data);
+		this.initializeSocket();
 	}
 
 	create() {

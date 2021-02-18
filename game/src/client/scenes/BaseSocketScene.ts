@@ -4,14 +4,14 @@ import { CST } from "../CST";
 import { connectToGameNamespace } from "../services/RoomService";
 import { getUserInfo } from "../services/UserInformationService";
 
-export default class BaseSocketScene extends Phaser.Scene {
+export default class BaseScene extends Phaser.Scene {
 	protected gameSocket: SocketIOClient.Socket;
 
 	constructor(sceneConfig: any) {
 		super(sceneConfig);
 	}
 
-	init(data: any) {
+	initializeSocket(): void {
 		this.gameSocket = this.registry.get("socket");
 
 		if (!!!this.gameSocket || !this.gameSocket.connected) {

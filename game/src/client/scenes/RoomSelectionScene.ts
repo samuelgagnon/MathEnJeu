@@ -1,9 +1,9 @@
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { CST } from "../CST";
 import { connectToRoomSelectionNamespace } from "../services/RoomService";
-import BaseSocketScene from "./BaseSocketScene";
+import BaseScene from "./BaseSocketScene";
 
-export default class RoomSelection extends BaseSocketScene {
+export default class RoomSelection extends BaseScene {
 	private joinRoomButton: Phaser.GameObjects.Text;
 	private backButton: Phaser.GameObjects.Text;
 	private inputHtml: Phaser.GameObjects.DOMElement;
@@ -17,7 +17,7 @@ export default class RoomSelection extends BaseSocketScene {
 	}
 
 	init(data: any) {
-		super.init(data);
+		this.initializeSocket();
 
 		this.roomSelectionSocket = connectToRoomSelectionNamespace();
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {

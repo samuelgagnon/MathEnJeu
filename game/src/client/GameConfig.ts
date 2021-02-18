@@ -1,5 +1,5 @@
 import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
-import BaseSocketScene from "./scenes/BaseSocketScene";
+import BaseScene from "./scenes/BaseSocketScene";
 import GameSelection from "./scenes/GameSelectionScene";
 import LoadScene from "./scenes/LoadScene";
 import MenuScene from "./scenes/MenuScene";
@@ -34,7 +34,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		InGameMenuScene,
 		ReportErrorScene,
 		RoomCreation,
-		BaseSocketScene,
+		BaseScene,
 	],
 	scale: {
 		parent: "phaser-game",
