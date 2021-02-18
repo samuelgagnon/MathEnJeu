@@ -27,4 +27,8 @@ export const RACE_CST = {
 			"xx....5.....|1....xx",
 		NUMBER_OF_ITEMS: 60,
 	},
+	QUESTION: {
+		MIN_DIFFICULTY: 1,
+		MAX_DIFFICULTY: 6,
+	},
 };

@@ -30,11 +30,10 @@ import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
+import { RACE_CST } from "./RACE_CST";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
-	private readonly MAX_QUESTION_DIFFICULTY: number = 6;
-	private readonly MIN_QUESTION_DIFFICULTY: number = 1;
 	private context: Room;
 	private inputBuffer: BufferedInput[] = [];
 	private isGameStarted: boolean = false;
@@ -318,15 +317,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			//If it's not possible, we simply reset the player answered questions id
 			if (!questionIdArray || !questionIdArray.length) {
 				if (actualDifficulty <= requestedDifficulty) {
-					if (actualDifficulty != this.MIN_QUESTION_DIFFICULTY) {
+					if (actualDifficulty != RACE_CST.QUESTION.MIN_DIFFICULTY) {
 						actualDifficulty--;
-					} else if (requestedDifficulty != this.MAX_QUESTION_DIFFICULTY) {
+					} else if (requestedDifficulty != RACE_CST.QUESTION.MAX_DIFFICULTY) {
 						actualDifficulty = requestedDifficulty + 1;
 					} else {
 						player.resetAnsweredQuestionsId();
 						actualDifficulty = requestedDifficulty;
 					}
-				} else if (actualDifficulty == this.MAX_QUESTION_DIFFICULTY) {
+				} else if (actualDifficulty == RACE_CST.QUESTION.MAX_DIFFICULTY) {
 					player.resetAnsweredQuestionsId();
 					actualDifficulty = requestedDifficulty;
 				} else {
