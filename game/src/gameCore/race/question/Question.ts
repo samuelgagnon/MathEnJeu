@@ -41,7 +41,7 @@ export class Question {
 	}
 
 	public getRightAnswer(): Answer {
-		return this.answers.find((answer) => answer.isKnownAsRight());
+		return this.answers.find((answer) => answer.getIsRight());
 	}
 
 	public getAnswerType(): string {
@@ -61,12 +61,12 @@ export class Question {
 	}
 
 	public areAllAnswersRight(): boolean {
-		return this.answers.every((answer) => answer.isKnownAsRight());
+		return this.answers.every((answer) => answer.getIsRight());
 	}
 
 	public removeWrongAnswer(): void {
-		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.isKnownAsRight());
-		const wrongAnswers: Answer[] = this.answers.filter((answer) => !answer.isKnownAsRight());
+		const rightAnswers: Answer[] = this.answers.filter((answer) => answer.getIsRight());
+		const wrongAnswers: Answer[] = this.answers.filter((answer) => !answer.getIsRight());
 		wrongAnswers.splice(Math.floor(Math.random() * wrongAnswers.length), 1);
 		this.answers = wrongAnswers.concat(rightAnswers);
 	}

@@ -3,15 +3,15 @@ import { AnswerDTO } from "../../../communication/race/DataInterfaces";
 export class Answer {
 	private id: number;
 	private label: string;
-	private knownAsRight: boolean;
+	private isRight: boolean;
 	constructor(id: number, label: string, isRight?: boolean) {
 		this.id = id;
 		this.label = label;
 		//TODO: rethink implementation (maybe seperate client answers from server answers)
 		if (isRight !== undefined && isRight != null) {
-			this.knownAsRight = isRight;
+			this.isRight = isRight;
 		} else {
-			this.knownAsRight = false;
+			this.isRight = false;
 		}
 	}
 
@@ -19,8 +19,8 @@ export class Answer {
 		return this.id;
 	}
 
-	public isKnownAsRight(): boolean {
-		return this.knownAsRight;
+	public getIsRight(): boolean {
+		return this.isRight;
 	}
 
 	public getLabel(): string {
@@ -38,7 +38,7 @@ export class Answer {
 		return {
 			id: this.id,
 			label: this.label,
-			isKnownAsRight: this.isKnownAsRight(),
+			isRight: this.getIsRight(),
 		};
 	}
 }
