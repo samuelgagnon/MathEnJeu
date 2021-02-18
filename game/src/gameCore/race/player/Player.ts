@@ -21,7 +21,6 @@ export default class Player {
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;
 	private readonly MOVE_PER_QUESTION = 1;
-	private readonly MAX_DIFFICULTY = 6;
 	private readonly PENALTY_DURATION = 5 * 1000; //in milliseconds
 	private maxPossibleMoveDistance: number = 3;
 	private missedQuestionsCount: number = 0;
@@ -138,7 +137,9 @@ export default class Player {
 
 	public getDifficulty(targetLocation: Point): number {
 		let difficulty = Move.getTaxiCabDistance(this.position, targetLocation);
-		if (difficulty > this.MAX_DIFFICULTY) difficulty = this.MAX_DIFFICULTY; //Max difficulty is 6 even though we can move by 6 tiles
+		if (this.playerStatus.getCurrentStatus() == StatusType.BrainiacStatus) difficulty--;
+		if (difficulty < RACE_CST.QUESTION.MIN_DIFFICULTY) difficulty = RACE_CST.QUESTION.MIN_DIFFICULTY;
+		if (difficulty > RACE_CST.QUESTION.MAX_DIFFICULTY) difficulty = RACE_CST.QUESTION.MAX_DIFFICULTY; //Max difficulty is 6 even though we can move by 6 tiles
 		return difficulty;
 	}
 
@@ -167,6 +168,14 @@ export default class Player {
 
 	public getLastQuestionPromptTimestamp() {
 		return this.lastQuestionPromptTimestamp;
+	}
+
+	public getAnsweredQuestionsId(): number[] {
+		return this.answeredQuestionsId;
+	}
+
+	public resetAnsweredQuestionsId(): void {
+		this.answeredQuestionsId = [];
 	}
 
 	public answeredQuestion(isAnswerCorrect: boolean): void {
