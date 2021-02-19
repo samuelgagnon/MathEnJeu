@@ -19,7 +19,6 @@ export default class RoomFactory {
 	}
 
 	private static generateRoomId(usedRoomId: Set<string>): string {
-		console.log(usedRoomId);
 		const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 		let randomId = "";
 		do {
