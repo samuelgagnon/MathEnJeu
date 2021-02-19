@@ -462,7 +462,7 @@ export default class RaceScene extends Phaser.Scene {
 		if (this.raceGame.hasServerStoppedSendingUpdates()) {
 			this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, { roomId: this.roomId });
 			//If the server game is still running but the client thinks the game is over
-		} else if (this.raceGame.isGameDurationTresholdExceeded) {
+		} else if (this.raceGame.isGameDurationTresholdExceeded()) {
 			Clock.startSynchronizationWithServer(this.raceGame.getCurrentPlayerSocket());
 		}
 	}
