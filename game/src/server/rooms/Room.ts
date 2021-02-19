@@ -1,5 +1,5 @@
 import { Namespace, Socket } from "socket.io";
-import { HostChangeEvent, UsersInfoSentEvent } from "../../communication/race/DataInterfaces";
+import { HostChangeEvent, RoomInfoEvent as RoomInfoEvent } from "../../communication/race/DataInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
@@ -145,7 +145,8 @@ export default class Room {
 	}
 
 	public emitUsersInRoom(): void {
-		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, <UsersInfoSentEvent>{
+		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, <RoomInfoEvent>{
+			roomId: this.getId(),
 			usersInfo: this.users.map((user) => user.userInfo),
 			hostName: this.host.userInfo.name,
 		});

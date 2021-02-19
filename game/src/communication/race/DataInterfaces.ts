@@ -57,7 +57,8 @@ export interface AnswerCorrectedEvent {
 	targetLocation: Point;
 }
 
-export interface UsersInfoSentEvent {
+export interface RoomInfoEvent {
+	roomId: string;
 	usersInfo: UserInfo[];
 	hostName: string;
 }
