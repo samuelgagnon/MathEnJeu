@@ -8,6 +8,7 @@ import {
 } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import Player from "../../gameCore/race/player/Player";
 import PlayerFactory from "../../gameCore/race/player/PlayerFactory";
@@ -53,11 +54,11 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame });
 		});
-		this.gameSocket.on("host-change", (data: HostChangeEvent) => {
+		this.gameSocket.on(ROOM_EVENT_NAMES.HOST_CHANGE, (data: HostChangeEvent) => {
 			this.isHost = false;
 			this.hostName = `Current host: ${data.newHostName}`;
 		});
-		this.gameSocket.on("is-host", () => {
+		this.gameSocket.on(ROOM_EVENT_NAMES.IS_HOST, () => {
 			this.isHost = true;
 		});
 	}
@@ -155,7 +156,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.quitButton.clearTint();
 			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
 			this.gameSocket.close();
-			this.scene.start(CST.SCENES.ROOM_SELECTION);
+			this.scene.start(CST.SCENES.GAME_SELECTION);
 		});
 
 		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {

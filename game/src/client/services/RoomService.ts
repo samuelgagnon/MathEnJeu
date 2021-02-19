@@ -1,4 +1,6 @@
 import io from "socket.io-client";
+import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
+import { RoomSettings } from "../../communication/room/RoomSettings";
 import UserInfo from "../../communication/user/UserInfo";
 
 export const connectToRoomSelectionNamespace = (): SocketIOClient.Socket => {
@@ -18,10 +20,10 @@ export const connectToGameNamespace = (userInfo: UserInfo): SocketIOClient.Socke
 	return socket;
 };
 
-export const createRoom = (socket: SocketIOClient.Socket) => {
-	socket.emit("create-room");
+export const createRoom = (socket: SocketIOClient.Socket, roomSettings: RoomSettings) => {
+	socket.emit(ROOM_EVENT_NAMES.CREATE_ROOM, roomSettings);
 };
 
 export const joinRoom = (socket: SocketIOClient.Socket, roomId: string) => {
-	socket.emit("join-room", { roomId: roomId });
+	socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId: roomId });
 };

@@ -5,11 +5,12 @@ import ServiceLocator from "../context/ServiceLocator";
 import Room from "./Room";
 
 export default class RoomFactory {
-	public static create(nsp: SocketIO.Namespace): Room {
+	public static create(nsp: SocketIO.Namespace, isPrivate: boolean): Room {
 		const roomId: string = uuidv4();
 		const roomString = `room-${roomId}`;
 		return new Room(
 			roomId,
+			isPrivate,
 			PreGameFactory.createPreGame(),
 			ServiceLocator.resolve(serviceConstants.GAME_REPOSITORY_CLASS),
 			ServiceLocator.resolve(serviceConstants.STATISTICS_REPOSITORY_CLASS),
