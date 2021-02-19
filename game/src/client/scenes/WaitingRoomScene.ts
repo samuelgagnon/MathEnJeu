@@ -1,11 +1,4 @@
-import {
-	GameEndEvent,
-	GameOptions,
-	GameStartEvent,
-	HostChangeEvent,
-	PlayerEndState,
-	UsersInfoSentEvent,
-} from "../../communication/race/DataInterfaces";
+import { GameEndEvent, GameOptions, GameStartEvent, HostChangeEvent, PlayerEndState, RoomInfoEvent } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
@@ -21,6 +14,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private quitButton: Phaser.GameObjects.Text;
 	private highScoreText: Phaser.GameObjects.Text;
 	private currentHost: Phaser.GameObjects.Text;
+	private roomIdText: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
 	private gameResultsHtml: Phaser.GameObjects.DOMElement;
@@ -28,6 +22,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean;
 	private hostName: string;
+	private roomId: string;
 	private highScore: number;
 
 	constructor() {
@@ -38,6 +33,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	init(data: any) {
 		this.lastGameResults = data.lastGameData;
 		this.hostName = "Current host: ";
+		this.roomId = "Room id: ";
 		this.isHost = false;
 		this.highScore = getUserHighScore();
 
@@ -69,7 +65,15 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
 		this.gameOptions = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.7).createFromCache(CST.HTML.GAME_OPTIONS);
 
-		this.currentHost = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.1, "Current host: ", {
+		this.currentHost = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.1, this.hostName, {
+			fontFamily: "Courier",
+			fontSize: "30px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.roomIdText = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.15, this.roomId, {
 			fontFamily: "Courier",
 			fontSize: "30px",
 			align: "center",
@@ -134,7 +138,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.startButton.on("pointerup", () => {
 			this.startButton.clearTint();
-			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
+			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
 			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_INITIALIZED, <GameOptions>{
 				gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
 			});
@@ -154,13 +158,14 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.quitButton.on("pointerup", () => {
 			this.quitButton.clearTint();
-			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS);
+			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
 			this.gameSocket.close();
 			this.scene.start(CST.SCENES.GAME_SELECTION);
 		});
 
-		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CURRENT_USERS, (data: UsersInfoSentEvent) => {
+		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, (data: RoomInfoEvent) => {
 			this.hostName = `Current host: ${data.hostName}`;
+			this.roomId = `Room id: ${data.roomId}`;
 
 			let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
 
@@ -188,6 +193,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.startButton.setVisible(this.isHost).setActive(this.isHost);
 		this.gameOptions.setVisible(this.isHost).setActive(this.isHost);
 		this.currentHost.text = this.hostName;
+		this.roomIdText.text = this.roomId;
 	}
 
 	private createPlayers(playersState: PlayerState[]): Player[] {

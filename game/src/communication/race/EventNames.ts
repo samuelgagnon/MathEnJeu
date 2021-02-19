@@ -19,6 +19,6 @@ export const CLIENT_EVENT_NAMES = {
 };
 
 export const WAITING_ROOM_EVENT_NAMES = {
-	CURRENT_USERS: "current-users",
+	ROOM_INFO: "room-info",
 	SCENE_LOADED: "scene-loaded",
 };
