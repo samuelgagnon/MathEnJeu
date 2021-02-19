@@ -21,11 +21,14 @@ export default class RoomFactory {
 	private static generateRoomId(usedRoomId: Set<string>): string {
 		const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 		let randomId = "";
+		let count = 0;
+		const maxCount = 10;
 		do {
+			count += 1;
 			for (let i = 0; i < 6; i++) {
 				randomId += characters.charAt(Math.floor(Math.random() * characters.length));
 			}
-		} while (usedRoomId.has(randomId));
+		} while (usedRoomId.has(randomId) && count < maxCount);
 
 		return randomId;
 	}
