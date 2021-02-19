@@ -256,6 +256,14 @@ export default class RaceGameUI extends Phaser.Scene {
 		}
 
 		//setting remaining time
+		if (raceScene.raceGame.getTimeRemaining() < 0) {
+			sceneEvents.emit(EventNames.gameDurationExceeded);
+			this.remainingTime.setText("0");
+		} else {
+			this.remainingTime.setText(Math.floor(raceScene.raceGame.getTimeRemaining() / 1000).toString());
+		}
+
+		//setting remaining time
 		this.remainingTime.setText(Math.floor(raceScene.raceGame.getTimeRemaining() / 1000).toString());
 
 		//setting player time status

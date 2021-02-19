@@ -6,6 +6,7 @@ import {
 	QuestionFoundFromBookEvent,
 } from "../../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { Clock } from "../../../gameCore/clock/Clock";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
 import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
@@ -145,6 +146,7 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
 		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
+		subscribeToEvent(EventNames.gameDurationExceeded, this.handleGameDurationExceededEvent, this);
 		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
@@ -332,12 +334,7 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.GAME_END, (data: GameEndEvent) => {
-			updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
-			this.raceGame.gameFinished();
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
-			this.scene.stop(CST.SCENES.RACE_GAME_UI);
-			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-			this.scene.start(CST.SCENES.WAITING_ROOM, { lastGameData: data, socket: this.raceGame.getCurrentPlayerSocket() });
+			this.endGame(data);
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
@@ -349,6 +346,20 @@ export default class RaceScene extends Phaser.Scene {
 		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
 			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
 			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
+		});
+	}
+
+	private endGame(data?: GameEndEvent): void {
+		const isEndGameEventMissed = !!data;
+		updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
+		this.raceGame.gameFinished();
+		this.scene.stop(CST.SCENES.REPORT_ERROR);
+		this.scene.stop(CST.SCENES.RACE_GAME_UI);
+		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+		this.scene.start(CST.SCENES.WAITING_ROOM, {
+			lastGameData: data,
+			socket: this.raceGame.getCurrentPlayerSocket(),
+			isEndGameEventMissed: isEndGameEventMissed,
 		});
 	}
 
@@ -426,6 +437,18 @@ export default class RaceScene extends Phaser.Scene {
 
 	private resumeGame(): void {
 		this.input.enabled = true;
+	}
+
+	private handleGameDurationExceededEvent(): void {
+		//If we simply missed the end game server event
+		if (this.raceGame.hasServerStoppedSendingUpdates()) {
+			//TODO : Change endgame for join current room
+			this.endGame();
+			//this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId });
+			//If the server game is still running but the client thinks the game is over
+		} else if (this.raceGame.isGameDurationTresholdExceeded) {
+			Clock.startSynchronizationWithServer(this.raceGame.getCurrentPlayerSocket());
+		}
 	}
 
 	private handleFollowPlayerToggle(isFollowingPlayer: boolean) {
