@@ -8,6 +8,8 @@ import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
 import User from "../data/User";
+import { joinRoomAnswerEvent } from "./../../communication/room/DataInterfaces";
+import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
 
 /**
  * This class is a final state machine that represents the current state of the room. It is basically the container that will hold each game
@@ -100,30 +102,31 @@ export default class Room {
 	 */
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): string {
 		if (this.users.length >= this.max_player_count) {
-			throw new RoomFullError(`Room ${this.id} is currently full. You cannot join right now.`);
+			throw new JoiningFullRoomError();
 		}
 
 		if (this.getGameState() == GameState.PreGame) {
-			const user: User = {
+			const newUser: User = {
 				userId: clientSocket.id,
 				userInfo: userInfo,
 				socket: clientSocket,
 			};
-
-			this.users.push(user);
-			clientSocket.join(this.roomString);
-			this.handleSocketEvents(clientSocket);
-			this.state.userJoined(user);
-			clientSocket.emit(ROOM_EVENT_NAMES.ROOM_JOINED);
+			if (!this.users.some((user) => user.userId == newUser.userId)) {
+				this.users.push(newUser);
+				clientSocket.join(this.roomString);
+				this.handleSocketEvents(clientSocket);
+				this.state.userJoined(newUser);
+			}
+			clientSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <joinRoomAnswerEvent>{ roomId: this.id });
 
 			//make user host when they're the first joining the room
 			if (this.users.length == 1) {
-				this.changeHost(user.userId);
+				this.changeHost(newUser.userId);
 			}
 			this.emitUsersInRoom();
-			return user.userId;
+			return newUser.userId;
 		} else {
-			throw new RoomNotFoundError(`Room ${this.id} is currently in progress. You cannot join right now.`);
+			throw new JoiningGameInProgressRoomError();
 		}
 	}
 

@@ -29,6 +29,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private isHost: boolean;
 	private hostName: string;
 	private highScore: number;
+	private roomId: string;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
@@ -37,6 +38,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.lastGameResults = data.lastGameData;
+		this.roomId = data.roomId;
 		this.hostName = "Current host: ";
 		this.isHost = false;
 		this.highScore = getUserHighScore();
@@ -52,7 +54,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				this.gameSocket
 			);
 
-			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame });
+			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame, roomId: this.roomId });
 		});
 		this.gameSocket.on(ROOM_EVENT_NAMES.HOST_CHANGE, (data: HostChangeEvent) => {
 			this.isHost = false;

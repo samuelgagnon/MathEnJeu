@@ -25,5 +25,5 @@ export const createRoom = (socket: SocketIOClient.Socket, roomSettings: RoomSett
 };
 
 export const joinRoom = (socket: SocketIOClient.Socket, roomId: string) => {
-	socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId: roomId });
+	socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, { roomId: roomId });
 };

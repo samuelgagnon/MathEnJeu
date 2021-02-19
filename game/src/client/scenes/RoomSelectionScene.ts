@@ -78,7 +78,7 @@ export default class RoomSelection extends BaseScene {
 		this.joinRoomButton.on("pointerup", () => {
 			this.joinRoomButton.clearTint();
 			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
-			this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId });
+			this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, { roomId });
 		});
 
 		this.backButton.on("pointerover", () => {

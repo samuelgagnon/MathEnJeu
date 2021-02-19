@@ -6,6 +6,8 @@ import {
 	QuestionFoundFromBookEvent,
 } from "../../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { joinRoomAnswerEvent as joinRoomAnswerEvent } from "../../../communication/room/DataInterfaces";
+import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import { Clock } from "../../../gameCore/clock/Clock";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
@@ -17,11 +19,14 @@ import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
-import { updateUserHighScore } from "../../services/UserInformationService";
+import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
+import { localizedString } from "./../../Localization";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class RaceScene extends Phaser.Scene {
+	//Room
+	roomId: string;
 	//Loops
 	lag: number;
 	physTimestep: number;
@@ -63,6 +68,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.raceGame = data.gameController;
+		this.roomId = data.roomId;
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
@@ -334,7 +340,11 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.GAME_END, (data: GameEndEvent) => {
-			this.endGame(data);
+			this.endGame();
+			this.scene.start(CST.SCENES.WAITING_ROOM, {
+				lastGameData: data,
+				socket: this.raceGame.getCurrentPlayerSocket(),
+			});
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
@@ -347,20 +357,28 @@ export default class RaceScene extends Phaser.Scene {
 			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
 			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
 		});
+
+		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: joinRoomAnswerEvent) => {
+			if (!!!data.error) {
+				this.endGame();
+				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket, roomId: data.roomId });
+			} else {
+				const errorMsg: localizedString = {
+					fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
+					en: "Connection error. You've been kicked out of the room.",
+				};
+				alert(errorMsg[getUserInfo().language]);
+				this.quitGame();
+			}
+		});
 	}
 
-	private endGame(data?: GameEndEvent): void {
-		const isEndGameEventMissed = !!data;
+	private endGame(): void {
 		updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
 		this.raceGame.gameFinished();
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.RACE_GAME_UI);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-		this.scene.start(CST.SCENES.WAITING_ROOM, {
-			lastGameData: data,
-			socket: this.raceGame.getCurrentPlayerSocket(),
-			isEndGameEventMissed: isEndGameEventMissed,
-		});
 	}
 
 	private activateAccessiblePositions(): void {
@@ -440,11 +458,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private handleGameDurationExceededEvent(): void {
-		//If we simply missed the end game server event
+		//If we missed the end game server event
 		if (this.raceGame.hasServerStoppedSendingUpdates()) {
-			//TODO : Change endgame for join current room
-			this.endGame();
-			//this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId });
+			this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, { roomId: this.roomId });
 			//If the server game is still running but the client thinks the game is over
 		} else if (this.raceGame.isGameDurationTresholdExceeded) {
 			Clock.startSynchronizationWithServer(this.raceGame.getCurrentPlayerSocket());
