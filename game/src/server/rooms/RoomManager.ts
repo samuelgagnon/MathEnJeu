@@ -6,6 +6,7 @@ import UserInfo from "../../communication/user/UserInfo";
 import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "./../../communication/clock/EventNames";
+import Room from "./Room";
 import RoomFactory from "./RoomFactory";
 
 export default class RoomManager {
@@ -43,7 +44,8 @@ export default class RoomManager {
 
 			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, (roomSettings: RoomSettings) => {
 				try {
-					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate);
+					const usedRoomIds = this.roomRepo.getAllRooms().map((room: Room) => room.getId());
+					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate, usedRoomIds);
 					const userId = newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 
