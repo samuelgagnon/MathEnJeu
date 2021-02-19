@@ -22,7 +22,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean;
 	private hostName: string;
-	private roomId: string;
 	private highScore: number;
 	private roomId: string;
 
@@ -33,7 +32,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.lastGameResults = data.lastGameData;
-		this.roomId = data.roomId;
 		this.hostName = "Current host: ";
 		this.roomId = "Room id: ";
 		this.isHost = false;

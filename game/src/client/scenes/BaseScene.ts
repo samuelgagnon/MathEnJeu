@@ -21,7 +21,7 @@ export default class BaseScene extends Phaser.Scene {
 
 		gameSocket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: joinRoomAnswerEvent) => {
 			if (!!!data.error) {
-				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: gameSocket, roomId: data.roomId });
+				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: gameSocket });
 			} else {
 				const language = getUserInfo().language;
 				let errorMsg: localizedString;

@@ -361,7 +361,7 @@ export default class RaceScene extends Phaser.Scene {
 		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: joinRoomAnswerEvent) => {
 			if (!!!data.error) {
 				this.endGame();
-				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket, roomId: data.roomId });
+				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
 			} else {
 				const errorMsg: localizedString = {
 					fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
