@@ -1,11 +1,12 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
-import { RoomSettings } from "../../communication/room/DataInterface";
+import { JoinRoomAnswerEvent, JoinRoomRequestEvent, RoomSettings } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "./../../communication/clock/EventNames";
+import { JoiningNonExistentRoomError } from "./JoinRoomErrors";
 import Room from "./Room";
 import RoomFactory from "./RoomFactory";
 
@@ -60,22 +61,18 @@ export default class RoomManager {
 				}
 			});
 
-			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM, (req) => {
+			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, (joinRoomRequestEvent: JoinRoomRequestEvent) => {
+				const roomId: string = joinRoomRequestEvent.roomId;
 				try {
-					const roomId: string = req.roomId;
 					const currentRoom = this.roomRepo.getRoomById(roomId);
 					if (currentRoom == undefined) {
-						throw new RoomNotFoundError(`Room ${roomId} was not found`);
+						throw new JoiningNonExistentRoomError();
 					}
-
 					const userId = currentRoom.joinRoom(socket, userInfo);
 					this.handleDisconnection(socket, roomId, userId);
-				} catch (err) {
-					console.log(err);
-					socket.error({
-						type: 400,
-						msg: err.message,
-					});
+				} catch (error) {
+					console.log(error);
+					socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: roomId, error: error });
 				}
 			});
 		});

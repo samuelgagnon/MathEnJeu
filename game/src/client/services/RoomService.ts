@@ -1,5 +1,5 @@
 import io from "socket.io-client";
-import { RoomSettings } from "../../communication/room/DataInterface";
+import { JoinRoomRequestEvent, RoomSettings } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 
@@ -25,5 +25,5 @@ export const createRoom = (socket: SocketIOClient.Socket, roomSettings: RoomSett
 };
 
 export const joinRoom = (socket: SocketIOClient.Socket, roomId: string) => {
-	socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM, { roomId: roomId });
+	socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: roomId });
 };

@@ -1,7 +1,7 @@
 import { GameEndEvent, GameOptions, GameStartEvent, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
-import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterface";
+import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import Player from "../../gameCore/race/player/Player";
@@ -29,8 +29,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean;
 	private hostName: string;
-	private roomId: string;
 	private highScore: number;
+	private roomId: string;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
@@ -58,7 +58,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				this.gameSocket
 			);
 
-			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame });
+			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame, roomId: this.roomId });
 		});
 		this.gameSocket.on(ROOM_EVENT_NAMES.HOST_CHANGE, (data: HostChangeEvent) => {
 			this.isHost = false;
