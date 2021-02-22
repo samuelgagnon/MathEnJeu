@@ -1,6 +1,5 @@
 import { Namespace, Socket } from "socket.io";
 import { HostChangeEvent } from "../../communication/race/DataInterfaces";
-import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterface";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
@@ -8,7 +7,7 @@ import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
 import User from "../data/User";
-import { JoinRoomAnswerEvent } from "./../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent, RoomInfoEvent, RoomSettings } from "./../../communication/room/DataInterfaces";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
 
 /**
