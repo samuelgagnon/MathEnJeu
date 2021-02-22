@@ -46,7 +46,7 @@ export default class RoomManager {
 			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, (roomSettings: RoomSettings) => {
 				try {
 					const usedRoomIds = this.roomRepo.getAllRooms().map((room: Room) => room.getId());
-					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate, usedRoomIds);
+					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate, roomSettings.maxPlayerCount, usedRoomIds);
 					const userId = newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 

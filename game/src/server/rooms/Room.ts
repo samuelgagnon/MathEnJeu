@@ -16,7 +16,7 @@ import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoom
  * on the state it is currently using.
  */
 export default class Room {
-	private max_player_count = 8;
+	private maxPlayerCount: number;
 	private readonly id: string;
 	private isPrivate: boolean;
 	private state: State;
@@ -31,6 +31,7 @@ export default class Room {
 	constructor(
 		id: string,
 		isPrivate: boolean,
+		maxPlayerCount: number,
 		state: State,
 		gameRepo: GameRepository,
 		statsRepo: StatisticsRepository,
@@ -39,6 +40,7 @@ export default class Room {
 	) {
 		this.id = id;
 		this.isPrivate = isPrivate;
+		this.maxPlayerCount = maxPlayerCount;
 		this.roomString = roomString;
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
@@ -100,7 +102,7 @@ export default class Room {
 	 * Returns the userId from the user who joined the room
 	 */
 	public joinRoom(clientSocket: Socket, userInfo: UserInfo): string {
-		if (this.users.length >= this.max_player_count) {
+		if (this.users.length >= this.maxPlayerCount) {
 			throw new JoiningFullRoomError();
 		}
 
@@ -151,7 +153,7 @@ export default class Room {
 		});
 		this.nsp.to(this.roomString).emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
 			isPrivate: this.isPrivate,
-			maxPlayerCount: this.max_player_count,
+			maxPlayerCount: this.maxPlayerCount,
 		});
 	}
 
@@ -175,7 +177,7 @@ export default class Room {
 
 		clientSocket.on(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, (roomSettings: RoomSettings) => {
 			this.isPrivate = roomSettings.isPrivate;
-			this.max_player_count = roomSettings.maxPlayerCount;
+			this.maxPlayerCount = roomSettings.maxPlayerCount;
 			this.emitUsersInRoom();
 		});
 	}
