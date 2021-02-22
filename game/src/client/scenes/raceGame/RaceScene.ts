@@ -359,16 +359,18 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
-			if (!!!data.error) {
-				this.endGame();
-				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
-			} else {
+			if (data.error) {
+				//Dans le cas où la reconnexion à la présente salle a été refusée.
 				const errorMsg: localizedString = {
 					fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
 					en: "Connection error. You've been kicked out of the room.",
 				};
 				alert(errorMsg[getUserInfo().language]);
 				this.quitGame();
+			} else {
+				//Dans le cas où la reconnexion à la présente salle a été acceptée.
+				this.endGame();
+				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
 			}
 		});
 	}
