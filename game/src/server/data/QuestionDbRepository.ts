@@ -82,4 +82,43 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		return gameQuestion;
 	}
+
+	async createQuestionsHtml(){
+		const queryString = `SELECT answer.label as answerLabel, answer_type.tag as answerType, answer_info.answer_latex as answerString,
+		question_info.question_latex as questionLaTex, question_info.feedback_latex as feedbackLaTex, 
+		\`language\`.short_name as language
+		
+			FROM question
+            INNER JOIN answer
+			ON question.question_id=answer.question_id
+            INNER JOIN question_info
+			ON question.question_id=question_info.question_id
+            INNER JOIN answer_type
+			ON question.answer_type_id = answer_type.answer_type_id
+            INNER JOIN question_level
+			ON question.question_id=question_level.question_id,
+			answer_info
+			WHERE question_info.language_id IN
+				(SELECT language_id
+				FROM \`language\`
+				WHERE \`language\`.short_name LIKE '${languageShortName}')
+			AND question.question_id = ${questionId}
+			AND answer_info.answer_id = answer.answer_id
+			AND answer_info.language_id IN
+			(SELECT language_id
+			FROM \`language\`
+			WHERE \`language\`.short_name LIKE '${languageShortName}');`;
+	}
+	const rows = await getConnection().query(queryString);
+	if (rows.length == 0) {
+		throw Error(
+			`No question matches the following parameters : 
+			questionId=${questionId}, 
+			languageShortName=${languageShortName}, 
+			levelId=${schoolGradeId}`
+		);
+	}
+	const gameAnswers: GameAnswer[] = rows.map(
+		(row) => new GameAnswer(row.answerId, row.answerType == "SHORT_ANSWER" ? row.answerString : row.answerLabel, row.answerIsRight)
+	);
 }
