@@ -1,7 +1,7 @@
 import UserInfo from "../user/UserInfo";
 
 export interface RoomSettings {
-	numberOfPlayers: number;
+	maxPlayerCount: number;
 	isPrivate: boolean;
 }
 

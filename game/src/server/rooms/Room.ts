@@ -149,7 +149,7 @@ export default class Room {
 		});
 		this.nsp.to(this.roomString).emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
 			isPrivate: this.isPrivate,
-			//numberOfPlayers: this.max_player_count,
+			maxPlayerCount: this.max_player_count,
 		});
 	}
 
@@ -173,7 +173,8 @@ export default class Room {
 
 		clientSocket.on(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, (roomSettings: RoomSettings) => {
 			this.isPrivate = roomSettings.isPrivate;
-			this.max_player_count = roomSettings.numberOfPlayers;
+			this.max_player_count = roomSettings.maxPlayerCount;
+			this.emitUsersInRoom();
 		});
 	}
 

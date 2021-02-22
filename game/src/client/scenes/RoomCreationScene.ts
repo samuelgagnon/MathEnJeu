@@ -59,7 +59,7 @@ export default class RoomCreation extends BaseScene {
 			this.createRoomButton.clearTint();
 			const numberOfPlayers = Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value);
 			const isPrivate = (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked;
-			createRoom(this.gameSocket, { isPrivate, numberOfPlayers });
+			createRoom(this.gameSocket, { isPrivate, maxPlayerCount: numberOfPlayers });
 		});
 
 		this.backButton.on("pointerover", () => {
