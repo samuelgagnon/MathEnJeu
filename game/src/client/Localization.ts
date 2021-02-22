@@ -1,4 +1,4 @@
-export interface localizedString {
+export interface LocalizedString {
 	fr: string;
 	en: string;
 }

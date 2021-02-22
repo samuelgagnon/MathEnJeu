@@ -3,7 +3,7 @@ import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { JOIN_ROOM_ERROR_NAME } from "../../server/rooms/JoinRoomErrors";
 import { CST } from "../CST";
-import { localizedString } from "../Localization";
+import { LocalizedString } from "../Localization";
 import { connectToGameNamespace } from "../services/RoomService";
 import { getUserInfo } from "../services/UserInformationService";
 
@@ -24,7 +24,7 @@ export default class BaseScene extends Phaser.Scene {
 				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: gameSocket });
 			} else {
 				const language = getUserInfo().language;
-				let errorMsg: localizedString;
+				let errorMsg: LocalizedString;
 				switch (data.error.name) {
 					case JOIN_ROOM_ERROR_NAME.FULL:
 						errorMsg = {

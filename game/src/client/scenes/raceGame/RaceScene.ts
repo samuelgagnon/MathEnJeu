@@ -8,7 +8,6 @@ import {
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
 import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
-import { Clock } from "../../../gameCore/clock/Clock";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
 import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
@@ -20,7 +19,7 @@ import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
-import { localizedString } from "./../../Localization";
+import { LocalizedString } from "./../../Localization";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
@@ -55,6 +54,9 @@ export default class RaceScene extends Phaser.Scene {
 	tiles: Phaser.GameObjects.Group;
 	items: Phaser.GameObjects.Group;
 
+	//Error
+	triedToReconnectAfterSocketError: boolean;
+
 	constructor() {
 		const sceneConfig = {
 			key: CST.SCENES.RACE_GAME,
@@ -79,6 +81,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.activeTileColor = 0xadff2f;
 		this.tileInactiveState = 0;
 		this.tileActiveState = 1;
+		this.triedToReconnectAfterSocketError = false;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
@@ -152,7 +155,6 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
 		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
-		subscribeToEvent(EventNames.gameDurationExceeded, this.handleGameDurationExceededEvent, this);
 		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
@@ -358,21 +360,43 @@ export default class RaceScene extends Phaser.Scene {
 			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
 		});
 
+		socket.on("connect_error", (error) => {
+			this.handleSocketError(error);
+		});
+		socket.on("error", (error) => {
+			this.handleSocketError(error);
+		});
+
 		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
 			if (data.error) {
 				//Dans le cas où la reconnexion à la présente salle a été refusée.
-				const errorMsg: localizedString = {
-					fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
-					en: "Connection error. You've been kicked out of the room.",
-				};
-				alert(errorMsg[getUserInfo().language]);
-				this.quitGame();
+				this.abortGame();
 			} else {
 				//Dans le cas où la reconnexion à la présente salle a été acceptée.
 				this.endGame();
 				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
 			}
 		});
+	}
+
+	private handleSocketError(error): void {
+		if (this.raceGame.hasServerStoppedSendingUpdates()) {
+			if (!this.triedToReconnectAfterSocketError) {
+				this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: this.roomId });
+				this.triedToReconnectAfterSocketError = true;
+			} else {
+				this.abortGame();
+			}
+		}
+	}
+
+	private abortGame() {
+		const errorMsg: LocalizedString = {
+			fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
+			en: "Connection error. You've been kicked out of the room.",
+		};
+		alert(errorMsg[getUserInfo().language]);
+		this.quitGame();
 	}
 
 	private endGame(): void {
@@ -457,16 +481,6 @@ export default class RaceScene extends Phaser.Scene {
 
 	private resumeGame(): void {
 		this.input.enabled = true;
-	}
-
-	private handleGameDurationExceededEvent(): void {
-		//If we missed the end game server event
-		if (this.raceGame.hasServerStoppedSendingUpdates()) {
-			this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: this.roomId });
-			//If the server game is still running but the client thinks the game is over
-		} else if (this.raceGame.isGameDurationTresholdExceeded()) {
-			Clock.startSynchronizationWithServer(this.raceGame.getCurrentPlayerSocket());
-		}
 	}
 
 	private handleFollowPlayerToggle(isFollowingPlayer: boolean) {

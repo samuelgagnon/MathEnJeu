@@ -16,7 +16,6 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	private lastServerUpdateTimestamp: number = 0;
 	private readonly MAX_TIME_DIFFERENCE = 1500; //milliseconds
 	private readonly NO_MORE_SERVER_UPDATE_THRESHOLD = 1000;
-	private readonly GAME_DURATION_EXCEEDED_TRESHOLD = 5000;
 
 	constructor(
 		gameTime: number,
@@ -96,10 +95,6 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 	public hasServerStoppedSendingUpdates() {
 		return Clock.now() - this.lastServerUpdateTimestamp > this.NO_MORE_SERVER_UPDATE_THRESHOLD;
-	}
-
-	public isGameDurationTresholdExceeded() {
-		return -this.getTimeRemaining() > this.GAME_DURATION_EXCEEDED_TRESHOLD;
 	}
 
 	public getPossibleCurrentPlayerMovement(position: Point): PossiblePositions[] {
