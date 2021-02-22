@@ -71,14 +71,8 @@ export default class RoomManager {
 					}
 					const userId = currentRoom.joinRoom(socket, userInfo);
 					this.handleDisconnection(socket, roomId, userId);
-				} catch (e) {
-					console.log(e);
-					let error: Error;
-					if (e instanceof Error) {
-						error = e;
-					} else {
-						error = new Error("Unexpected error : " + JSON.stringify(e));
-					}
+				} catch (error) {
+					console.log(error);
 					socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: roomId, error: error });
 				}
 			});
