@@ -1,7 +1,7 @@
 import { Namespace, Socket } from "socket.io";
-import { HostChangeEvent, RoomInfoEvent as RoomInfoEvent } from "../../communication/race/DataInterfaces";
-import { WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
-import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
+import { HostChangeEvent } from "../../communication/race/DataInterfaces";
+import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterface";
+import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
@@ -15,7 +15,7 @@ import User from "../data/User";
  * on the state it is currently using.
  */
 export default class Room {
-	private max_player_count = 51;
+	private max_player_count = 8;
 	private readonly id: string;
 	private isPrivate: boolean;
 	private state: State;
@@ -143,9 +143,13 @@ export default class Room {
 
 	public emitUsersInRoom(): void {
 		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, <RoomInfoEvent>{
-			roomId: this.getId(),
+			roomId: this.id,
 			usersInfo: this.users.map((user) => user.userInfo),
 			hostName: this.host.userInfo.name,
+		});
+		this.nsp.to(this.roomString).emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
+			isPrivate: this.isPrivate,
+			//numberOfPlayers: this.max_player_count,
 		});
 	}
 
@@ -165,6 +169,11 @@ export default class Room {
 			if (clientSocket.id == this.host.socket.id) {
 				clientSocket.emit(ROOM_EVENT_NAMES.IS_HOST);
 			}
+		});
+
+		clientSocket.on(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, (roomSettings: RoomSettings) => {
+			this.isPrivate = roomSettings.isPrivate;
+			this.max_player_count = roomSettings.numberOfPlayers;
 		});
 	}
 

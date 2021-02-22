@@ -1,5 +1,4 @@
 import { ItemType } from "../../gameCore/race/items/Item";
-import UserInfo from "../user/UserInfo";
 import ItemState from "./ItemState";
 import PlayerState from "./PlayerState";
 
@@ -55,12 +54,6 @@ export interface AnswerCorrectedEvent {
 	answerIsRight: boolean;
 	correctionTimestamp: number;
 	targetLocation: Point;
-}
-
-export interface RoomInfoEvent {
-	roomId: string;
-	usersInfo: UserInfo[];
-	hostName: string;
 }
 
 export interface HostChangeEvent {
