@@ -17,8 +17,3 @@ export const CLIENT_EVENT_NAMES = {
 	QUESTION_FOUND_WITH_BOOK: "question-found-with-book",
 	ANSWER_CORRECTED: "answer-corrected",
 };
-
-export const WAITING_ROOM_EVENT_NAMES = {
-	ROOM_INFO: "room-info",
-	SCENE_LOADED: "scene-loaded",
-};

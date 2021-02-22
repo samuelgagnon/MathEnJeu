@@ -1,8 +1,11 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
+<<<<<<< HEAD
 import { JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../communication/room/DataInterfaces";
+=======
+import { RoomSettings } from "../../communication/room/DataInterface";
+>>>>>>> master
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
-import { RoomSettings } from "../../communication/room/RoomSettings";
 import UserInfo from "../../communication/user/UserInfo";
 import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";

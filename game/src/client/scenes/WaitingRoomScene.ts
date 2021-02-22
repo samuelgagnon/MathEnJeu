@@ -1,7 +1,8 @@
-import { GameEndEvent, GameOptions, GameStartEvent, HostChangeEvent, PlayerEndState, RoomInfoEvent } from "../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/race/EventNames";
+import { GameEndEvent, GameOptions, GameStartEvent, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
+import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
-import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
+import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterface";
+import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import Player from "../../gameCore/race/player/Player";
 import PlayerFactory from "../../gameCore/race/player/PlayerFactory";
@@ -19,6 +20,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private usersListHtml: Phaser.GameObjects.DOMElement;
 	private gameResultsHtml: Phaser.GameObjects.DOMElement;
 	private gameOptions: Phaser.GameObjects.DOMElement;
+	private roomSettings: Phaser.GameObjects.DOMElement;
+	private applySettingsText: Phaser.GameObjects.Text;
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean;
 	private hostName: string;
@@ -57,6 +60,16 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.gameSocket.on(ROOM_EVENT_NAMES.IS_HOST, () => {
 			this.isHost = true;
 		});
+		this.gameSocket.on(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, (roomSettings: RoomSettings) => {
+			(<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked = roomSettings.isPrivate;
+			(<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value = String(roomSettings.numberOfPlayers);
+		});
+
+		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS);
+			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.IS_HOST);
+			this.gameSocket.removeEventListener(ROOM_EVENT_NAMES.HOST_CHANGE);
+		});
 	}
 
 	create() {
@@ -64,6 +77,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
 		this.gameOptions = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.7).createFromCache(CST.HTML.GAME_OPTIONS);
+		this.roomSettings = this.add.dom(this.game.renderer.width * 0.67, this.game.renderer.height * 0.4).createFromCache(CST.HTML.ROOM_SETTINGS);
 
 		this.currentHost = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.1, this.hostName, {
 			fontFamily: "Courier",
@@ -72,6 +86,16 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			color: "#FDFFB5",
 			fontStyle: "bold",
 		});
+
+		this.applySettingsText = this.add
+			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.5, "Apply settings", {
+				fontFamily: "Courier",
+				fontSize: "30px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
 
 		this.roomIdText = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.15, this.roomId, {
 			fontFamily: "Courier",
@@ -93,21 +117,25 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			});
 		}
 
-		this.startButton = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
-			fontFamily: "Courier",
-			fontSize: "50px",
-			align: "center",
-			color: "#FDFFB5",
-			fontStyle: "bold",
-		});
+		this.startButton = this.add
+			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
+				fontFamily: "Courier",
+				fontSize: "50px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
 
-		this.quitButton = this.add.text(this.game.renderer.width * 0.05, this.game.renderer.height * 0.1, "<- Leave Room", {
-			fontFamily: "Courier",
-			fontSize: "40px",
-			align: "center",
-			color: "#FDFFB5",
-			fontStyle: "bold",
-		});
+		this.quitButton = this.add
+			.text(this.game.renderer.width * 0.05, this.game.renderer.height * 0.1, "<- Leave Room", {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
 
 		this.highScoreText = this.add
 			.text(this.game.renderer.width * 0.35, this.game.renderer.height * 0.1, `HighScore: ${this.highScore}`, {
@@ -120,9 +148,25 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			.setVisible(false)
 			.setActive(false);
 
-		this.startButton.setInteractive({ useHandCursor: true });
+		this.applySettingsText.on("pointerover", () => {
+			this.applySettingsText.setTint(0xffff66);
+		});
 
-		this.quitButton.setInteractive({ useHandCursor: true });
+		this.applySettingsText.on("pointerout", () => {
+			this.applySettingsText.clearTint();
+		});
+
+		this.applySettingsText.on("pointerdown", () => {
+			this.applySettingsText.setTint(0x86bfda);
+		});
+
+		this.applySettingsText.on("pointerup", () => {
+			this.startButton.clearTint();
+			this.gameSocket.emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
+				isPrivate: (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked,
+				numberOfPlayers: Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value),
+			});
+		});
 
 		this.startButton.on("pointerover", () => {
 			this.startButton.setTint(0xffff66);
@@ -192,6 +236,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	update() {
 		this.startButton.setVisible(this.isHost).setActive(this.isHost);
 		this.gameOptions.setVisible(this.isHost).setActive(this.isHost);
+		this.roomSettings.setVisible(this.isHost).setActive(this.isHost);
+		this.applySettingsText.setVisible(this.isHost).setActive(this.isHost);
 		this.currentHost.text = this.hostName;
 		this.roomIdText.text = this.roomId;
 	}

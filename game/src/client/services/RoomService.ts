@@ -1,7 +1,7 @@
 import io from "socket.io-client";
+import { RoomSettings } from "../../communication/room/DataInterface";
 import { JoinRoomRequestEvent } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
-import { RoomSettings } from "../../communication/room/RoomSettings";
 import UserInfo from "../../communication/user/UserInfo";
 
 export const connectToRoomSelectionNamespace = (): SocketIOClient.Socket => {
