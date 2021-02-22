@@ -1,6 +1,6 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
-import { joinRoomAnswerEvent } from "../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { RoomSettings } from "../../communication/room/RoomSettings";
 import UserInfo from "../../communication/user/UserInfo";
@@ -62,8 +62,8 @@ export default class RoomManager {
 				}
 			});
 
-			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, (req) => {
-				const roomId: string = req.roomId;
+			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, (joinRoomRequestEvent: JoinRoomRequestEvent) => {
+				const roomId: string = joinRoomRequestEvent.roomId;
 				try {
 					const currentRoom = this.roomRepo.getRoomById(roomId);
 					if (currentRoom == undefined) {
@@ -79,7 +79,7 @@ export default class RoomManager {
 					} else {
 						error = new Error("Unexpected error : " + JSON.stringify(e));
 					}
-					socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <joinRoomAnswerEvent>{ roomId: roomId, error: error });
+					socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: roomId, error: error });
 				}
 			});
 		});

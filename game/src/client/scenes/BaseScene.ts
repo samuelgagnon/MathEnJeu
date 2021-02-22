@@ -1,4 +1,4 @@
-import { joinRoomAnswerEvent } from "../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { JOIN_ROOM_ERROR_NAME } from "../../server/rooms/JoinRoomErrors";
@@ -19,7 +19,7 @@ export default class BaseScene extends Phaser.Scene {
 			gameSocket = connectToGameNamespace(getUserInfo());
 		}
 
-		gameSocket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: joinRoomAnswerEvent) => {
+		gameSocket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
 			if (!!!data.error) {
 				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: gameSocket });
 			} else {

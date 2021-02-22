@@ -6,7 +6,7 @@ import {
 	QuestionFoundFromBookEvent,
 } from "../../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
-import { joinRoomAnswerEvent as joinRoomAnswerEvent } from "../../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import { Clock } from "../../../gameCore/clock/Clock";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
@@ -358,7 +358,7 @@ export default class RaceScene extends Phaser.Scene {
 			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
 		});
 
-		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: joinRoomAnswerEvent) => {
+		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
 			if (!!!data.error) {
 				this.endGame();
 				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
@@ -460,7 +460,7 @@ export default class RaceScene extends Phaser.Scene {
 	private handleGameDurationExceededEvent(): void {
 		//If we missed the end game server event
 		if (this.raceGame.hasServerStoppedSendingUpdates()) {
-			this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, { roomId: this.roomId });
+			this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: this.roomId });
 			//If the server game is still running but the client thinks the game is over
 		} else if (this.raceGame.isGameDurationTresholdExceeded()) {
 			Clock.startSynchronizationWithServer(this.raceGame.getCurrentPlayerSocket());

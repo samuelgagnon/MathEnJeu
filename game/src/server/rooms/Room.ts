@@ -8,7 +8,7 @@ import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
 import User from "../data/User";
-import { joinRoomAnswerEvent } from "./../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent } from "./../../communication/room/DataInterfaces";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
 
 /**
@@ -117,7 +117,7 @@ export default class Room {
 				this.handleSocketEvents(clientSocket);
 				this.state.userJoined(newUser);
 			}
-			clientSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <joinRoomAnswerEvent>{ roomId: this.id });
+			clientSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: this.id });
 
 			//make user host when they're the first joining the room
 			if (this.users.length == 1) {
