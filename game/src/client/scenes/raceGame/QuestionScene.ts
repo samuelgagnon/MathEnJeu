@@ -1,6 +1,6 @@
-import { AnswerCorrectedEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
 import { Clock } from "../../../gameCore/clock/Clock";
+import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
@@ -206,13 +206,11 @@ export default class QuestionScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 		subscribeToEvent(EventNames.errorWindowOpened, this.pauseGame, this);
 		subscribeToEvent(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
+		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket().removeEventListener(CE.ANSWER_CORRECTED);
 			this.clearQuestionTextures();
 		});
-
-		this.handleSocketEvents((<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket());
 	}
 
 	update() {
@@ -251,15 +249,12 @@ export default class QuestionScene extends Phaser.Scene {
 		this.destroyScene();
 	}
 
-	private handleSocketEvents(socket: SocketIOClient.Socket): void {
-		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight, data.correctionTimestamp, this.targetLocation);
-			if (data.answerIsRight) {
-				this.destroyScene();
-			} else {
-				this.startFeedback();
-			}
-		});
+	private questionCorrected(isAnswerRight: boolean): void {
+		if (isAnswerRight) {
+			this.destroyScene();
+		} else {
+			this.startFeedback();
+		}
 	}
 
 	private startFeedback() {
@@ -310,11 +305,13 @@ export default class QuestionScene extends Phaser.Scene {
 	private useCrystalBall(): void {
 		//TODO: Make constants of the types
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
-			try {
-				sceneEvents.emit(EventNames.useCrystalBall);
-				this.question.removeWrongAnswer();
-			} catch (error) {
-				console.log(error);
+			if (!this.question.areAllAnswersRight()) {
+				try {
+					sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
+					this.question.removeWrongAnswer();
+				} catch (error) {
+					console.log(error);
+				}
 			}
 		} else {
 			alert("must be a multiple choice question");

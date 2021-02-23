@@ -25,5 +25,10 @@ export const RACE_CST = {
 			"......5...|..1......" +
 			"x.....5....|.1.....x" +
 			"xx....5.....|1....xx",
+		NUMBER_OF_ITEMS: 60,
+	},
+	QUESTION: {
+		MIN_DIFFICULTY: 1,
+		MAX_DIFFICULTY: 6,
 	},
 };

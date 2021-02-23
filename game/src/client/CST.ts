@@ -7,6 +7,8 @@ export const CST = {
 		RACE_GAME_UI: "raceGameUI",
 		CREATE_ROOM: "createRoomScene",
 		QUESTION_WINDOW: "questionScene",
+		ROOM_CREATION: "roomCreationScene",
+		GAME_SELECTION: "gameSelectionScene",
 		ROOM_SELECTION: "roomSelectionScene",
 		USERS_SETTING: "userSettingsScene",
 		WAITING_ROOM: "waitingRoomScene",
@@ -42,5 +44,6 @@ export const CST = {
 		ROOMS_LIST: "roomsList.html",
 		USER_SETTINGS: "userSettings.html",
 		USERS_LIST: "usersList.html",
+		ROOM_SETTINGS: "roomSettings.html",
 	},
 };

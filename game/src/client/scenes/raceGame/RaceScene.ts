@@ -1,5 +1,13 @@
-import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import {
+	AnswerCorrectedEvent,
+	GameEndEvent,
+	PlayerLeftEvent,
+	QuestionFoundEvent,
+	QuestionFoundFromBookEvent,
+} from "../../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/DataInterfaces";
+import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
 import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
@@ -10,11 +18,14 @@ import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
-import { updateUserHighScore } from "../../services/UserInformationService";
+import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
+import { LocalizedString } from "./../../Localization";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class RaceScene extends Phaser.Scene {
+	//Room
+	roomId: string;
 	//Loops
 	lag: number;
 	physTimestep: number;
@@ -43,6 +54,9 @@ export default class RaceScene extends Phaser.Scene {
 	tiles: Phaser.GameObjects.Group;
 	items: Phaser.GameObjects.Group;
 
+	//Error
+	triedToReconnectAfterSocketError: boolean;
+
 	constructor() {
 		const sceneConfig = {
 			key: CST.SCENES.RACE_GAME,
@@ -56,6 +70,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.raceGame = data.gameController;
+		this.roomId = data.roomId;
 		this.lag = 0;
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
@@ -66,6 +81,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.activeTileColor = 0xadff2f;
 		this.tileInactiveState = 0;
 		this.tileActiveState = 1;
+		this.triedToReconnectAfterSocketError = false;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
@@ -122,7 +138,7 @@ export default class RaceScene extends Phaser.Scene {
 
 							//TODO verify if has arrived logic should be moved to player
 							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().isAnsweringQuestion()) {
-								this.raceGame.playerMoveRequest({ x: x, y: y });
+								this.playerRequestMove(<Point>{ x: x, y: y });
 							}
 						}
 					});
@@ -144,7 +160,12 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
 		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
-		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
+	}
+
+	playerRequestMove(targetLocation: Point) {
+		//To keep target location in memory when we get the answer from question scene
+		this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(targetLocation);
+		this.raceGame.playerMoveRequest(targetLocation);
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -305,11 +326,11 @@ export default class RaceScene extends Phaser.Scene {
 		this.raceGame.clientPlayerAnswersQuestion(answer, <Point>{ x: position.x, y: position.y });
 	}
 
-	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number, position: Point): void {
+	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number): void {
 		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
 		this.clearTileInteractions();
-		if (isAnswerRight) {
-			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
+		if (!isAnswerRight) {
+			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(this.raceGame.getCurrentPlayer().getPosition());
 		}
 		this.isReadyToGetPossiblePositions = true;
 	}
@@ -321,12 +342,11 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.GAME_END, (data: GameEndEvent) => {
-			updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
-			this.raceGame.gameFinished();
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
-			this.scene.stop(CST.SCENES.RACE_GAME_UI);
-			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-			this.scene.start(CST.SCENES.WAITING_ROOM, { lastGameData: data, socket: this.raceGame.getCurrentPlayerSocket() });
+			this.endGame();
+			this.scene.start(CST.SCENES.WAITING_ROOM, {
+				lastGameData: data,
+				socket: this.raceGame.getCurrentPlayerSocket(),
+			});
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
@@ -334,6 +354,57 @@ export default class RaceScene extends Phaser.Scene {
 			this.raceGame.getCurrentPlayer().promptQuestion(questionFound);
 			this.createQuestionWindow(data.targetLocation, questionFound);
 		});
+
+		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
+			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
+			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
+		});
+
+		socket.on("connect_error", (error) => {
+			this.handleSocketError(error);
+		});
+		socket.on("error", (error) => {
+			this.handleSocketError(error);
+		});
+
+		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
+			if (data.error) {
+				//Dans le cas où la reconnexion à la présente salle a été refusée.
+				this.abortGame();
+			} else {
+				//Dans le cas où la reconnexion à la présente salle a été acceptée.
+				this.endGame();
+				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
+			}
+		});
+	}
+
+	private handleSocketError(error): void {
+		if (this.raceGame.hasServerStoppedSendingUpdates()) {
+			if (!this.triedToReconnectAfterSocketError) {
+				this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: this.roomId });
+				this.triedToReconnectAfterSocketError = true;
+			} else {
+				this.abortGame();
+			}
+		}
+	}
+
+	private abortGame() {
+		const errorMsg: LocalizedString = {
+			fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
+			en: "Connection error. You've been kicked out of the room.",
+		};
+		alert(errorMsg[getUserInfo().language]);
+		this.quitGame();
+	}
+
+	private endGame(): void {
+		updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
+		this.raceGame.gameFinished();
+		this.scene.stop(CST.SCENES.REPORT_ERROR);
+		this.scene.stop(CST.SCENES.RACE_GAME_UI);
+		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 	}
 
 	private activateAccessiblePositions(): void {
@@ -401,7 +472,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
 		this.scene.stop(CST.SCENES.RACE_GAME);
-		this.scene.start(CST.SCENES.ROOM_SELECTION);
+		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
 
 	private pauseGame(): void {

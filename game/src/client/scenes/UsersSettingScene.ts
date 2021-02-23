@@ -93,7 +93,7 @@ export default class UsersSettingScene extends Phaser.Scene {
 			setUserInfo(userInfo);
 			initializeUserStats();
 
-			this.scene.start(CST.SCENES.ROOM_SELECTION);
+			this.scene.start(CST.SCENES.GAME_SELECTION);
 		});
 	}
 }

@@ -1,10 +1,13 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
+import { JoinRoomAnswerEvent, JoinRoomRequestEvent, RoomSettings } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { Clock } from "../../gameCore/clock/Clock";
 import RoomRepository from "../data/RoomRepository";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "./../../communication/clock/EventNames";
+import { JoiningNonExistentRoomError } from "./JoinRoomErrors";
+import Room from "./Room";
 import RoomFactory from "./RoomFactory";
 
 export default class RoomManager {
@@ -40,15 +43,17 @@ export default class RoomManager {
 				});
 			});
 
-			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, () => {
+			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, (roomSettings: RoomSettings) => {
 				try {
-					const newRoom = RoomFactory.create(this.nsp);
-					newRoom.joinRoom(socket, userInfo);
+					const usedRoomIds = this.roomRepo.getAllRooms().map((room: Room) => room.getId());
+					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate, roomSettings.maxPlayerCount, usedRoomIds);
+					const userId = newRoom.joinRoom(socket, userInfo);
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getId();
-					this.handleDisconnection(socket, roomId);
+					this.handleDisconnection(socket, roomId, userId);
 				} catch (err) {
+					console.log(err);
 					socket.error({
 						type: 400,
 						msg: err.message,
@@ -56,21 +61,18 @@ export default class RoomManager {
 				}
 			});
 
-			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM, (req) => {
+			socket.on(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, (joinRoomRequestEvent: JoinRoomRequestEvent) => {
+				const roomId: string = joinRoomRequestEvent.roomId;
 				try {
-					const roomId: string = req.roomId;
 					const currentRoom = this.roomRepo.getRoomById(roomId);
 					if (currentRoom == undefined) {
-						throw new RoomNotFoundError(`Room ${roomId} was not found`);
+						throw new JoiningNonExistentRoomError();
 					}
-
-					currentRoom.joinRoom(socket, userInfo);
-					this.handleDisconnection(socket, roomId);
-				} catch (err) {
-					socket.error({
-						type: 400,
-						msg: err.message,
-					});
+					const userId = currentRoom.joinRoom(socket, userInfo);
+					this.handleDisconnection(socket, roomId, userId);
+				} catch (error) {
+					console.log(error);
+					socket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: roomId, error: error });
 				}
 			});
 		});
@@ -82,16 +84,16 @@ export default class RoomManager {
 		}
 	}
 
-	private removeUserFromRoom(roomId: string, socket: Socket) {
+	private removeUserFromRoom(roomId: string, userId: string) {
 		const currentRoom = this.roomRepo.getRoomById(roomId);
-		currentRoom.leaveRoom(socket);
+		currentRoom.leaveRoom(userId);
 
 		this.deleteRoomIfEmpty(roomId);
 	}
 
-	private handleDisconnection(socket: Socket, roomId: string): void {
+	private handleDisconnection(socket: Socket, roomId: string, userId: string): void {
 		socket.on("disconnect", () => {
-			this.removeUserFromRoom(roomId, socket);
+			this.removeUserFromRoom(roomId, userId);
 		});
 	}
 }
