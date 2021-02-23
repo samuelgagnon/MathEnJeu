@@ -19,7 +19,7 @@ export default class BaseScene extends Phaser.Scene {
 			gameSocket = connectToGameNamespace(getUserInfo());
 		}
 
-		gameSocket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
+		gameSocket.on(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
 			if (!!!data.error) {
 				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: gameSocket });
 			} else {
