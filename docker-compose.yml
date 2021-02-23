@@ -10,6 +10,7 @@ services:
       - db
     volumes: 
       - ./questions_png:/usr/src/MathEnJeu/dist/server/assets/
+      - ./question_images:/usr/src/MathEnJeu/dist/server/assets/question_images
 
   web:
     container_name: vue_app

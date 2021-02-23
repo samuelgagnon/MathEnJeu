@@ -51,6 +51,11 @@ export class Server {
 				});
 		});
 
+		this.app.get("/question_image/:id", async (req, res) => {
+			const questionId = req.params.id;
+			res.sendFile(path.join(__dirname, `assets/question_images/${questionId}`));
+		});
+
 		this.app.get("/questionFeedbackImage", async (req, res) => {
 			const questionId = req.query.id;
 			const languageShortName = req.query.languageShortName;
