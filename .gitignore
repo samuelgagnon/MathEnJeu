@@ -1,3 +1,5 @@
 /questions_png
 /question_images
+/question_latex
+/feedback_latex
 *.env
