@@ -9,8 +9,10 @@ services:
     depends_on:
       - db
     volumes: 
-      - ./questions_png:/usr/src/MathEnJeu/dist/server/assets/
+      - ./questions_png:/usr/src/MathEnJeu/dist/server/assets/questions_png
       - ./question_images:/usr/src/MathEnJeu/dist/server/assets/question_images
+      - ./question_latex:/usr/src/MathEnJeu/dist/server/assets/question_latex
+      - ./feedback_latex:/usr/src/MathEnJeu/dist/server/assets/feedback_latex
 
   web:
     container_name: vue_app

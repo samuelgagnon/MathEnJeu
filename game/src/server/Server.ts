@@ -1,9 +1,11 @@
 import bodyParser from "body-parser";
 import { Application } from "express";
+import fs from "fs";
 import { Server as HTTPServer } from "http";
 import path from "path";
 import "reflect-metadata";
 import ErrorReport from "../communication/ErrorReport";
+import { Question } from "../gameCore/race/question/Question";
 import QuestionRepository from "./data/QuestionRepository";
 import ReportedErrorRepository from "./data/ReportedErrorRepository";
 
@@ -43,7 +45,7 @@ export class Server {
 			this.questionRepo
 				.getQuestionById(Number(questionId), languageShortName.toString(), Number(schoolGradeId))
 				.then((question) => {
-					res.sendFile(path.join(__dirname, `assets/${question.getQuestionRelativePath()}`));
+					res.sendFile(path.join(__dirname, `assets/questions_png/${question.getQuestionRelativePath()}`));
 				})
 				.catch((error) => {
 					console.log("Query status " + error);
@@ -56,6 +58,29 @@ export class Server {
 			res.sendFile(path.join(__dirname, `assets/question_images/${questionId}`));
 		});
 
+		this.app.get("/generate_latex_files", async (req, res) => {
+			this.questionRepo
+				.getAllQuestions()
+				.then((questions: any[]) => {
+					const questionPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, false));
+					const feedbackPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, true));
+
+					Promise.all(questionPromises.concat(feedbackPromises))
+						.then((_) => {
+							console.log("done");
+							res.sendStatus(200);
+						})
+						.catch((err) => {
+							console.error(err);
+							res.sendStatus(err);
+						});
+				})
+				.catch((error) => {
+					console.log("ORM query status " + error);
+					res.send(error);
+				});
+		});
+
 		this.app.get("/questionFeedbackImage", async (req, res) => {
 			const questionId = req.query.id;
 			const languageShortName = req.query.languageShortName;
@@ -63,8 +88,8 @@ export class Server {
 
 			this.questionRepo
 				.getQuestionById(Number(questionId), languageShortName.toString(), Number(schoolGradeId))
-				.then((question) => {
-					res.sendFile(path.join(__dirname, `assets/${question.getFeedbackRelativePath()}`));
+				.then((question: Question) => {
+					res.sendFile(path.join(__dirname, `assets/questions_png/${question.getFeedbackRelativePath()}`));
 				})
 				.catch((error) => {
 					console.log("ORM query status " + error);
@@ -81,5 +106,19 @@ export class Server {
 
 	public listen(callback: (port: number) => void): void {
 		this.httpServer.listen(this.DEFAULT_PORT, process.env.SERVER_API_URL, () => callback(this.DEFAULT_PORT));
+	}
+
+	private writeLatexFile(question: any, isFeedback: boolean): Promise<any> {
+		const data = isFeedback ? question.feedbackLatex : question.questionLatex;
+		const directory = isFeedback ? "feedback_latex" : "question_latex";
+		return new Promise((resolve, reject) => {
+			fs.writeFile(path.join(__dirname, `assets/${directory}/question_${question.questionId}_${question.shortName}.tex`), data, (err) => {
+				if (err) {
+					reject("Writing file error!");
+				} else {
+					resolve("Writing file successful !");
+				}
+			});
+		});
 	}
 }

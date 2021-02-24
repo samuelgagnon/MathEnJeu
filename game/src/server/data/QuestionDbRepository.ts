@@ -82,4 +82,14 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		return gameQuestion;
 	}
+
+	async getAllQuestions(): Promise<any[]> {
+		const queryString = `select question_info.question_id as questionId, question_info.question_latex as questionLatex, question_info.feedback_latex as feedbackLatex, \`language\`.short_name as shortName from question_info 
+		INNER JOIN \`language\` 
+		ON question_info.language_id= \`language\`.language_id;`;
+
+		const rows = await getConnection().query(queryString);
+
+		return rows;
+	}
 }
