@@ -75,7 +75,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.pointsForPosition = [];
-		this.isFollowingPlayer = false;
+		this.isFollowingPlayer = true;
 		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
 		this.activeTileColor = 0xadff2f;
@@ -147,10 +147,13 @@ export default class RaceScene extends Phaser.Scene {
 		}
 
 		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		this.isReadyToGetPossiblePositions = false;
-		this.activateAccessiblePositions();
+		this.isReadyToGetPossiblePositions = true;
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//Initilalize camera
+		this.render();
+		this.handleFollowPlayerToggle(this.isFollowingPlayer);
 
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
@@ -278,18 +281,20 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private renderAccessiblePositions() {
-		const currentPlayer = this.raceGame.getCurrentPlayer();
-		const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
-			this.activateAccessiblePositions();
-		} else if (
-			//If a player gets affected by a banana or any other state change without moving
-			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
-			this.playerHasArrived(currentPosition) &&
-			!currentPlayer.isAnsweringQuestion()
-		) {
-			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
-			this.activateAccessiblePositions();
+		if (this.raceGame.getIsGameStarted()) {
+			const currentPlayer = this.raceGame.getCurrentPlayer();
+			const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
+			if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
+				this.activateAccessiblePositions();
+			} else if (
+				//If a player gets affected by a banana or any other state change without moving
+				currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
+				this.playerHasArrived(currentPosition) &&
+				!currentPlayer.isAnsweringQuestion()
+			) {
+				this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
+				this.activateAccessiblePositions();
+			}
 		}
 	}
 

@@ -19,7 +19,7 @@ export interface BookUsedEvent {
 	questionDifficulty: number;
 }
 
-export interface GameStartEvent {
+export interface GameCreatedEvent {
 	gameTime: number;
 	gameStartTimeStamp: number;
 	grid: StartingRaceGridInfo;
