@@ -270,7 +270,6 @@ export default class RaceGameUI extends Phaser.Scene {
 		}
 
 		//setting remaining time
-		const GO_DURATION = 1000;
 		const timeRemaining = raceScene.raceGame.getTimeRemaining();
 		if (timeRemaining < 0) {
 			this.setRemainingTimeText(0);
