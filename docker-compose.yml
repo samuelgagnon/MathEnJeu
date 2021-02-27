@@ -13,6 +13,7 @@ services:
       - ./question_images:/usr/src/MathEnJeu/dist/server/assets/question_images
       - ./question_latex:/usr/src/MathEnJeu/dist/server/assets/question_latex
       - ./feedback_latex:/usr/src/MathEnJeu/dist/server/assets/feedback_latex
+      - ./question_html:/usr/src/MathEnJeu/dist/server/assets/question_html
 
   web:
     container_name: vue_app
