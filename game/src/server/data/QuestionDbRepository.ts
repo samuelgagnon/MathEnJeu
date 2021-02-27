@@ -28,6 +28,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 		return questionsId;
 	}
 
+	//TODO remove schoolGradeId (normally, we shouldn't have to use that parameter to get a question by ID)
 	async getQuestionById(questionId: number, languageShortName: string, schoolGradeId: number): Promise<GameQuestion> {
 		const queryString = `SELECT answer.answer_id as answerId, answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
 		question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName, 
