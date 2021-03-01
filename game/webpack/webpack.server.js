@@ -44,6 +44,7 @@ module.exports = (env) => {
 		plugins: [
 			new webpack.DefinePlugin({
 				"process.env": {
+					SERVER_API_URL: JSON.stringify(process.env.SERVER_API_URL),
 					PORT: JSON.stringify(process.env.PORT),
 					DB_USER: JSON.stringify(process.env.DB_USER),
 					DB_PWD: JSON.stringify(process.env.DB_PWD),

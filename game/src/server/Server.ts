@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import { Application } from "express";
 import fs from "fs";
 import { Server as HTTPServer } from "http";
+import { JSDOM } from "jsdom";
 import path from "path";
 import "reflect-metadata";
 import ErrorReport from "../communication/ErrorReport";
@@ -53,32 +54,25 @@ export class Server {
 				});
 		});
 
-		this.app.get("/question_image/:id", async (req, res) => {
+		this.app.get("/question-image/:id", async (req, res) => {
 			const questionId = req.params.id;
-			res.sendFile(path.join(__dirname, `assets/question_images/${questionId}`));
+			const fileName = this.renameToSVGFile(questionId);
+
+			res.sendFile(path.join(__dirname, `assets/question_images/${fileName}`));
 		});
 
-		this.app.get("/generate_latex_files", async (req, res) => {
-			this.questionRepo
-				.getAllQuestions()
-				.then((questions: any[]) => {
-					const questionPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, false));
-					const feedbackPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, true));
+		this.app.get("/question-html/:id", (req, res) => {
+			const questionId = req.params.id;
+			const languageShortName = !!req.query.languageShortName ? req.query.languageShortName : "fr";
 
-					Promise.all(questionPromises.concat(feedbackPromises))
-						.then((_) => {
-							console.log("done");
-							res.sendStatus(200);
-						})
-						.catch((err) => {
-							console.error(err);
-							res.sendStatus(err);
-						});
-				})
-				.catch((error) => {
-					console.log("ORM query status " + error);
-					res.send(error);
-				});
+			res.sendFile(path.join(__dirname, `assets/question_html/question_html/question_${questionId}_${languageShortName}.html`));
+		});
+
+		this.app.get("/feedback-html/:id", (req, res) => {
+			const questionId = req.params.questionId;
+			const languageShortName = req.query.languageShortName;
+
+			res.sendFile(path.join(__dirname, `assets/question_html/feedback_html/feedback_${questionId}_${languageShortName}.html`));
 		});
 
 		this.app.get("/questionFeedbackImage", async (req, res) => {
@@ -102,17 +96,78 @@ export class Server {
 			console.log(body);
 			this.errorRepo.addReportedError(body.languageShortName, body.errorDescription, JSON.stringify(body.errorLog), body.username, body.questionId);
 		});
+
+		//TODO maybe remove it in production
+		this.app.get("/generate-latex-files", async (req, res) => {
+			this.questionRepo
+				.getAllQuestions()
+				.then((questions: any[]) => {
+					const questionPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, false));
+					const feedbackPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, true));
+
+					Promise.all(questionPromises.concat(feedbackPromises))
+						.then((_) => {
+							console.log("done");
+							res.sendStatus(200);
+						})
+						.catch((err) => {
+							console.error(err);
+							res.sendStatus(err);
+						});
+				})
+				.catch((error) => {
+					console.log("ORM query status " + error);
+					res.send(error);
+				});
+		});
+
+		this.app.get("/append-to-html", async (req, res) => {
+			try {
+				await this.appendToHtml("feedback");
+				await this.appendToHtml("question");
+
+				res.sendStatus(200);
+			} catch (error) {
+				console.log(error);
+				res.send(error);
+			}
+		});
+
+		this.app.get("/modify-html", async (req, res) => {
+			try {
+				await this.modifyHtmlFiles("feedback");
+				await this.modifyHtmlFiles("question");
+
+				res.sendStatus(200);
+			} catch (error) {
+				console.log(error);
+				res.send(error);
+			}
+		});
+	}
+
+	private renameToSVGFile(questionId: string) {
+		let stringArray = questionId.split(".");
+		const lastElement = stringArray[stringArray.length - 1];
+
+		if (lastElement !== "svg") {
+			if (lastElement === "eps") stringArray.pop();
+
+			stringArray.push("svg");
+		}
+		return stringArray.join(".");
 	}
 
 	public listen(callback: (port: number) => void): void {
-		this.httpServer.listen(this.DEFAULT_PORT, process.env.SERVER_API_URL, () => callback(this.DEFAULT_PORT));
+		this.httpServer.listen(this.DEFAULT_PORT, () => callback(this.DEFAULT_PORT));
 	}
 
 	private writeLatexFile(question: any, isFeedback: boolean): Promise<any> {
 		const data = isFeedback ? question.feedbackLatex : question.questionLatex;
 		const directory = isFeedback ? "feedback_latex" : "question_latex";
+		const fileName = isFeedback ? "feedback" : "question";
 		return new Promise((resolve, reject) => {
-			fs.writeFile(path.join(__dirname, `assets/${directory}/question_${question.questionId}_${question.shortName}.tex`), data, (err) => {
+			fs.writeFile(path.join(__dirname, `assets/${directory}/${fileName}_${question.questionId}_${question.shortName}.tex`), data, (err) => {
 				if (err) {
 					reject("Writing file error!");
 				} else {
@@ -120,5 +175,47 @@ export class Server {
 				}
 			});
 		});
+	}
+
+	private async appendToHtml(directory: string): Promise<void> {
+		const dirPath = path.join(__dirname, `assets/question_html`);
+		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
+
+		const htmlToAppend = await fs.promises.readFile(`${dirPath}/append.html`, { encoding: "utf-8" });
+
+		for (const file of files) {
+			console.log(file);
+			const filePath = `${dirPath}/${directory}_html/${file}`;
+			const htmlToModify = await fs.promises.readFile(filePath, { encoding: "utf-8" });
+			await fs.promises.writeFile(filePath, this.modifyHtml(htmlToModify));
+			await fs.promises.appendFile(filePath, htmlToAppend);
+		}
+	}
+
+	private async modifyHtmlFiles(directory: string): Promise<void> {
+		const dirPath = path.join(__dirname, `assets/question_html`);
+		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
+
+		for (const file of files) {
+			console.log(file);
+			const filePath = `${dirPath}/${directory}_html/${file}`;
+			const htmlToModify = await fs.promises.readFile(filePath, { encoding: "utf-8" });
+			await fs.promises.writeFile(filePath, this.modifyHtml(htmlToModify));
+		}
+	}
+
+	private modifyHtml(html: string): string {
+		const dom = new JSDOM(html);
+		dom.window.document.querySelectorAll("embed").forEach((element) => {
+			let image = dom.window.document.createElement("img");
+			image.src = element.src;
+			element.parentElement.replaceChild(image, element);
+		});
+
+		dom.window.document.querySelectorAll("img").forEach((element) => {
+			element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+		});
+
+		return dom.window.document.documentElement.innerHTML;
 	}
 }
