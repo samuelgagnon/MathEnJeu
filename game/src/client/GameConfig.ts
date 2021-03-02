@@ -1,3 +1,4 @@
+import GesturesPlugin from "phaser3-rex-plugins/plugins/gestures-plugin.js";
 import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 import BaseScene from "./scenes/BaseScene";
 import GameSelection from "./scenes/GameSelectionScene";
@@ -49,6 +50,11 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 				key: "rexUI",
 				plugin: RexUIPlugin,
 				mapping: "rexUI",
+			},
+			{
+				key: "rexGestures",
+				plugin: GesturesPlugin,
+				mapping: "rexGestures",
 			},
 		],
 	},

@@ -1,3 +1,4 @@
+import { Pinch } from "phaser3-rex-plugins/plugins/gestures.js";
 import {
 	AnswerCorrectedEvent,
 	GameEndEvent,
@@ -536,7 +537,23 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private createCameraBounds(x: number, y: number, boardWidth: number, boardHeight: number): void {
-		this.cameras.main.setBounds(x, y, boardWidth * this.distanceBetweenTwoTiles + 600, boardHeight * this.distanceBetweenTwoTiles + 600, true);
+		let pinch = new Pinch(this);
+		pinch.on(
+			"pinch",
+			(pinch) => {
+				var scaleFactor = pinch.scaleFactor;
+				this.cameras.main.zoom *= scaleFactor;
+			},
+			this
+		);
+
+		this.cameras.main.setBounds(
+			x - 200,
+			y - 200,
+			boardWidth * this.distanceBetweenTwoTiles + 600,
+			boardHeight * this.distanceBetweenTwoTiles + 600,
+			true
+		);
 	}
 }
 
