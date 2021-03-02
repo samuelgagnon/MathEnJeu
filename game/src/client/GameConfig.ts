@@ -3,6 +3,7 @@ import BaseScene from "./scenes/BaseScene";
 import GameSelection from "./scenes/GameSelectionScene";
 import LoadScene from "./scenes/LoadScene";
 import MenuScene from "./scenes/MenuScene";
+import BackgroundScene from "./scenes/raceGame/BackgroundScene";
 import InGameMenuScene from "./scenes/raceGame/InGameMenuScene";
 import QuestionScene from "./scenes/raceGame/QuestionScene";
 import RaceGameUI from "./scenes/raceGame/RaceGameUI";
@@ -35,6 +36,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		ReportErrorScene,
 		RoomCreation,
 		BaseScene,
+		BackgroundScene,
 	],
 	scale: {
 		parent: "phaser-game",

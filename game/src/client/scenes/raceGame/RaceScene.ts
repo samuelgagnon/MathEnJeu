@@ -20,6 +20,7 @@ import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
 import { LocalizedString } from "./../../Localization";
+import { BackgroundSceneData } from "./BackgroundScene";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
@@ -35,7 +36,6 @@ export default class RaceScene extends Phaser.Scene {
 	distanceBetweenTwoTiles: number;
 	boardPosition: Point;
 	keyboardInputs;
-	background: Phaser.GameObjects.TileSprite;
 	isFollowingPlayer: boolean;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
@@ -86,10 +86,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	create() {
-		this.draggableCameraControls();
+		this.scene.launch(CST.SCENES.BACKGROUD, <BackgroundSceneData>{ backgroundImage: CST.IMAGES.BACKGROUD });
 
-		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
-		this.background.setScrollFactor(0);
+		this.draggableCameraControls();
 
 		this.cameras.main.centerOn(0, 0);
 		this.keyboardInputs = this.input.keyboard.createCursorKeys();
@@ -151,6 +150,9 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
 
+		//RenderBackground behind everything else
+		this.scene.sendToBack(CST.SCENES.BACKGROUD);
+
 		//Initilalize camera
 		this.render();
 		this.handleFollowPlayerToggle(this.isFollowingPlayer);
@@ -183,14 +185,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	render() {
-		this.renderBackground();
 		this.renderPlayerSprites();
 		this.renderGameBoard();
 		this.renderAccessiblePositions();
-	}
-
-	private renderBackground() {
-		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
 	}
 
 	private renderPlayerSprites() {
