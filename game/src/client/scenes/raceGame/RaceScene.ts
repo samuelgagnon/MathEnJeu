@@ -33,7 +33,7 @@ export default class RaceScene extends Phaser.Scene {
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
-	distanceBetweenTwoTiles: number;
+	readonly distanceBetweenTwoTiles: number = 66;
 	boardPosition: Point;
 	keyboardInputs;
 	isFollowingPlayer: boolean = true;
@@ -81,7 +81,6 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.draggableCameraControls();
 
-		this.cameras.main.centerOn(0, 0);
 		this.keyboardInputs = this.input.keyboard.createCursorKeys();
 
 		this.tiles = this.add.group();
@@ -89,9 +88,8 @@ export default class RaceScene extends Phaser.Scene {
 
 		const gameGrid = this.raceGame.getGrid();
 
-		//TODO : Find a way to store those "Magic Numbers"
-		this.distanceBetweenTwoTiles = 66;
-		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
+		this.boardPosition = { x: <number>this.game.config.width * 0.5, y: <number>this.game.config.height * 0.5 };
+		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
 
 		//creating game board
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
@@ -535,6 +533,10 @@ export default class RaceScene extends Phaser.Scene {
 	private zoomOut(): void {
 		const cam = this.cameras.main;
 		if (cam.zoom >= this.minZoom) cam.zoom -= 0.1;
+	}
+
+	private createCameraBounds(x: number, y: number, boardWidth: number, boardHeight: number): void {
+		this.cameras.main.setBounds(x, y, boardWidth * this.distanceBetweenTwoTiles + 600, boardHeight * this.distanceBetweenTwoTiles + 600, true);
 	}
 }
 
