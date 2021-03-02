@@ -3,10 +3,13 @@ import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
 export default class RaceGameUI extends Phaser.Scene {
+	gameDuration: number;
+
 	disabledInteractionZone: Phaser.GameObjects.Zone;
 
-	remainingTime: Phaser.GameObjects.Text;
+	startCountdownText: Phaser.GameObjects.Text;
 	remainingTimeText: Phaser.GameObjects.Text;
+	remainingTimeLabelText: Phaser.GameObjects.Text;
 	startOptionsButton: Phaser.GameObjects.Image;
 
 	isFollowingPlayer: boolean;
@@ -35,8 +38,9 @@ export default class RaceGameUI extends Phaser.Scene {
 	create() {
 		const raceScene: RaceScene = <RaceScene>this.scene.get(CST.SCENES.RACE_GAME);
 		const currentPlayer = raceScene.raceGame.getCurrentPlayer();
+		this.gameDuration = raceScene.raceGame.getGameDuration();
 
-		this.isFollowingPlayer = false;
+		this.isFollowingPlayer = true;
 		this.isThrowingBanana = false;
 
 		this.playerStatusText = this.add
@@ -64,7 +68,7 @@ export default class RaceGameUI extends Phaser.Scene {
 			)
 			.setScrollFactor(0);
 
-		this.remainingTime = this.add
+		this.remainingTimeText = this.add
 			.text(150, 50, raceScene.raceGame.getTimeRemaining().toString(), {
 				fontFamily: "Courier",
 				fontSize: "32px",
@@ -74,12 +78,22 @@ export default class RaceGameUI extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
-		this.remainingTimeText = this.add
+		this.remainingTimeLabelText = this.add
 			.text(50, 50, "Time: ", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
 				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0);
+
+		this.startCountdownText = this.add
+			.text(600, 200, "", {
+				fontFamily: "Courier",
+				fontSize: "120px",
+				align: "center",
+				color: "#FFFFFF",
 				fontStyle: "bold",
 			})
 			.setScrollFactor(0);
@@ -178,7 +192,7 @@ export default class RaceGameUI extends Phaser.Scene {
 			.setScrollFactor(0);
 
 		this.followPlayerText = this.add
-			.text(50, 500, "Camera follow: Off", {
+			.text(50, 500, this.isFollowingPlayer ? "Camera follow: On" : "Camera follow: Off", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -198,9 +212,9 @@ export default class RaceGameUI extends Phaser.Scene {
 		});
 
 		this.followPlayerText.on("pointerup", () => {
-			const newLabel = this.isFollowingPlayer ? "Camera follow: Off" : "Camera follow: On";
-			this.followPlayerText.setText(newLabel);
 			this.isFollowingPlayer = !this.isFollowingPlayer;
+			const newLabel = this.isFollowingPlayer ? "Camera follow: On" : "Camera follow: Off";
+			this.followPlayerText.setText(newLabel);
 			sceneEvents.emit(EventNames.followPlayerToggle, this.isFollowingPlayer);
 		});
 
@@ -256,14 +270,16 @@ export default class RaceGameUI extends Phaser.Scene {
 		}
 
 		//setting remaining time
-		if (raceScene.raceGame.getTimeRemaining() < 0) {
-			this.remainingTime.setText("0");
+		const timeRemaining = raceScene.raceGame.getTimeRemaining();
+		if (timeRemaining < 0) {
+			this.setRemainingTimeText(0);
+		} else if (!raceScene.raceGame.getIsGameStarted()) {
+			this.setRemainingTimeText(this.gameDuration);
+			this.setStartCountdownText(timeRemaining - this.gameDuration);
 		} else {
-			this.remainingTime.setText(Math.floor(raceScene.raceGame.getTimeRemaining() / 1000).toString());
+			this.setRemainingTimeText(timeRemaining);
+			this.startCountdownText.setText("");
 		}
-
-		//setting remaining time
-		this.remainingTime.setText(Math.floor(raceScene.raceGame.getTimeRemaining() / 1000).toString());
 
 		//setting player time status
 		this.playerStatusText.setText(currentPlayerStatus.toString().substring(0, currentPlayerStatus.length - 6));
@@ -277,6 +293,24 @@ export default class RaceGameUI extends Phaser.Scene {
 
 		//setting player points
 		this.pointsTotal.setText(currentPlayer.getPoints().toString());
+	}
+
+	/**
+	 * Set the time to display as remaining time.
+	 *
+	 * @param remainingTime Time remaining before the game ends in milliseconds
+	 */
+	private setRemainingTimeText(remainingTime: number): void {
+		this.remainingTimeText.setText(Math.floor(remainingTime / 1000).toString());
+	}
+
+	private setStartCountdownText(remainingTime: number): void {
+		const approxRemainingTime = Math.floor(remainingTime / 1000);
+		if (approxRemainingTime > 0) {
+			this.startCountdownText.setText(approxRemainingTime.toString());
+		} else {
+			this.startCountdownText.setText("GO!");
+		}
 	}
 
 	private resumeGame() {

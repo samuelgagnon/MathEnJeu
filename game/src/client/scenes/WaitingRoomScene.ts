@@ -1,4 +1,4 @@
-import { GameEndEvent, GameOptions, GameStartEvent, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
+import { GameCreatedEvent, GameEndEvent, GameOptions, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
 import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterfaces";
@@ -48,7 +48,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.highScore = getUserHighScore();
 
 		this.gameSocket = data.socket;
-		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_START, (gameInfo: GameStartEvent) => {
+		this.gameSocket.once(CLIENT_EVENT_NAMES.GAME_CREATED, (gameInfo: GameCreatedEvent) => {
 			const raceGame: ClientRaceGameController = RaceGameFactory.createClient(
 				gameInfo.gameTime,
 				gameInfo.gameStartTimeStamp,

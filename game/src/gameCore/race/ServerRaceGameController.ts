@@ -2,8 +2,8 @@ import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
 	BookUsedEvent,
+	GameCreatedEvent,
 	GameEndEvent,
-	GameStartEvent,
 	ItemUsedEvent,
 	MoveRequestEvent,
 	PlayerEndState,
@@ -36,7 +36,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
 	private context: Room;
 	private inputBuffer: BufferedInput[] = [];
-	private isGameStarted: boolean = false;
+	private isGameCreated: boolean = false;
 	private gameId: string;
 	private gameDbId: number = null;
 	private itemPickUpTimestamps: Number[] = [];
@@ -54,7 +54,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		isSinglePlayer: boolean
 	) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, Clock.now(), grid, players);
+		super(gameTime, Clock.now() + RACE_CST.CIRCUIT.STARTING_TRANSITION_DURATION, grid, players);
 		this.gameId = gameId;
 		this.questionRepo = questionRepo;
 		this.isSinglePlayer = isSinglePlayer;
@@ -73,19 +73,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.state;
 	}
 
-	private emitStartGameEvent(): void {
+	private emitGameCreatedEvent(): void {
 		this.context
 			.getStatsRepo()
-			.addGameStats(this.gameTime, "RaceGame", this.players.length, new Date())
+			.addGameStats(this.gameDuration, "RaceGame", this.players.length, new Date())
 			.then((res) => (this.gameDbId = res))
 			.catch((err) => console.log(err));
 
-		this.isGameStarted = true;
+		this.isGameCreated = true;
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
-			.emit(CE.GAME_START, <GameStartEvent>{
-				gameTime: this.gameTime,
+			.emit(CE.GAME_CREATED, <GameCreatedEvent>{
+				gameTime: this.gameDuration,
 				gameStartTimeStamp: this.gameStartTimeStamp,
 				grid: <StartingRaceGridInfo>{
 					width: this.grid.getWidth(),
@@ -112,7 +112,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public update(): void {
-		if (!this.isGameStarted) this.emitStartGameEvent();
+		if (!this.isGameCreated) this.emitGameCreatedEvent();
 		this.resolveInputs();
 		super.update();
 		if (this.timeRemaining <= 0) this.gameFinished();
@@ -154,8 +154,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		});
 
 		socket.on(SE.MOVE_REQUEST, (data: MoveRequestEvent) => {
-			const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
-			this.inputBuffer.push(newInput);
+			//We're just ignoring the request if the game isn't started yet.
+			if (this.isGameStarted) {
+				const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
+				this.inputBuffer.push(newInput);
+			}
 		});
 
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
