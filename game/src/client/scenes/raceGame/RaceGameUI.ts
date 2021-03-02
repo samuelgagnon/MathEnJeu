@@ -19,6 +19,10 @@ export default class RaceGameUI extends Phaser.Scene {
 	playerStatusText: Phaser.GameObjects.Text;
 	playerStatusTime: Phaser.GameObjects.Text;
 
+	//zoom options
+	zoomInButton: Phaser.GameObjects.Text;
+	zoomOutButton: Phaser.GameObjects.Text;
+
 	//playerItems
 	bananaText: Phaser.GameObjects.Text;
 	bananaCount: Phaser.GameObjects.Text;
@@ -204,6 +208,32 @@ export default class RaceGameUI extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
+		this.zoomInButton = this.add
+			.text(50, Number(this.game.config.height) * 0.9, "+", {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({
+				useHandCursor: true,
+			})
+			.setScrollFactor(0);
+
+		this.zoomOutButton = this.add
+			.text(100, Number(this.game.config.height) * 0.9, "-", {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({
+				useHandCursor: true,
+			})
+			.setScrollFactor(0);
+
 		this.throwBananaText.on("pointerup", () => {
 			const newLabel = this.isThrowingBanana ? "Throwing banana: Off" : "Throwing banana: On";
 			this.throwBananaText.setText(newLabel);
@@ -251,6 +281,40 @@ export default class RaceGameUI extends Phaser.Scene {
 			this.startOptionsButton.clearTint();
 			sceneEvents.emit(EventNames.gamePaused);
 			this.scene.launch(CST.SCENES.IN_GAME_MENU);
+		});
+
+		this.zoomInButton.on("pointerover", () => {
+			this.zoomInButton.setTint(0xffff66);
+		});
+
+		this.zoomInButton.on("pointerout", () => {
+			this.zoomInButton.clearTint();
+		});
+
+		this.zoomInButton.on("pointerdown", () => {
+			this.zoomInButton.setTint(0x86bfda);
+		});
+
+		this.zoomInButton.on("pointerup", () => {
+			this.zoomInButton.clearTint();
+			sceneEvents.emit(EventNames.zoomIn);
+		});
+
+		this.zoomOutButton.on("pointerover", () => {
+			this.zoomOutButton.setTint(0xffff66);
+		});
+
+		this.zoomOutButton.on("pointerout", () => {
+			this.zoomOutButton.clearTint();
+		});
+
+		this.zoomOutButton.on("pointerdown", () => {
+			this.zoomOutButton.setTint(0x86bfda);
+		});
+
+		this.zoomOutButton.on("pointerup", () => {
+			this.zoomOutButton.clearTint();
+			sceneEvents.emit(EventNames.zoomOut);
 		});
 
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);

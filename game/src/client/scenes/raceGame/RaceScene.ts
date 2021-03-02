@@ -28,29 +28,32 @@ export default class RaceScene extends Phaser.Scene {
 	//Room
 	roomId: string;
 	//Loops
-	lag: number;
-	physTimestep: number;
+	lag: number = 0;
+	physTimestep: number = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
 	distanceBetweenTwoTiles: number;
 	boardPosition: Point;
 	keyboardInputs;
-	isFollowingPlayer: boolean;
+	isFollowingPlayer: boolean = true;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
-	pointsForPosition: Phaser.GameObjects.Text[];
+	pointsForPosition: Phaser.GameObjects.Text[] = [];
 
 	targetLocation: Point;
 
 	currentPlayerMovement: number;
-	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible position
-	isThrowingBanana: boolean;
+	isReadyToGetPossiblePositions: boolean; //Needed to make sure the scene doesn't always recalculate the possible position
+	isThrowingBanana: boolean = true;
 
-	tileActiveState: number;
-	tileInactiveState: number;
-	activeTileColor: number;
+	readonly tileActiveState: number = 1;
+	readonly tileInactiveState: number = 0;
+	readonly activeTileColor: number = 0xadff2f;
 
-	characterSprites: CharacterSprites[];
+	readonly maxZoom: number = 1.5;
+	readonly minZoom: number = 0.8;
+
+	characterSprites: CharacterSprites[] = [];
 	tiles: Phaser.GameObjects.Group;
 	items: Phaser.GameObjects.Group;
 
@@ -58,10 +61,7 @@ export default class RaceScene extends Phaser.Scene {
 	triedToReconnectAfterSocketError: boolean;
 
 	constructor() {
-		const sceneConfig = {
-			key: CST.SCENES.RACE_GAME,
-		};
-		super(sceneConfig);
+		super({ key: CST.SCENES.RACE_GAME });
 	}
 
 	preload() {
@@ -71,16 +71,7 @@ export default class RaceScene extends Phaser.Scene {
 	init(data: any) {
 		this.raceGame = data.gameController;
 		this.roomId = data.roomId;
-		this.lag = 0;
-		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
-		this.characterSprites = [];
-		this.pointsForPosition = [];
-		this.isFollowingPlayer = true;
-		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
-		this.activeTileColor = 0xadff2f;
-		this.tileInactiveState = 0;
-		this.tileActiveState = 1;
 		this.triedToReconnectAfterSocketError = false;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
@@ -165,6 +156,8 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
 		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
+		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
 	}
 
 	playerRequestMove(targetLocation: Point) {
@@ -532,6 +525,16 @@ export default class RaceScene extends Phaser.Scene {
 				this.cameras.main.scrollY += 4;
 			}
 		}
+	}
+
+	private zoomIn(): void {
+		const cam = this.cameras.main;
+		if (cam.zoom <= this.maxZoom) cam.zoom += 0.1;
+	}
+
+	private zoomOut(): void {
+		const cam = this.cameras.main;
+		if (cam.zoom >= this.minZoom) cam.zoom -= 0.1;
 	}
 }
 
