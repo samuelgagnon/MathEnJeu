@@ -256,6 +256,7 @@ export default class RaceGameUI extends Phaser.Scene {
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
 		subscribeToEvent(EventNames.error, this.handleErrors, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	update() {

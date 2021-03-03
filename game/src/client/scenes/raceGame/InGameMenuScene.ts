@@ -122,7 +122,10 @@ export default class InGameMenuScene extends Phaser.Scene {
 
 		subscribeToEvent(EventNames.errorWindowOpened, this.errorWindowOpened, this);
 		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
+
+	update() {}
 
 	private resumeGame(): void {
 		sceneEvents.emit(EventNames.gameResumed);

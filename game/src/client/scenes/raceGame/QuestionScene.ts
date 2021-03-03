@@ -207,6 +207,7 @@ export default class QuestionScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.errorWindowOpened, this.pauseGame, this);
 		subscribeToEvent(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
 		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
 			this.clearQuestionTextures();
