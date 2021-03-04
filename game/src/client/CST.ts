@@ -45,5 +45,6 @@ export const CST = {
 		USER_SETTINGS: "userSettings.html",
 		USERS_LIST: "usersList.html",
 		ROOM_SETTINGS: "roomSettings.html",
+		PLAYER_KICK_INPUT: "playerInput.html",
 	},
 };

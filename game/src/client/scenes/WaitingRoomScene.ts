@@ -1,7 +1,7 @@
 import { GameCreatedEvent, GameEndEvent, GameOptions, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import PlayerState from "../../communication/race/PlayerState";
-import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterfaces";
+import { RoomInfoEvent, RoomSettings, UserDTO } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import Player from "../../gameCore/race/player/Player";
@@ -18,33 +18,29 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private roomIdText: Phaser.GameObjects.Text;
 	private gameSocket: SocketIOClient.Socket;
 	private usersListHtml: Phaser.GameObjects.DOMElement;
+	private usersDTO: UserDTO[] = [];
 	private gameResultsHtml: Phaser.GameObjects.DOMElement;
 	private gameOptions: Phaser.GameObjects.DOMElement;
 	private roomSettings: Phaser.GameObjects.DOMElement;
 	private nbPlayersText: Phaser.GameObjects.Text;
 	private isPrivateText: Phaser.GameObjects.Text;
 	private applySettingsText: Phaser.GameObjects.Text;
-	private nbPlayers: number;
-	private isPrivate: boolean;
+	private nbPlayers: number = 0;
+	private isPrivate: boolean = false;
 	private lastGameResults: GameEndEvent;
-	private isHost: boolean;
-	private hostName: string;
+	private isHost: boolean = false;
+	private hostName: string = "Current host: ";
 	private highScore: number;
-	private roomId: string;
+	private roomId: string = "Room id: ";
+	private kickButton: Phaser.GameObjects.Text;
+	private kickPlayerInput: Phaser.GameObjects.DOMElement;
 
 	constructor() {
-		const sceneConfig = { key: CST.SCENES.WAITING_ROOM };
-		super(sceneConfig);
+		super({ key: CST.SCENES.WAITING_ROOM });
 	}
 
 	init(data: any) {
 		this.lastGameResults = data.lastGameData;
-		this.hostName = "Current host: ";
-		this.roomId = "Room id: ";
-		this.isPrivate = false;
-		this.nbPlayers = 0;
-
-		this.isHost = false;
 		this.highScore = getUserHighScore();
 
 		this.gameSocket = data.socket;
@@ -60,12 +56,14 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame, roomId: this.roomId });
 		});
+		this.gameSocket.once(WAITING_ROOM_EVENT_NAMES.KICKED, () => this.quitScene());
 		this.gameSocket.on(ROOM_EVENT_NAMES.HOST_CHANGE, (data: HostChangeEvent) => {
 			this.isHost = false;
 			this.hostName = `Current host: ${data.newHostName}`;
 		});
 		this.gameSocket.on(ROOM_EVENT_NAMES.IS_HOST, () => {
 			this.isHost = true;
+			this.updateUsersList();
 		});
 		this.gameSocket.on(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, (roomSettings: RoomSettings) => {
 			this.nbPlayers = roomSettings.maxPlayerCount;
@@ -85,6 +83,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
 
 		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
+		this.kickPlayerInput = this.add.dom(this.game.renderer.width * 0.23, this.game.renderer.height * 0.6).createFromCache(CST.HTML.PLAYER_KICK_INPUT);
 		this.gameOptions = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.7).createFromCache(CST.HTML.GAME_OPTIONS);
 		this.roomSettings = this.add.dom(this.game.renderer.width * 0.67, this.game.renderer.height * 0.4).createFromCache(CST.HTML.ROOM_SETTINGS);
 
@@ -142,26 +141,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			});
 		}
 
-		this.startButton = this.add
-			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
-				fontFamily: "Courier",
-				fontSize: "50px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setInteractive({ useHandCursor: true });
-
-		this.quitButton = this.add
-			.text(this.game.renderer.width * 0.05, this.game.renderer.height * 0.1, "<- Leave Room", {
-				fontFamily: "Courier",
-				fontSize: "40px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setInteractive({ useHandCursor: true });
-
 		this.highScoreText = this.add
 			.text(this.game.renderer.width * 0.35, this.game.renderer.height * 0.1, `HighScore: ${this.highScore}`, {
 				fontFamily: "Courier",
@@ -193,6 +172,43 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			});
 		});
 
+		this.kickButton = this.add
+			.text(this.game.renderer.width * 0.32, this.game.renderer.height * 0.58, "kick", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
+
+		this.kickButton.on("pointerover", () => {
+			this.kickButton.setTint(0xffff66);
+		});
+
+		this.kickButton.on("pointerout", () => {
+			this.kickButton.clearTint();
+		});
+
+		this.kickButton.on("pointerdown", () => {
+			this.kickButton.setTint(0x86bfda);
+		});
+
+		this.kickButton.on("pointerup", () => {
+			this.kickButton.clearTint();
+			this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.KICK_PLAYER, (<HTMLInputElement>this.kickPlayerInput.getChildByID("playerField")).value);
+		});
+
+		this.startButton = this.add
+			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
+				fontFamily: "Courier",
+				fontSize: "50px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
+
 		this.startButton.on("pointerover", () => {
 			this.startButton.setTint(0xffff66);
 		});
@@ -213,6 +229,16 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			});
 		});
 
+		this.quitButton = this.add
+			.text(this.game.renderer.width * 0.05, this.game.renderer.height * 0.1, "<- Leave Room", {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
+
 		this.quitButton.on("pointerover", () => {
 			this.quitButton.setTint(0xffff66);
 		});
@@ -227,32 +253,15 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.quitButton.on("pointerup", () => {
 			this.quitButton.clearTint();
-			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
-			this.gameSocket.close();
-			this.scene.start(CST.SCENES.GAME_SELECTION);
+			this.quitScene();
 		});
 
 		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, (data: RoomInfoEvent) => {
 			this.hostName = `Current host: ${data.hostName}`;
 			this.roomId = `Room id: ${data.roomId}`;
+			this.usersDTO = data.userDTOs;
 
-			let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
-
-			while (usersList.firstChild) {
-				usersList.removeChild(usersList.firstChild);
-			}
-
-			if (data.usersInfo.length > 1) {
-				this.highScoreText.setActive(false).setVisible(false);
-			} else {
-				this.highScoreText.setActive(true).setVisible(true);
-			}
-
-			data.usersInfo.forEach((userInfo) => {
-				var li = document.createElement("li");
-				li.appendChild(document.createTextNode(userInfo.name));
-				usersList.appendChild(li);
-			});
+			this.updateUsersList();
 		});
 
 		this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
@@ -269,11 +278,39 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.isPrivateText.setText(`Private: ${this.isPrivate}`);
 	}
 
+	private quitScene() {
+		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.KICKED);
+		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
+		this.gameSocket.close();
+		this.scene.start(CST.SCENES.GAME_SELECTION);
+	}
+
 	private createPlayers(playersState: PlayerState[]): Player[] {
 		let players: Player[] = [];
 		playersState.forEach((playerState: PlayerState) => {
 			players.push(PlayerFactory.createFromPlayerState(playerState));
 		});
 		return players;
+	}
+
+	private updateUsersList(): void {
+		let usersList = <HTMLInputElement>this.usersListHtml.getChildByID("usersList");
+
+		while (usersList.firstChild) {
+			usersList.removeChild(usersList.firstChild);
+		}
+
+		if (this.usersDTO.length > 1) {
+			this.highScoreText.setActive(false).setVisible(false);
+		} else {
+			this.highScoreText.setActive(true).setVisible(true);
+		}
+
+		this.usersDTO.forEach((user) => {
+			var li = document.createElement("li");
+			const displayedInfo = this.isHost ? `${user.userInfo.name} - ${user.userId}` : user.userInfo.name;
+			li.appendChild(document.createTextNode(displayedInfo));
+			usersList.appendChild(li);
+		});
 	}
 }
