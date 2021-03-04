@@ -6,9 +6,9 @@ import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
-import User from "../data/User";
 import { JoinRoomAnswerEvent, RoomInfoEvent, RoomSettings } from "./../../communication/room/DataInterfaces";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
+import User from "./User";
 
 /**
  * This class is a final state machine that represents the current state of the room. It is basically the container that will hold each game
@@ -108,6 +108,7 @@ export default class Room {
 
 		if (this.getGameState() == GameState.PreGame) {
 			const newUser: User = {
+				isReady: false,
 				userId: clientSocket.id,
 				userInfo: userInfo,
 				socket: clientSocket,

@@ -1,5 +1,5 @@
 import PlayerState from "../../../communication/race/PlayerState";
-import User from "../../../server/data/User";
+import User from "../../../server/rooms/User";
 import Inventory from "./Inventory";
 import Player from "./Player";
 import Status from "./playerStatus/Status";

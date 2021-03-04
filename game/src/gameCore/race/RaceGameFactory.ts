@@ -1,6 +1,6 @@
 import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
-import User from "../../server/data/User";
+import User from "../../server/rooms/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";

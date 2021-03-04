@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
 import { GameOptions } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
-import User from "../../server/data/User";
 import Room from "../../server/rooms/Room";
+import User from "../../server/rooms/User";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";
 import State, { GameState } from "./State";
 
