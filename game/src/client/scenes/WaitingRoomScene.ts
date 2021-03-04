@@ -13,6 +13,7 @@ import { getUserHighScore } from "../services/UserInformationService";
 
 export default class WaitingRoomScene extends Phaser.Scene {
 	private startButton: Phaser.GameObjects.Text;
+	private readyButton: Phaser.GameObjects.Text;
 	private quitButton: Phaser.GameObjects.Text;
 	private highScoreText: Phaser.GameObjects.Text;
 	private currentHost: Phaser.GameObjects.Text;
@@ -201,9 +202,9 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		});
 
 		this.startButton = this.add
-			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.85, "Start Game", {
+			.text(this.game.renderer.width * 0.55, this.game.renderer.height * 0.9, "Start Game", {
 				fontFamily: "Courier",
-				fontSize: "50px",
+				fontSize: "40px",
 				align: "center",
 				color: "#FDFFB5",
 				fontStyle: "bold",
@@ -228,6 +229,33 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_INITIALIZED, <GameOptions>{
 				gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
 			});
+		});
+
+		this.readyButton = this.add
+			.text(this.game.renderer.width * 0.8, this.game.renderer.height * 0.9, "Ready", {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
+
+		this.readyButton.on("pointerover", () => {
+			this.readyButton.setTint(0xffff66);
+		});
+
+		this.readyButton.on("pointerout", () => {
+			this.readyButton.clearTint();
+		});
+
+		this.readyButton.on("pointerdown", () => {
+			this.readyButton.setTint(0x86bfda);
+		});
+
+		this.readyButton.on("pointerup", () => {
+			this.readyButton.clearTint();
+			this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.READY);
 		});
 
 		this.quitButton = this.add
@@ -309,7 +337,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.usersDTO.forEach((user) => {
 			var li = document.createElement("li");
-			const displayedInfo = this.isHost ? `${user.userInfo.name} - ${user.userId}` : user.userInfo.name;
+			const isReady = user.isReady ? "Ready" : "Not ready";
+			const displayedInfo = this.isHost ? `${user.userInfo.name} - ${user.userId} / ${isReady}` : `${user.userInfo.name} / ${isReady}`;
 			li.appendChild(document.createTextNode(displayedInfo));
 			usersList.appendChild(li);
 		});

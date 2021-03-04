@@ -8,7 +8,7 @@ import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
 import { JoinRoomAnswerEvent, RoomInfoEvent, RoomSettings } from "./../../communication/room/DataInterfaces";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
-import User from "./User";
+import User, { UserToDTO } from "./User";
 
 /**
  * This class is a final state machine that represents the current state of the room. It is basically the container that will hold each game
@@ -85,6 +85,10 @@ export default class Room {
 		return this.state.getStateType();
 	}
 
+	public areUsersReady(): boolean {
+		return this.users.every((user) => user.isReady);
+	}
+
 	public transitionTo(nextState: State): void {
 		this.state = nextState;
 		this.state.setContext(this);
@@ -116,7 +120,7 @@ export default class Room {
 			if (!this.users.some((user) => user.userId == newUser.userId)) {
 				this.users.push(newUser);
 				clientSocket.join(this.roomString);
-				this.handleSocketEvents(clientSocket);
+				this.handleSocketEvents(clientSocket, newUser.userId);
 				this.state.userJoined(newUser);
 			}
 			clientSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: this.id });
@@ -157,9 +161,7 @@ export default class Room {
 	public emitUsersInRoom(): void {
 		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, <RoomInfoEvent>{
 			roomId: this.id,
-			userDTOs: this.users.map((user) => {
-				return { userId: user.userId, userInfo: user.userInfo };
-			}),
+			userDTOs: this.users.map((user) => UserToDTO(user)),
 			hostName: this.host.userInfo.name,
 		});
 		this.nsp.to(this.roomString).emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
@@ -176,7 +178,7 @@ export default class Room {
 		clientSocket.removeAllListeners(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
 	}
 
-	private handleSocketEvents(clientSocket: Socket): void {
+	private handleSocketEvents(clientSocket: Socket, userId: string): void {
 		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED, () => {
 			this.emitUsersInRoom();
 
@@ -196,6 +198,11 @@ export default class Room {
 			if (clientSocket.id === this.host.socket.id && userId != this.host.userId) {
 				this.kickPlayer(userId);
 			}
+		});
+
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.READY, () => {
+			this.toggleReadyState(userId);
+			this.emitUsersInRoom();
 		});
 	}
 
@@ -219,5 +226,10 @@ export default class Room {
 		if (kickedUser === undefined) return;
 		this.removeUser(userId);
 		kickedUser.socket.emit(WAITING_ROOM_EVENT_NAMES.KICKED);
+	}
+
+	private toggleReadyState(userId: string): void {
+		let userToToggle = this.users.find((user) => user.userId === userId);
+		userToToggle.isReady = !userToToggle.isReady;
 	}
 }
