@@ -12,6 +12,7 @@ export const EventNames = {
 	gamePaused: "game-pause",
 	gameResumed: "game-resume",
 	quitGame: "quit-game",
+	gameEnds: "game-ends",
 
 	followPlayerToggle: "follow-player-toggle",
 	throwingBananaToggle: "throwing-banana-toggle",

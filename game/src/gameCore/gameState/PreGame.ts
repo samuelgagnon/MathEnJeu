@@ -62,6 +62,6 @@ export default class PreGame implements State {
 	}
 
 	private removeSocketEvents(socket: Socket): void {
-		socket.removeAllListeners(CLIENT_EVENT_NAMES.GAME_START);
+		socket.removeAllListeners(CLIENT_EVENT_NAMES.GAME_CREATED);
 	}
 }

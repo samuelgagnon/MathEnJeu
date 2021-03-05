@@ -5,16 +5,17 @@ import Item, { ItemType } from "./items/Item";
 import Player from "./player/Player";
 
 export default abstract class RaceGameController {
-	protected readonly gameTime: number; //in milliseconds
+	protected isGameStarted: boolean = false;
+	protected readonly gameDuration: number; //in milliseconds
 	protected timeRemaining: number;
 	protected readonly gameStartTimeStamp: number;
 	protected grid: RaceGrid;
 	protected players: Player[] = [];
 	protected items: Item[];
 
-	constructor(gameTime: number, gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
-		this.gameTime = gameTime;
-		this.timeRemaining = gameTime;
+	constructor(gameDuration: number, gameStartTimeStamp: number, grid: RaceGrid, players: Player[]) {
+		this.gameDuration = gameDuration;
+		this.timeRemaining = gameDuration;
 		this.gameStartTimeStamp = gameStartTimeStamp;
 		this.grid = grid;
 		this.players = players;
@@ -28,11 +29,23 @@ export default abstract class RaceGameController {
 	}
 
 	protected gameLogicUpdate(): void {
-		this.timeRemaining = this.gameTime - (Clock.now() - this.gameStartTimeStamp);
+		this.timeRemaining = this.gameDuration - (Clock.now() - this.gameStartTimeStamp);
+		//This boolean expression is divided in two distinct expressions to avoid computing timestamp difference every loop while the game is already started.
+		if (!this.isGameStarted) {
+			if (Clock.now() >= this.gameStartTimeStamp) this.isGameStarted = true;
+		}
 	}
 
 	public getTimeRemaining(): number {
 		return this.timeRemaining;
+	}
+
+	public getIsGameStarted(): boolean {
+		return this.isGameStarted;
+	}
+
+	public getGameDuration(): number {
+		return this.gameDuration;
 	}
 
 	private playersUpdate() {

@@ -7,8 +7,13 @@ export interface RoomSettings {
 
 export interface RoomInfoEvent {
 	roomId: string;
-	usersInfo: UserInfo[];
+	userDTOs: UserDTO[];
 	hostName: string;
+}
+
+export interface UserDTO {
+	userId: string;
+	userInfo: UserInfo;
 }
 
 export interface JoinRoomAnswerEvent {

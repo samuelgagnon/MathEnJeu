@@ -10,4 +10,6 @@ export const ROOM_EVENT_NAMES = {
 export const WAITING_ROOM_EVENT_NAMES = {
 	ROOM_INFO: "room-info",
 	SCENE_LOADED: "scene-loaded",
+	KICK_PLAYER: "kick-player",
+	KICKED: "kicked",
 };

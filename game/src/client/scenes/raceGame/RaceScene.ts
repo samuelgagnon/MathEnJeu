@@ -75,7 +75,7 @@ export default class RaceScene extends Phaser.Scene {
 		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.pointsForPosition = [];
-		this.isFollowingPlayer = false;
+		this.isFollowingPlayer = true;
 		this.isThrowingBanana = false;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
 		this.activeTileColor = 0xadff2f;
@@ -147,10 +147,13 @@ export default class RaceScene extends Phaser.Scene {
 		}
 
 		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		this.isReadyToGetPossiblePositions = false;
-		this.activateAccessiblePositions();
+		this.isReadyToGetPossiblePositions = true;
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//Initilalize camera
+		this.render();
+		this.handleFollowPlayerToggle(this.isFollowingPlayer);
 
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
@@ -160,6 +163,7 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
 		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	playerRequestMove(targetLocation: Point) {
@@ -278,18 +282,20 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private renderAccessiblePositions() {
-		const currentPlayer = this.raceGame.getCurrentPlayer();
-		const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
-			this.activateAccessiblePositions();
-		} else if (
-			//If a player gets affected by a banana or any other state change without moving
-			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
-			this.playerHasArrived(currentPosition) &&
-			!currentPlayer.isAnsweringQuestion()
-		) {
-			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
-			this.activateAccessiblePositions();
+		if (this.raceGame.getIsGameStarted()) {
+			const currentPlayer = this.raceGame.getCurrentPlayer();
+			const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
+			if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
+				this.activateAccessiblePositions();
+			} else if (
+				//If a player gets affected by a banana or any other state change without moving
+				currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
+				this.playerHasArrived(currentPosition) &&
+				!currentPlayer.isAnsweringQuestion()
+			) {
+				this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
+				this.activateAccessiblePositions();
+			}
 		}
 	}
 
@@ -402,9 +408,7 @@ export default class RaceScene extends Phaser.Scene {
 	private endGame(): void {
 		updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
 		this.raceGame.gameFinished();
-		this.scene.stop(CST.SCENES.REPORT_ERROR);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+		sceneEvents.emit(EventNames.gameEnds);
 	}
 
 	private activateAccessiblePositions(): void {
@@ -467,11 +471,8 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	public quitGame(): void {
-		this.scene.stop(CST.SCENES.IN_GAME_MENU);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
-		this.scene.stop(CST.SCENES.RACE_GAME);
+		sceneEvents.emit(EventNames.gameEnds);
 		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
 
@@ -531,6 +532,8 @@ export default class RaceScene extends Phaser.Scene {
 			}
 		}
 	}
+
+	private closeActiveScenes(): void {}
 }
 
 interface CharacterSprites {
