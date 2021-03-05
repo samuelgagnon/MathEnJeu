@@ -12,7 +12,7 @@ services:
       - ./questions_png:/usr/src/MathEnJeu/dist/server/assets/questions_png
       - ./question_images:/usr/src/MathEnJeu/dist/server/assets/question_images
       - ./question_latex:/usr/src/MathEnJeu/dist/server/assets/question_latex
-      - ./feedback_latex:/usr/src/MathEnJeu/dist/server/assets/feedback_latex
+      - ./latex_files:/usr/src/MathEnJeu/dist/server/assets/latex_files
       - ./question_html:/usr/src/MathEnJeu/dist/server/assets/question_html
 
   web:

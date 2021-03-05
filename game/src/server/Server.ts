@@ -98,14 +98,36 @@ export class Server {
 		});
 
 		//TODO maybe remove it in production
-		this.app.get("/generate-latex-files", async (req, res) => {
+		this.app.get("/generate-questions-latex-files", async (req, res) => {
 			this.questionRepo
 				.getAllQuestions()
 				.then((questions: any[]) => {
-					const questionPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, false));
-					const feedbackPromises: Promise<any>[] = questions.map((question) => this.writeLatexFile(question, true));
+					const questionPromises: Promise<any>[] = questions.map((question) => this.writeQuestionsLatexFile(question, false));
+					const feedbackPromises: Promise<any>[] = questions.map((question) => this.writeQuestionsLatexFile(question, true));
 
 					Promise.all(questionPromises.concat(feedbackPromises))
+						.then((_) => {
+							console.log("done");
+							res.sendStatus(200);
+						})
+						.catch((err) => {
+							console.error(err);
+							res.sendStatus(err);
+						});
+				})
+				.catch((error) => {
+					console.log("ORM query status " + error);
+					res.send(error);
+				});
+		});
+
+		this.app.get("/generate-answers-latex-files", async (req, res) => {
+			this.questionRepo
+				.getAllAnswers()
+				.then((answers: any[]) => {
+					const answerPromises: Promise<any>[] = answers.map((answer) => this.writeAnswersLatexFile(answer));
+
+					Promise.all(answerPromises)
 						.then((_) => {
 							console.log("done");
 							res.sendStatus(200);
@@ -162,19 +184,22 @@ export class Server {
 		this.httpServer.listen(this.DEFAULT_PORT, () => callback(this.DEFAULT_PORT));
 	}
 
-	private writeLatexFile(question: any, isFeedback: boolean): Promise<any> {
+	private writeQuestionsLatexFile(question: any, isFeedback: boolean): Promise<any> {
 		const data = isFeedback ? question.feedbackLatex : question.questionLatex;
 		const directory = isFeedback ? "feedback_latex" : "question_latex";
 		const fileName = isFeedback ? "feedback" : "question";
-		return new Promise((resolve, reject) => {
-			fs.writeFile(path.join(__dirname, `assets/${directory}/${fileName}_${question.questionId}_${question.shortName}.tex`), data, (err) => {
-				if (err) {
-					reject("Writing file error!");
-				} else {
-					resolve("Writing file successful !");
-				}
-			});
-		});
+
+		return fs.promises.writeFile(
+			path.join(__dirname, `assets/latex_files/${directory}/${fileName}_${question.questionId}_${question.shortName}.tex`),
+			data
+		);
+	}
+
+	private writeAnswersLatexFile(answer: any): Promise<any> {
+		return fs.promises.writeFile(
+			path.join(__dirname, `assets/latex_files/answers_latex/answer_${answer.answerId}_${answer.shortName}.tex`),
+			answer.answerLatex
+		);
 	}
 
 	private async appendToHtml(directory: string): Promise<void> {

@@ -1,7 +1,6 @@
 /questions_png
 /question_images
-/question_latex
-/feedback_latex
+/latex_files
 /question_html/feedback_html
 /question_html/question_html
 *.zip

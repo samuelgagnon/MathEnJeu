@@ -93,4 +93,14 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		return rows;
 	}
+
+	async getAllAnswers(): Promise<any[]> {
+		const queryString = `select answer_info.answer_id as answerId, answer_info.answer_latex as answerLatex, \`language\`.short_name as shortName from answer_info 
+		INNER JOIN \`language\` 
+		ON answer_info.language_id = \`language\`.language_id;`;
+
+		const rows = await getConnection().query(queryString);
+
+		return rows;
+	}
 }
