@@ -29,7 +29,7 @@ export default class RaceScene extends Phaser.Scene {
 	//Room
 	roomId: string;
 	//Loops
-	lag: number = 0;
+	lag: number;
 	physTimestep: number = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 	//GameCore
 	raceGame: ClientRaceGameController;
@@ -39,7 +39,7 @@ export default class RaceScene extends Phaser.Scene {
 	keyboardInputs;
 	isFollowingPlayer: boolean = true;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
-	pointsForPosition: Phaser.GameObjects.Text[] = [];
+	pointsForPosition: Phaser.GameObjects.Text[];
 
 	targetLocation: Point;
 
@@ -54,7 +54,7 @@ export default class RaceScene extends Phaser.Scene {
 	readonly maxZoom: number = 1.5;
 	readonly minZoom: number = 0.8;
 
-	characterSprites: CharacterSprites[] = [];
+	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
 	items: Phaser.GameObjects.Group;
 
@@ -70,6 +70,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	init(data: any) {
+		this.characterSprites = [];
+		this.pointsForPosition = [];
+		this.lag = 0;
 		this.raceGame = data.gameController;
 		this.roomId = data.roomId;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
