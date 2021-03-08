@@ -160,6 +160,7 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
 		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
 		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	playerRequestMove(targetLocation: Point) {
@@ -399,9 +400,7 @@ export default class RaceScene extends Phaser.Scene {
 	private endGame(): void {
 		updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
 		this.raceGame.gameFinished();
-		this.scene.stop(CST.SCENES.REPORT_ERROR);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+		sceneEvents.emit(EventNames.gameEnds);
 	}
 
 	private activateAccessiblePositions(): void {
@@ -464,11 +463,8 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	public quitGame(): void {
-		this.scene.stop(CST.SCENES.IN_GAME_MENU);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
-		this.scene.stop(CST.SCENES.RACE_GAME);
+		sceneEvents.emit(EventNames.gameEnds);
 		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
 

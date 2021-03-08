@@ -3,7 +3,7 @@ import { Clock } from "../../../gameCore/clock/Clock";
 import { CST } from "../../CST";
 import { postErrorReport } from "../../services/ReportErrorService";
 import { getUserInfo } from "../../services/UserInformationService";
-import { EventNames, sceneEvents } from "./RaceGameEvents";
+import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 export default class ReportErrorScene extends Phaser.Scene {
 	position: Point;
@@ -85,6 +85,8 @@ export default class ReportErrorScene extends Phaser.Scene {
 		this.cancelButton.on("pointerup", () => {
 			this.destroyScene();
 		});
+
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	private destroyScene(): void {
