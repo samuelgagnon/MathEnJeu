@@ -1,7 +1,6 @@
 /questions_png
 /question_images
 /question_html
-/question_latex
-/feedback_latex
+/latex_files
 *.zip
 .env

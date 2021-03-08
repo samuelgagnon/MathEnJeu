@@ -17,6 +17,9 @@ export const EventNames = {
 	followPlayerToggle: "follow-player-toggle",
 	throwingBananaToggle: "throwing-banana-toggle",
 
+	zoomIn: "zoom-in",
+	zoomOut: "zoom-out",
+
 	errorWindowOpened: "error-window-opened",
 	errorWindowClosed: "error-window-closed",
 	error: "error",

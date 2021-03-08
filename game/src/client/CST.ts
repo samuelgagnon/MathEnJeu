@@ -1,5 +1,6 @@
 export const CST = {
 	SCENES: {
+		BACKGROUD: "backgroundScene",
 		LOAD: "loadScene",
 		MENU: "menuScene",
 		MAIN: "mainScene",
