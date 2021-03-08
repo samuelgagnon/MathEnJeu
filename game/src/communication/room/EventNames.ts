@@ -12,4 +12,5 @@ export const WAITING_ROOM_EVENT_NAMES = {
 	SCENE_LOADED: "scene-loaded",
 	KICK_PLAYER: "kick-player",
 	KICKED: "kicked",
+	READY: "ready",
 };

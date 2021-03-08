@@ -1,4 +1,4 @@
-import UserInfo from "../user/UserInfo";
+import { UserDTO } from "../user/UserDTO";
 
 export interface RoomSettings {
 	maxPlayerCount: number;
@@ -9,11 +9,6 @@ export interface RoomInfoEvent {
 	roomId: string;
 	userDTOs: UserDTO[];
 	hostName: string;
-}
-
-export interface UserDTO {
-	userId: string;
-	userInfo: UserInfo;
 }
 
 export interface JoinRoomAnswerEvent {

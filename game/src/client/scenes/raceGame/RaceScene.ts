@@ -1,3 +1,4 @@
+import { Pinch } from "phaser3-rex-plugins/plugins/gestures.js";
 import {
 	AnswerCorrectedEvent,
 	GameEndEvent,
@@ -20,6 +21,7 @@ import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
 import { LocalizedString } from "./../../Localization";
+import { BackgroundSceneData } from "./BackgroundScene";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
@@ -28,27 +30,29 @@ export default class RaceScene extends Phaser.Scene {
 	roomId: string;
 	//Loops
 	lag: number;
-	physTimestep: number;
+	physTimestep: number = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
-	distanceBetweenTwoTiles: number;
+	readonly distanceBetweenTwoTiles: number = 66;
 	boardPosition: Point;
 	keyboardInputs;
-	background: Phaser.GameObjects.TileSprite;
-	isFollowingPlayer: boolean;
+	isFollowingPlayer: boolean = true;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
 
 	targetLocation: Point;
 
 	currentPlayerMovement: number;
-	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible position
-	isThrowingBanana: boolean;
+	isReadyToGetPossiblePositions: boolean; //Needed to make sure the scene doesn't always recalculate the possible position
+	isThrowingBanana: boolean = true;
 
-	tileActiveState: number;
-	tileInactiveState: number;
-	activeTileColor: number;
+	readonly tileActiveState: number = 1;
+	readonly tileInactiveState: number = 0;
+	readonly activeTileColor: number = 0xadff2f;
+
+	readonly maxZoom: number = 1.5;
+	readonly minZoom: number = 0.8;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -58,10 +62,7 @@ export default class RaceScene extends Phaser.Scene {
 	triedToReconnectAfterSocketError: boolean;
 
 	constructor() {
-		const sceneConfig = {
-			key: CST.SCENES.RACE_GAME,
-		};
-		super(sceneConfig);
+		super({ key: CST.SCENES.RACE_GAME });
 	}
 
 	preload() {
@@ -69,29 +70,21 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	init(data: any) {
-		this.raceGame = data.gameController;
-		this.roomId = data.roomId;
-		this.lag = 0;
-		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.pointsForPosition = [];
-		this.isFollowingPlayer = true;
-		this.isThrowingBanana = false;
+		this.lag = 0;
+		this.raceGame = data.gameController;
+		this.roomId = data.roomId;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
-		this.activeTileColor = 0xadff2f;
-		this.tileInactiveState = 0;
-		this.tileActiveState = 1;
 		this.triedToReconnectAfterSocketError = false;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
 	create() {
+		this.scene.launch(CST.SCENES.BACKGROUD, <BackgroundSceneData>{ backgroundImage: CST.IMAGES.BACKGROUD });
+
 		this.draggableCameraControls();
 
-		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
-		this.background.setScrollFactor(0);
-
-		this.cameras.main.centerOn(0, 0);
 		this.keyboardInputs = this.input.keyboard.createCursorKeys();
 
 		this.tiles = this.add.group();
@@ -99,9 +92,8 @@ export default class RaceScene extends Phaser.Scene {
 
 		const gameGrid = this.raceGame.getGrid();
 
-		//TODO : Find a way to store those "Magic Numbers"
-		this.distanceBetweenTwoTiles = 66;
-		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
+		this.boardPosition = { x: <number>this.game.config.width * 0.5, y: <number>this.game.config.height * 0.5 };
+		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
 
 		//creating game board
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
@@ -151,6 +143,9 @@ export default class RaceScene extends Phaser.Scene {
 
 		this.scene.launch(CST.SCENES.RACE_GAME_UI);
 
+		//RenderBackground behind everything else
+		this.scene.sendToBack(CST.SCENES.BACKGROUD);
+
 		//Initilalize camera
 		this.render();
 		this.handleFollowPlayerToggle(this.isFollowingPlayer);
@@ -163,6 +158,8 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.useBook, this.useBook, this);
 		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
+		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
 		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
@@ -184,14 +181,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	render() {
-		this.renderBackground();
 		this.renderPlayerSprites();
 		this.renderGameBoard();
 		this.renderAccessiblePositions();
-	}
-
-	private renderBackground() {
-		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
 	}
 
 	private renderPlayerSprites() {
@@ -533,7 +525,35 @@ export default class RaceScene extends Phaser.Scene {
 		}
 	}
 
-	private closeActiveScenes(): void {}
+	private zoomIn(): void {
+		const cam = this.cameras.main;
+		if (cam.zoom <= this.maxZoom) cam.zoom += 0.1;
+	}
+
+	private zoomOut(): void {
+		const cam = this.cameras.main;
+		if (cam.zoom >= this.minZoom) cam.zoom -= 0.1;
+	}
+
+	private createCameraBounds(x: number, y: number, boardWidth: number, boardHeight: number): void {
+		let pinch = new Pinch(this);
+		pinch.on(
+			"pinch",
+			(pinch) => {
+				var scaleFactor = pinch.scaleFactor;
+				this.cameras.main.zoom *= scaleFactor;
+			},
+			this
+		);
+
+		this.cameras.main.setBounds(
+			x - 200,
+			y - 200,
+			boardWidth * this.distanceBetweenTwoTiles + 600,
+			boardHeight * this.distanceBetweenTwoTiles + 600,
+			true
+		);
+	}
 }
 
 interface CharacterSprites {

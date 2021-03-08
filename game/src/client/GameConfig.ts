@@ -1,8 +1,10 @@
+import GesturesPlugin from "phaser3-rex-plugins/plugins/gestures-plugin.js";
 import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 import BaseScene from "./scenes/BaseScene";
 import GameSelection from "./scenes/GameSelectionScene";
 import LoadScene from "./scenes/LoadScene";
 import MenuScene from "./scenes/MenuScene";
+import BackgroundScene from "./scenes/raceGame/BackgroundScene";
 import InGameMenuScene from "./scenes/raceGame/InGameMenuScene";
 import QuestionScene from "./scenes/raceGame/QuestionScene";
 import RaceGameUI from "./scenes/raceGame/RaceGameUI";
@@ -35,6 +37,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 		ReportErrorScene,
 		RoomCreation,
 		BaseScene,
+		BackgroundScene,
 	],
 	scale: {
 		parent: "phaser-game",
@@ -47,6 +50,11 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 				key: "rexUI",
 				plugin: RexUIPlugin,
 				mapping: "rexUI",
+			},
+			{
+				key: "rexGestures",
+				plugin: GesturesPlugin,
+				mapping: "rexGestures",
 			},
 		],
 	},

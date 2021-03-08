@@ -1,4 +1,4 @@
-import User from "../../server/data/User";
+import User from "../../server/rooms/User";
 import PreGame from "./PreGame";
 
 export default class PreGameFactory {
