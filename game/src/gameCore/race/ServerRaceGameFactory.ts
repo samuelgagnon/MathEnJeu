@@ -1,7 +1,7 @@
 import { GameOptions } from "../../communication/race/DataInterfaces";
 import { serviceConstants } from "../../server/context/CommonContext";
 import ServiceLocator from "../../server/context/ServiceLocator";
-import User from "../../server/data/User";
+import User from "../../server/rooms/User";
 import RaceGameFactory from "./RaceGameFactory";
 import { RACE_CST } from "./RACE_CST";
 import ServerRaceGameController from "./ServerRaceGameController";
