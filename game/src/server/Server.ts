@@ -65,14 +65,14 @@ export class Server {
 			const questionId = req.params.id;
 			const languageShortName = !!req.query.languageShortName ? req.query.languageShortName : "fr";
 
-			res.sendFile(path.join(__dirname, `assets/questions_html/questions_html/question_${questionId}_${languageShortName}.html`));
+			res.sendFile(path.join(__dirname, `assets/question_html/questions_html/question_${questionId}_${languageShortName}.html`));
 		});
 
 		this.app.get("/feedback-html/:id", (req, res) => {
 			const questionId = req.params.questionId;
 			const languageShortName = req.query.languageShortName;
 
-			res.sendFile(path.join(__dirname, `assets/questions_html/feedback_html/feedback_${questionId}_${languageShortName}.html`));
+			res.sendFile(path.join(__dirname, `assets/question_html/feedback_html/feedback_${questionId}_${languageShortName}.html`));
 		});
 
 		this.app.get("/questionFeedbackImage", async (req, res) => {
@@ -145,8 +145,9 @@ export class Server {
 
 		this.app.get("/append-to-html", async (req, res) => {
 			try {
-				await this.appendToHtml("feedback");
-				await this.appendToHtml("question");
+				// await this.appendToHtml("feedback");
+				// await this.appendToHtml("questions");
+				await this.appendToHtml("answers");
 
 				res.sendStatus(200);
 			} catch (error) {
@@ -157,8 +158,9 @@ export class Server {
 
 		this.app.get("/modify-html", async (req, res) => {
 			try {
-				await this.modifyHtmlFiles("feedback");
-				await this.modifyHtmlFiles("question");
+				// await this.modifyHtmlFiles("feedback");
+				// await this.modifyHtmlFiles("questions");
+				await this.modifyHtmlFiles("answers");
 
 				res.sendStatus(200);
 			} catch (error) {
@@ -203,7 +205,7 @@ export class Server {
 	}
 
 	private async appendToHtml(directory: string): Promise<void> {
-		const dirPath = path.join(__dirname, `assets/questions_html`);
+		const dirPath = path.join(__dirname, `assets/question_html`);
 		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
 
 		const htmlToAppend = await fs.promises.readFile(`${dirPath}/append.html`, { encoding: "utf-8" });
@@ -218,7 +220,7 @@ export class Server {
 	}
 
 	private async modifyHtmlFiles(directory: string): Promise<void> {
-		const dirPath = path.join(__dirname, `assets/questions_html`);
+		const dirPath = path.join(__dirname, `assets/question_html`);
 		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
 
 		for (const file of files) {
