@@ -145,8 +145,8 @@ export class Server {
 
 		this.app.get("/append-to-html", async (req, res) => {
 			try {
-				// await this.appendToHtml("feedback");
-				// await this.appendToHtml("questions");
+				await this.appendToHtml("feedback");
+				await this.appendToHtml("questions");
 				await this.appendToHtml("answers");
 
 				res.sendStatus(200);
@@ -158,8 +158,8 @@ export class Server {
 
 		this.app.get("/modify-html", async (req, res) => {
 			try {
-				// await this.modifyHtmlFiles("feedback");
-				// await this.modifyHtmlFiles("questions");
+				await this.modifyHtmlFiles("feedback");
+				await this.modifyHtmlFiles("questions");
 				await this.modifyHtmlFiles("answers");
 
 				res.sendStatus(200);
@@ -241,6 +241,13 @@ export class Server {
 
 		dom.window.document.querySelectorAll("img").forEach((element) => {
 			element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+		});
+
+		dom.window.document.querySelectorAll("u").forEach((element) => {
+			console.log(`inner html: ${element.innerHTML}`);
+			if (element.innerHTML === "") {
+				element.innerHTML = "___";
+			}
 		});
 
 		return dom.window.document.documentElement.innerHTML;
