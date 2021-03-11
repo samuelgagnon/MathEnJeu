@@ -242,6 +242,9 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private getHtmlForQuestion(): void {
+		//debug
+		console.log(`QuestionId: ${this.question.getId()}`);
+
 		this.questionHtml = createHtmlQuestion(
 			this,
 			Number(this.game.config.width) * 0.45,
