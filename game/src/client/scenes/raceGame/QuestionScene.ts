@@ -23,6 +23,7 @@ export default class QuestionScene extends Phaser.Scene {
 	feedbackHtml: Phaser.GameObjects.DOMElement;
 
 	enterButton: Phaser.GameObjects.Text;
+	continueButton: Phaser.GameObjects.Text;
 	correctAnswer: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
 	reportProblemButton: Phaser.GameObjects.Text;
@@ -78,6 +79,29 @@ export default class QuestionScene extends Phaser.Scene {
 				useHandCursor: true,
 			});
 
+		this.enterButton.on("pointerup", () => {
+			this.answerQuestion();
+		});
+
+		this.continueButton = this.add
+			.text(this.width * 0.8, this.height * 0.9, "Continue", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			})
+			.setVisible(false)
+			.setActive(false);
+
+		this.continueButton.on("pointerup", () => {
+			this.destroyScene();
+		});
+
 		this.correctAnswer = this.add
 			.text(this.width * 0.8, this.height * 0.9, "correct answer", {
 				fontFamily: "Courier",
@@ -91,6 +115,14 @@ export default class QuestionScene extends Phaser.Scene {
 				useHandCursor: true,
 			});
 
+		//DEBUG
+		this.correctAnswer.on("pointerup", () => {
+			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(
+				new Answer(undefined, "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"),
+				this.targetLocation
+			);
+		});
+
 		this.reportProblemButton = this.add
 			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
 				fontFamily: "Courier",
@@ -103,18 +135,6 @@ export default class QuestionScene extends Phaser.Scene {
 			.setInteractive({
 				useHandCursor: true,
 			});
-
-		this.enterButton.on("pointerup", () => {
-			this.answerQuestion();
-		});
-
-		//DEBUG
-		this.correctAnswer.on("pointerup", () => {
-			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(
-				new Answer(undefined, "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"),
-				this.targetLocation
-			);
-		});
 
 		this.reportProblemButton.on("pointerup", () => {
 			sceneEvents.emit(EventNames.errorWindowOpened);
@@ -204,7 +224,7 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private endPenalty(): void {
 		//TODO: Instead of destroying this scene instantly, show a button used to quit the feedback (at this scene in general).
-		this.destroyScene();
+		this.continueButton.setActive(true).setVisible(true);
 	}
 
 	private questionCorrected(isAnswerRight: boolean): void {
