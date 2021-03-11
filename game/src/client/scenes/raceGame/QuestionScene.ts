@@ -5,7 +5,7 @@ import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
-import { createHtmlFeedback, createHtmlQuestion } from "../CustomHtml";
+import { createHtmlAnswer, createHtmlFeedback, createHtmlQuestion, createInvisibleDiv } from "../CustomHtml";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
@@ -17,6 +17,8 @@ export default class QuestionScene extends Phaser.Scene {
 	targetLocation: Point;
 	question: Question;
 
+	answersButton: Phaser.GameObjects.DOMElement[];
+	answersHtml: Phaser.GameObjects.DOMElement[];
 	questionHtml: Phaser.GameObjects.DOMElement;
 	feedbackHtml: Phaser.GameObjects.DOMElement;
 
@@ -34,6 +36,7 @@ export default class QuestionScene extends Phaser.Scene {
 	feedbackStartTimeStamp: number;
 	feedbackRemainingTimeTxt: Phaser.GameObjects.Text;
 	showFeedbackTime: boolean;
+	background: Phaser.GameObjects.Rectangle;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
@@ -45,24 +48,25 @@ export default class QuestionScene extends Phaser.Scene {
 		this.targetLocation = data.targetLocation;
 		this.showFeedbackTime = false;
 		this.feedbackStartTimeStamp = undefined;
+		this.answersButton = [];
+		this.answersHtml = [];
 
 		this.sizeFactor = 0.9;
 		this.width = Number(this.game.config.width) * 0.9;
 		this.height = Number(this.game.config.height) * 0.9;
 
-		var x = Number(this.game.config.width) * 0.05;
-		var y = Number(this.game.config.height) * 0.05;
+		var x = Number(this.game.config.width) * 0.5;
+		var y = Number(this.game.config.height) * 0.5;
 		this.position = { x: x, y: y };
 	}
 
 	create() {
-		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
-		this.cameras.main.setBackgroundColor(0xffffff);
+		this.background = this.add.rectangle(this.position.x, this.position.y, this.width, this.height, 0xffffff);
 
 		this.inputHtml = this.add.dom(this.width * 0.4, this.height * 0.85).createFromCache(CST.HTML.ANSWER_INPUT);
 
 		this.enterButton = this.add
-			.text(this.width * 0.6, this.height * 0.85, "enter", {
+			.text(this.width * 0.65, this.height * 0.9, "enter", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -75,7 +79,7 @@ export default class QuestionScene extends Phaser.Scene {
 			});
 
 		this.correctAnswer = this.add
-			.text(this.width * 0.8, this.height * 0.85, "correct answer", {
+			.text(this.width * 0.8, this.height * 0.9, "correct answer", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -120,11 +124,11 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.bookIcon = this.add
-			.sprite(this.width * 0.05, this.height * 0.9, CST.IMAGES.BOOK)
+			.sprite(Number(this.game.config.width) * 0.1, Number(this.game.config.height) * 0.9, CST.IMAGES.BOOK)
 			.setInteractive({ useHandCursor: true })
 			.setScale(0.1);
 		this.crystalBallIcon = this.add
-			.sprite(this.width * 0.15, this.height * 0.9, CST.IMAGES.CRYSTAL_BALL)
+			.sprite(Number(this.game.config.width) * 0.2, Number(this.game.config.height) * 0.9, CST.IMAGES.CRYSTAL_BALL)
 			.setInteractive({ useHandCursor: true })
 			.setScale(0.1);
 
@@ -213,8 +217,12 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private startFeedback() {
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
-		this.inputHtml.setAlpha(0);
-		this.correctAnswer.setAlpha(0);
+		this.answersHtml.forEach((answer) => answer.setAlpha(0).setActive(false).setVisible(false));
+		this.answersButton.forEach((answer) => answer.setAlpha(0).setActive(false).setVisible(false));
+		this.inputHtml.setAlpha(0).setActive(false).setVisible(false);
+		this.enterButton.setAlpha(0).setActive(false).setVisible(false);
+		this.correctAnswer.setAlpha(0).setActive(false).setVisible(false);
+		this.questionHtml.setAlpha(0).setActive(false).setVisible(false);
 		this.feedbackStartTimeStamp = Clock.now();
 		//Approximation of feedbackMaxTime by checking remaining time.
 		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now();
@@ -228,7 +236,7 @@ export default class QuestionScene extends Phaser.Scene {
 				fontStyle: "bold",
 			})
 			.setScrollFactor(0);
-		//this.feedbackImage.setAlpha(1);
+		this.feedbackHtml.setAlpha(1).setVisible(true);
 
 		this.showFeedbackTime = true;
 	}
@@ -236,24 +244,65 @@ export default class QuestionScene extends Phaser.Scene {
 	private getHtmlForQuestion(): void {
 		this.questionHtml = createHtmlQuestion(
 			this,
-			Number(this.game.config.width) * 0.5,
-			Number(this.game.config.height) * 0.35,
-			900,
-			600,
+			Number(this.game.config.width) * 0.45,
+			Number(this.game.config.height) * 0.25,
+			800,
+			300,
 			this.question.getId()
 		);
 		this.feedbackHtml = createHtmlFeedback(
 			this,
-			Number(this.game.config.width) * 0.5,
-			Number(this.game.config.height) * 0.35,
-			900,
-			600,
+			Number(this.game.config.width) * 0.45,
+			Number(this.game.config.height) * 0.25,
+			800,
+			300,
 			this.question.getId()
-		).setVisible(false);
+		).setAlpha(0);
+
+		if (this.question.getAnswerType() === "MULTIPLE_CHOICE") {
+			this.question.getAnswers().forEach((answer: Answer, index: number) => {
+				const answerHtml = createHtmlAnswer(
+					this,
+					Number(this.game.config.width) * 0.2 + 200 * index + 20,
+					Number(this.game.config.height) * 0.65,
+					150,
+					150,
+					answer.getId()
+				)
+					.setDepth(1)
+					.setAlpha(0);
+
+				this.answersHtml.push(answerHtml);
+
+				const invisibleDiv = createInvisibleDiv(
+					this,
+					Number(this.game.config.width) * 0.2 + 200 * index + 20,
+					Number(this.game.config.height) * 0.65,
+					150,
+					150
+				).setDepth(3);
+
+				invisibleDiv.addListener("click");
+				invisibleDiv.on("click", () => {
+					this.answerQuestion(this.question.getAnswers()[index]);
+				});
+
+				this.answersButton.push(invisibleDiv);
+
+				this.inputHtml.setAlpha(0);
+				this.enterButton.setAlpha(0);
+			});
+		} else {
+			this.inputHtml.setAlpha(1);
+		}
+
+		this.answersHtml.forEach((answer) => answer.setAlpha(1));
 	}
 
-	private answerQuestion(): void {
-		const answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+	private answerQuestion(answer?: Answer): void {
+		if (!answer) {
+			answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+		}
 		sceneEvents.emit(EventNames.answerQuestion, answer, this.targetLocation);
 	}
 
@@ -284,14 +333,17 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private pauseGame() {
-		this.feedbackHtml.setVisible(false).setActive(false);
-		this.questionHtml.setVisible(false).setActive(false);
+		this.feedbackHtml.setAlpha(0).setActive(false).setVisible(false);
+		this.questionHtml.setAlpha(0).setActive(false).setVisible(false);
 		this.input.enabled = false;
 	}
 
 	private resumeGame() {
-		this.feedbackHtml.setVisible(this.showFeedbackTime).setActive(this.showFeedbackTime);
-		this.questionHtml.setVisible(!this.showFeedbackTime).setActive(!this.showFeedbackTime);
+		const questionAlpha = this.showFeedbackTime ? 0 : 1;
+		const feedbackAlpha = this.showFeedbackTime ? 1 : 0;
+
+		this.feedbackHtml.setAlpha(feedbackAlpha).setVisible(this.showFeedbackTime).setActive(this.showFeedbackTime);
+		this.questionHtml.setAlpha(questionAlpha).setVisible(!this.showFeedbackTime).setActive(!this.showFeedbackTime);
 		this.input.enabled = true;
 	}
 
