@@ -207,12 +207,14 @@ export default class QuestionScene extends Phaser.Scene {
 
 	update() {
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
+		//console.log(`end of penalty timestamp: ${raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp()}`);
 
 		if (this.showFeedbackTime) {
 			const feedbackRemainingTime = this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime;
 			if (feedbackRemainingTime > 0) {
 				this.feedbackRemainingTimeTxt.setText(Math.ceil(feedbackRemainingTime / 1000).toString());
 			} else if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
+				this.feedbackRemainingTimeTxt.setActive(false).setVisible(false);
 				this.endPenalty();
 			}
 		}
@@ -248,7 +250,7 @@ export default class QuestionScene extends Phaser.Scene {
 		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now();
 
 		this.feedbackRemainingTimeTxt = this.add
-			.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {
+			.text(Number(this.game.config.width) * 0.8, Number(this.game.config.height) * 0.15, this.feedbackMaxTime.toString(), {
 				fontFamily: "Courier",
 				fontSize: "26px",
 				align: "center",

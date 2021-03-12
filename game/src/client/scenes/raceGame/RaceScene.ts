@@ -354,8 +354,8 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
 			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
+			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
 		});
 
 		socket.on("connect_error", (error) => {
