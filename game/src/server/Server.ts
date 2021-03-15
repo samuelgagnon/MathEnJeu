@@ -54,6 +54,10 @@ export class Server {
 				});
 		});
 
+		this.app.get("/question-style.css", async (req, res) => {
+			res.sendFile(path.join(__dirname, `assets/question_html/question-style.css`));
+		});
+
 		this.app.get("/question-image/:id", async (req, res) => {
 			const questionId = req.params.id;
 			const fileName = this.renameToSVGFile(questionId);
@@ -240,6 +244,8 @@ export class Server {
 
 	private modifyHtml(html: string): string {
 		const dom = new JSDOM(html);
+		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css>"`;
+
 		dom.window.document.querySelectorAll("embed").forEach((element) => {
 			let image = dom.window.document.createElement("img");
 			image.src = element.src;

@@ -207,7 +207,6 @@ export default class QuestionScene extends Phaser.Scene {
 
 	update() {
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
-		//console.log(`end of penalty timestamp: ${raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp()}`);
 
 		if (this.showFeedbackTime) {
 			const feedbackRemainingTime = this.feedbackStartTimeStamp - Clock.now() + this.feedbackMaxTime;
@@ -225,7 +224,6 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private endPenalty(): void {
-		//TODO: Instead of destroying this scene instantly, show a button used to quit the feedback (at this scene in general).
 		this.continueButton.setActive(true).setVisible(true);
 	}
 
