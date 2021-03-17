@@ -265,6 +265,11 @@ export default class QuestionScene extends Phaser.Scene {
 		//debug
 		console.log(`QuestionId: ${this.question.getId()}`);
 
+		if (!!this.questionHtml || !!this.feedbackHtml) {
+			this.questionHtml.destroy();
+			this.feedbackHtml.destroy();
+		}
+
 		this.questionHtml = createHtmlQuestion(
 			this,
 			Number(this.game.config.width) * 0.45,
@@ -283,41 +288,52 @@ export default class QuestionScene extends Phaser.Scene {
 		).setAlpha(0);
 
 		if (this.question.getAnswerType() === "MULTIPLE_CHOICE") {
-			this.question.getAnswers().forEach((answer: Answer, index: number) => {
-				const answerHtml = createHtmlAnswer(
-					this,
-					Number(this.game.config.width) * 0.2 + 200 * index + 20,
-					Number(this.game.config.height) * 0.65,
-					150,
-					150,
-					answer.getId()
-				)
-					.setDepth(1)
-					.setAlpha(0);
-
-				this.answersHtml.push(answerHtml);
-
-				const invisibleDiv = createInvisibleDiv(
-					this,
-					Number(this.game.config.width) * 0.2 + 200 * index + 20,
-					Number(this.game.config.height) * 0.65,
-					150,
-					150
-				).setDepth(3);
-
-				invisibleDiv.addListener("click");
-				invisibleDiv.on("click", () => {
-					this.answerQuestion(this.question.getAnswers()[index]);
-				});
-
-				this.answersButton.push(invisibleDiv);
-
-				this.inputHtml.setAlpha(0);
-				this.enterButton.setAlpha(0);
-			});
+			this.generateHtmlAnswers();
 		} else {
 			this.inputHtml.setAlpha(1);
 		}
+	}
+
+	private generateHtmlAnswers() {
+		if (this.answersHtml.length > 0 || this.answersButton.length > 0) {
+			this.answersHtml.forEach((element) => element.destroy());
+			this.answersButton.forEach((element) => element.destroy());
+
+			this.answersHtml = [];
+			this.answersButton = [];
+		}
+		this.question.getAnswers().forEach((answer: Answer, index: number) => {
+			const answerHtml = createHtmlAnswer(
+				this,
+				Number(this.game.config.width) * 0.2 + 200 * index + 20,
+				Number(this.game.config.height) * 0.65,
+				150,
+				150,
+				answer.getId()
+			)
+				.setDepth(1)
+				.setAlpha(0);
+
+			this.answersHtml.push(answerHtml);
+
+			const invisibleDiv = createInvisibleDiv(
+				this,
+				Number(this.game.config.width) * 0.2 + 200 * index + 20,
+				Number(this.game.config.height) * 0.65,
+				150,
+				150
+			).setDepth(3);
+
+			invisibleDiv.addListener("click");
+			invisibleDiv.on("click", () => {
+				this.answerQuestion(this.question.getAnswers()[index]);
+			});
+
+			this.answersButton.push(invisibleDiv);
+
+			this.inputHtml.setAlpha(0);
+			this.enterButton.setAlpha(0);
+		});
 
 		this.answersHtml.forEach((answer) => answer.setAlpha(1));
 	}
@@ -341,6 +357,7 @@ export default class QuestionScene extends Phaser.Scene {
 				try {
 					sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
 					this.question.removeWrongAnswer();
+					this.generateHtmlAnswers();
 				} catch (error) {
 					console.log(error);
 				}
@@ -358,6 +375,8 @@ export default class QuestionScene extends Phaser.Scene {
 	private pauseGame() {
 		this.feedbackHtml.setAlpha(0).setActive(false).setVisible(false);
 		this.questionHtml.setAlpha(0).setActive(false).setVisible(false);
+		this.answersHtml.forEach((element) => element.setAlpha(0).setActive(false).setVisible(false));
+		this.answersButton.forEach((element) => element.setAlpha(0).setActive(false).setVisible(false));
 		this.input.enabled = false;
 	}
 
@@ -367,6 +386,8 @@ export default class QuestionScene extends Phaser.Scene {
 
 		this.feedbackHtml.setAlpha(feedbackAlpha).setVisible(this.showFeedbackTime).setActive(this.showFeedbackTime);
 		this.questionHtml.setAlpha(questionAlpha).setVisible(!this.showFeedbackTime).setActive(!this.showFeedbackTime);
+		this.answersHtml.forEach((element) => element.setAlpha(questionAlpha).setActive(!this.showFeedbackTime).setVisible(!this.showFeedbackTime));
+		this.answersButton.forEach((element) => element.setAlpha(questionAlpha).setActive(!this.showFeedbackTime).setVisible(!this.showFeedbackTime));
 		this.input.enabled = true;
 	}
 
