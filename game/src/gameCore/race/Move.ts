@@ -1,14 +1,14 @@
 import MoveState from "../../communication/race/MoveState";
 import { Clock } from "../clock/Clock";
 import AffineTransform from "./AffineTransform";
-import { RACE_CST } from "./RACE_CST";
+import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 
 export default class Move {
 	private startTimestamp: number;
 	private startLocation: Point;
 	private targetLocation: Point;
 	private hasArrived: boolean;
-	private readonly SPEED: Point = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
+	private readonly SPEED: Point = { x: RACE_PARAMETERS.MOVE.SPEED, y: RACE_PARAMETERS.MOVE.SPEED };
 
 	private renderedMove?: Move;
 	private positionRendering?: AffineTransform;
@@ -22,7 +22,7 @@ export default class Move {
 		if (SPEED !== undefined && SPEED !== null) {
 			this.SPEED = SPEED;
 		} else {
-			this.SPEED = { x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED };
+			this.SPEED = { x: RACE_PARAMETERS.MOVE.SPEED, y: RACE_PARAMETERS.MOVE.SPEED };
 		}
 
 		if (positionRendering !== undefined && positionRendering !== null) {
@@ -36,7 +36,7 @@ export default class Move {
 			this.startTimestamp,
 			positionRendering.apply(this.startLocation),
 			positionRendering.apply(this.targetLocation),
-			positionRendering.applyLinearTransform({ x: RACE_CST.MOVE.SPEED, y: RACE_CST.MOVE.SPEED })
+			positionRendering.applyLinearTransform({ x: RACE_PARAMETERS.MOVE.SPEED, y: RACE_PARAMETERS.MOVE.SPEED })
 		);
 	}
 

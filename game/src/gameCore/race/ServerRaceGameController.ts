@@ -27,10 +27,11 @@ import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
+import ComputerPlayer from "./player/ComputerPlayer";
 import Player from "./player/Player";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
-import { RACE_CST } from "./RACE_CST";
+import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
@@ -43,18 +44,20 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private questionRepo: QuestionRepository;
 	private state: GameState = GameState.RaceGame;
 	private isSinglePlayer: boolean;
+	private computerPlayers: ComputerPlayer[];
 
 	constructor(
 		gameTime: number,
 		grid: RaceGrid,
 		players: Player[],
+		computerPlayers: ComputerPlayer[],
 		users: User[],
 		gameId: string,
 		questionRepo: QuestionRepository,
 		isSinglePlayer: boolean
 	) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, Clock.now() + RACE_CST.CIRCUIT.STARTING_TRANSITION_DURATION, grid, players);
+		super(gameTime, Clock.now() + RACE_PARAMETERS.CIRCUIT.STARTING_TRANSITION_DURATION, grid, players);
 		this.gameId = gameId;
 		this.questionRepo = questionRepo;
 		this.isSinglePlayer = isSinglePlayer;
@@ -115,6 +118,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		if (!this.isGameCreated) this.emitGameCreatedEvent();
 		this.resolveInputs();
 		super.update();
+		this.handleComputerPlayerActions();
 		if (this.timeRemaining <= 0) this.gameFinished();
 		this.handleItemsRespawn();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
@@ -320,15 +324,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			//If it's not possible, we simply reset the player answered questions id
 			if (!questionIdArray || !questionIdArray.length) {
 				if (actualDifficulty <= requestedDifficulty) {
-					if (actualDifficulty != RACE_CST.QUESTION.MIN_DIFFICULTY) {
+					if (actualDifficulty != RACE_PARAMETERS.QUESTION.MIN_DIFFICULTY) {
 						actualDifficulty--;
-					} else if (requestedDifficulty != RACE_CST.QUESTION.MAX_DIFFICULTY) {
+					} else if (requestedDifficulty != RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
 						actualDifficulty = requestedDifficulty + 1;
 					} else {
 						player.resetAnsweredQuestionsId();
 						actualDifficulty = requestedDifficulty;
 					}
-				} else if (actualDifficulty == RACE_CST.QUESTION.MAX_DIFFICULTY) {
+				} else if (actualDifficulty == RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
 					player.resetAnsweredQuestionsId();
 					actualDifficulty = requestedDifficulty;
 				} else {
@@ -384,7 +388,13 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		});
 	}
 
-	isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
+	private handleComputerPlayerActions(): void {
+		this.computerPlayers.forEach((player) => {
+			player.handActions();
+		});
+	}
+
+	private isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
 		const player = this.findPlayer(moveRequestEvent.playerId);
 		if (!player.isAnsweringQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());

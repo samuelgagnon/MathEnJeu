@@ -3,7 +3,7 @@ import PlayerState from "../../../communication/race/PlayerState";
 import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
-import { RACE_CST } from "../RACE_CST";
+import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
 import { Answer } from "./../question/Answer";
 import { Question } from "./../question/Question";
 import Inventory from "./Inventory";
@@ -138,8 +138,8 @@ export default class Player {
 	public getDifficulty(targetLocation: Point): number {
 		let difficulty = Move.getTaxiCabDistance(this.position, targetLocation);
 		if (this.playerStatus.getCurrentStatus() == StatusType.BrainiacStatus) difficulty--;
-		if (difficulty < RACE_CST.QUESTION.MIN_DIFFICULTY) difficulty = RACE_CST.QUESTION.MIN_DIFFICULTY;
-		if (difficulty > RACE_CST.QUESTION.MAX_DIFFICULTY) difficulty = RACE_CST.QUESTION.MAX_DIFFICULTY; //Max difficulty is 6 even though we can move by 6 tiles
+		if (difficulty < RACE_PARAMETERS.QUESTION.MIN_DIFFICULTY) difficulty = RACE_PARAMETERS.QUESTION.MIN_DIFFICULTY;
+		if (difficulty > RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) difficulty = RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY; //Max difficulty is 6 even though we can move by 6 tiles
 		return difficulty;
 	}
 
@@ -217,8 +217,8 @@ export default class Player {
 	}
 
 	public passingByFinishLine(): void {
-		if (this.lastValidCheckpoint == RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
-			this.addPoints(RACE_CST.CIRCUIT.POINTS_FOR_LAP);
+		if (this.lastValidCheckpoint == RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+			this.addPoints(RACE_PARAMETERS.CIRCUIT.POINTS_FOR_LAP);
 		}
 		this.lastValidCheckpoint = 0;
 	}

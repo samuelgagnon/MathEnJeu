@@ -5,12 +5,13 @@ import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
 import ItemFactory from "./items/ItemFactory";
+import ComputerPlayer, { Difficulty } from "./player/ComputerPlayer";
 import Inventory from "./player/Inventory";
 import Player from "./player/Player";
 import PlayerFactory from "./player/PlayerFactory";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
-import { RACE_CST } from "./RACE_CST";
+import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 
 //RaceGameController was split in 2 to prevent unused dependencies to be sent to the client
 export default class RaceGameFactory {
@@ -51,7 +52,7 @@ export default class RaceGameFactory {
 						if (checkpointGroup == NaN) {
 							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
 						} else {
-							if (checkpointGroup >= 1 && checkpointGroup <= RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+							if (checkpointGroup >= 1 && checkpointGroup <= RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
 								tiles.push(new Tile(<Point>{ x, y }, true, false, false, undefined, Number(tileSymbol)));
 							} else {
 								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
@@ -62,7 +63,7 @@ export default class RaceGameFactory {
 			}
 		}
 		let raceGrid = new RaceGrid(tiles, gridWidth, gridHeight, []);
-		for (let i = 0; i < RACE_CST.CIRCUIT.NUMBER_OF_ITEMS; i++) {
+		for (let i = 0; i < RACE_PARAMETERS.CIRCUIT.NUMBER_OF_ITEMS; i++) {
 			raceGrid.generateNewItem([], isSinglePlayer);
 		}
 		return raceGrid;
@@ -70,17 +71,35 @@ export default class RaceGameFactory {
 
 	public static generatePlayers(users: User[], startingPositions: Point[]): Player[] {
 		let players: Player[] = [];
-		let i: number = 0;
-		users.forEach((user: User) => {
-			let currentIndex = i;
-			if (i >= startingPositions.length) {
-				currentIndex = i % startingPositions.length;
+		users.forEach((user: User, index: number) => {
+			let currentIndex = index;
+			if (index >= startingPositions.length) {
+				currentIndex = index % startingPositions.length;
 			}
 			players.push(PlayerFactory.create(user, startingPositions[currentIndex], StatusFactory.create(StatusType.NormalStatus), new Inventory()));
-			i++;
+		});
+		return players;
+	}
+
+	public static generateComputerPlayers(difficulties: Difficulty[], startingPositions: Point[]) {
+		let computerPlayers: ComputerPlayer[] = [];
+		difficulties.forEach((difficulty: Difficulty, index: number) => {
+			let currentIndex = index;
+			if (index >= startingPositions.length) {
+				currentIndex = index % startingPositions.length;
+			}
+			computerPlayers.push(
+				PlayerFactory.creatComputerPlayer(
+					`bot-${index}`,
+					startingPositions[currentIndex],
+					difficulty,
+					StatusFactory.create(StatusType.NormalStatus),
+					new Inventory()
+				)
+			);
 		});
 
-		return players;
+		return computerPlayers;
 	}
 
 	public static generateClientRaceGrid(startingRaceGridInfo: StartingRaceGridInfo): RaceGrid {
