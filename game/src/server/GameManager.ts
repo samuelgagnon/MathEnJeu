@@ -13,17 +13,14 @@ export default class GameManager {
 	}
 
 	public startLoop() {
-		this.updateLoop();
+		this.update();
 	}
 
-	private updateLoop() {
-		setInterval(this.update, this.FREQUENCY, this.gameRepo);
-	}
-
-	private update(gameRepo): void {
-		console.log(gameRepo.getAllGames().length);
-		gameRepo.getAllGames().forEach((game: ServerGame) => {
-			game.update();
-		});
+	private update() {
+		setInterval(() => {
+			this.gameRepo.getAllGames().forEach((game: ServerGame) => {
+				game.update();
+			});
+		}, this.FREQUENCY);
 	}
 }

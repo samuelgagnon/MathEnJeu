@@ -158,6 +158,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			.to(this.context.getRoomString())
 			.emit(CE.PLAYER_LEFT, <PlayerLeftEvent>{ playerId: user.userId });
 		this.removeSocketEvents(user.socket);
+
+		if (this.context.isRoomEmtpty()) {
+			this.context.removeGameFromRepo(this);
+		}
 	}
 
 	private handleSocketEvents(socket: Socket): void {
