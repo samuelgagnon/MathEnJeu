@@ -81,7 +81,7 @@ export default class RaceGameFactory {
 		return players;
 	}
 
-	public static generateComputerPlayers(difficulties: Difficulty[], startingPositions: Point[]) {
+	public static generateComputerPlayers(difficulties: Difficulty[], startingPositions: Point[], gameStartTimeStamp: number) {
 		let computerPlayers: ComputerPlayer[] = [];
 		difficulties.forEach((difficulty: Difficulty, index: number) => {
 			let currentIndex = index;
@@ -94,7 +94,8 @@ export default class RaceGameFactory {
 					startingPositions[currentIndex],
 					difficulty,
 					StatusFactory.create(StatusType.NormalStatus),
-					new Inventory()
+					new Inventory(),
+					gameStartTimeStamp
 				)
 			);
 		});

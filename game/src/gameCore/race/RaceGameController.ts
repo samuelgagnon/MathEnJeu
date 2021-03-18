@@ -52,14 +52,10 @@ export default abstract class RaceGameController {
 		this.players.forEach((player) => player.update());
 	}
 
-	public addPlayer(player: Player): void {
-		this.players.push(player);
-	}
-
 	protected abstract gameFinished(): void;
 
-	public removePlayer(socketId: string) {
-		this.players = this.players.filter((player) => player.id !== socketId);
+	public removePlayer(playerId: string) {
+		this.players = this.players.filter((player) => player.id !== playerId);
 	}
 
 	public getPointsForMoveDistance(moveDistance: number): number {

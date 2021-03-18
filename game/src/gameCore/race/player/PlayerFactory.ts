@@ -12,8 +12,26 @@ export default class PlayerFactory {
 		return new Player(user.userId, startLocation, user.userInfo.name, status, inventory, user.userInfo.schoolGrade, user.userInfo.language);
 	}
 
-	public static creatComputerPlayer(id: string, startLocation: Point, difficulty: Difficulty, status: Status, inventory: Inventory): ComputerPlayer {
-		return new ComputerPlayer(id, startLocation, "", status, inventory, 1, "", difficulty, RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR);
+	public static creatComputerPlayer(
+		id: string,
+		startLocation: Point,
+		difficulty: Difficulty,
+		status: Status,
+		inventory: Inventory,
+		gameStartTimeStamp: number
+	): ComputerPlayer {
+		return new ComputerPlayer(
+			id,
+			startLocation,
+			"",
+			status,
+			inventory,
+			1,
+			"",
+			difficulty,
+			gameStartTimeStamp,
+			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
+		);
 	}
 
 	public static createFromPlayerState(playerState: PlayerState): Player {

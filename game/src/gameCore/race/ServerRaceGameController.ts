@@ -45,9 +45,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private state: GameState = GameState.RaceGame;
 	private isSinglePlayer: boolean;
 	private computerPlayers: ComputerPlayer[];
+	private randTimestamp: number = Clock.now() + 5000;
 
 	constructor(
 		gameTime: number,
+		gameStartTimeStamp: number,
 		grid: RaceGrid,
 		players: Player[],
 		computerPlayers: ComputerPlayer[],
@@ -57,8 +59,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		isSinglePlayer: boolean
 	) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, Clock.now() + RACE_PARAMETERS.CIRCUIT.STARTING_TRANSITION_DURATION, grid, players);
+		super(gameTime, gameStartTimeStamp, grid, players);
+		this.players = this.players.concat(computerPlayers);
 		this.gameId = gameId;
+		this.computerPlayers = computerPlayers;
 		this.questionRepo = questionRepo;
 		this.isSinglePlayer = isSinglePlayer;
 		this.handleAllUsersSocketEvents(users);
@@ -116,10 +120,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	public update(): void {
 		if (!this.isGameCreated) this.emitGameCreatedEvent();
+		if (this.timeRemaining <= 0) this.gameFinished();
+
+		if (this.randTimestamp < Clock.now()) {
+			this.computerPlayers[0].id = "test";
+		}
+
 		this.resolveInputs();
 		super.update();
 		this.handleComputerPlayerActions();
-		if (this.timeRemaining <= 0) this.gameFinished();
 		this.handleItemsRespawn();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}
@@ -390,7 +399,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private handleComputerPlayerActions(): void {
 		this.computerPlayers.forEach((player) => {
-			player.handActions();
+			player.handleActions();
 		});
 	}
 

@@ -16,7 +16,7 @@ import { StatusType } from "./playerStatus/StatusType";
  */
 
 export default class Player {
-	readonly id: string;
+	public id: string;
 	private readonly MAX_BRAINIAC_MOVEMENT = 7;
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;

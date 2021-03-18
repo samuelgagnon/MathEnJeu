@@ -19,15 +19,18 @@ export default class ComputerPlayer extends Player {
 		schoolGrade: number,
 		language: string,
 		difficulty: Difficulty,
+		nextActionTimeStamp: number,
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		super(id, startLocation, name, status, inventory, schoolGrade, language);
 		this.difficulty = difficulty;
+		this.nextActionTimeStamp = nextActionTimeStamp;
 		this.pointsCalculator = pointsCalculator;
 	}
 
-	public handActions(): void {
-		if (this.nextActionTimeStamp >= Clock.now() && this.isReadyForNextAction) {
+	public handleActions(): void {
+		//console.log(`Computer players array: ${this.id}`);
+		if (this.isReadyForNextAction && this.nextActionTimeStamp <= Clock.now()) {
 			if (this.generateRandomValue()) {
 				this.moveTo(Clock.now(), this.getRandomLocation(), this.pointsCalculator);
 			}
@@ -36,6 +39,11 @@ export default class ComputerPlayer extends Player {
 			this.isReadyForNextAction = false;
 		}
 		if (this.hasArrived()) this.isReadyForNextAction = true;
+	}
+
+	public update(): void {
+		super.update();
+		//console.log(`Players array: ${this.id}`);
 	}
 
 	private getRandomLocation(): Point {
