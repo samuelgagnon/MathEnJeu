@@ -80,6 +80,10 @@ export default class Move {
 		return Math.abs(targetLocation.x - startLocation.x) + Math.abs(targetLocation.y - startLocation.y);
 	}
 
+	public static isDiagonal(position: Point, targetLocation: Point): boolean {
+		return Math.abs(targetLocation.x - position.x) > 0 && Math.abs(targetLocation.y - position.y) > 0;
+	}
+
 	public getCurrentPosition(nowTimestamp: number = Clock.now()): Point {
 		let d: number = this.getDistance();
 

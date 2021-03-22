@@ -215,7 +215,7 @@ export default class Player {
 	 * @param pointsCalculatorCallBack callback function that allows its caller to choose which method it uses for the player to calculate its points.
 	 */
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
-		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
+		const isMoveDiagonal = Move.isDiagonal(this.getPosition(), targetLocation);
 		//diagonal movement is not permitted
 		if (this.move.getHasArrived() && !isMoveDiagonal && !this.isInPenaltyState()) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);

@@ -1,4 +1,5 @@
 import { Clock } from "../../../clock/Clock";
+import Move from "../../Move";
 import Inventory from "../Inventory";
 import Player from "../Player";
 import Status from "../playerStatus/Status";
@@ -50,7 +51,7 @@ export default class ComputerPlayer extends Player {
 			this.pathToFollow = this.pathFinder.findPath(this.getPosition(), this.findNextCheckpoint());
 		}
 
-		return this.pathToFollow.shift();
+		return this.selectRandomPositionFromPath();
 	}
 
 	public generateRandomValue(): boolean {
@@ -61,6 +62,27 @@ export default class ComputerPlayer extends Player {
 		const nextCheckpoints = this.checkpointPositions.shift();
 		this.checkpointPositions.push(nextCheckpoints);
 		return nextCheckpoints[Math.floor(Math.random() * nextCheckpoints.length)]; //to select a random checkpoint positions from all possible checkpoint positions
+	}
+
+	/**
+	 * Selects and returns an accessible point to the ComputerPlayer within its movable distance and removes everyone before it.
+	 * @returns The selected point where the computer player will move to.
+	 */
+	private selectRandomPositionFromPath(): Point {
+		let possibleIndexes: number[] = [];
+		this.pathToFollow.forEach((point: Point, i: number) => {
+			const isDiagonal = Move.isDiagonal(this.getPosition(), point);
+			const distanceFromCurrentPosition = Move.getTaxiCabDistance(this.getPosition(), point);
+			if (!isDiagonal && distanceFromCurrentPosition <= this.getMaxMovementDistance()) {
+				possibleIndexes.push(i);
+			}
+		});
+
+		const randomIndex = possibleIndexes[Math.floor(Math.random() * possibleIndexes.length)];
+		const selectedPosition = this.pathToFollow[randomIndex];
+		this.pathToFollow.splice(0, randomIndex + 1);
+
+		return selectedPosition;
 	}
 
 	private setTimeForNextAction(): void {
