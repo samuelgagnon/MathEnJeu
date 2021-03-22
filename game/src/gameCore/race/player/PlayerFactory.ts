@@ -1,7 +1,8 @@
 import PlayerState from "../../../communication/race/PlayerState";
 import User from "../../../server/rooms/User";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
-import ComputerPlayer, { Difficulty } from "./ComputerPlayer";
+import ComputerPlayer, { Difficulty } from "./ComputerPlayer/ComputerPlayer";
+import PathFinder from "./ComputerPlayer/PathFinder";
 import Inventory from "./Inventory";
 import Player from "./Player";
 import Status from "./playerStatus/Status";
@@ -18,7 +19,9 @@ export default class PlayerFactory {
 		difficulty: Difficulty,
 		status: Status,
 		inventory: Inventory,
-		gameStartTimeStamp: number
+		gameStartTimeStamp: number,
+		pathFinder: PathFinder,
+		checkpointPositions: Point[][]
 	): ComputerPlayer {
 		return new ComputerPlayer(
 			id,
@@ -30,6 +33,8 @@ export default class PlayerFactory {
 			"",
 			difficulty,
 			gameStartTimeStamp,
+			pathFinder,
+			checkpointPositions,
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
 		);
 	}

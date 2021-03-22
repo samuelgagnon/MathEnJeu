@@ -3,7 +3,7 @@ import { serviceConstants } from "../../server/context/CommonContext";
 import ServiceLocator from "../../server/context/ServiceLocator";
 import User from "../../server/rooms/User";
 import { Clock } from "../clock/Clock";
-import { Difficulty } from "./player/ComputerPlayer";
+import { Difficulty } from "./player/ComputerPlayer/ComputerPlayer";
 import RaceGameFactory from "./RaceGameFactory";
 import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 import ServerRaceGameController from "./ServerRaceGameController";
@@ -20,7 +20,7 @@ export default class ServerRaceGameFactory {
 			isSinglePlayer
 		);
 		let players = RaceGameFactory.generatePlayers(users, raceGrid.getStartingPositions());
-		let computerPlayers = RaceGameFactory.generateComputerPlayers([Difficulty.HARD], raceGrid.getStartingPositions(), gameStartTimeStamp);
+		let computerPlayers = RaceGameFactory.generateComputerPlayers([Difficulty.HARD], raceGrid.getStartingPositions(), gameStartTimeStamp, raceGrid);
 		return new ServerRaceGameController(
 			gameOptions.gameTime * 60 * 1000, //TODO: maybe apply milliseconds conversion before the factory
 			gameStartTimeStamp,

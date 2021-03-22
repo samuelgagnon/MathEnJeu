@@ -1,14 +1,17 @@
-import { Clock } from "../../clock/Clock";
-import Inventory from "./Inventory";
-import Player from "./Player";
-import Status from "./playerStatus/Status";
+import { Clock } from "../../../clock/Clock";
+import Inventory from "../Inventory";
+import Player from "../Player";
+import Status from "../playerStatus/Status";
+import PathFinder from "./PathFinder";
 
 export default class ComputerPlayer extends Player {
 	private difficulty: Difficulty;
 	private nextActionTimeStamp: number;
 	private isReadyForNextAction: boolean;
+	private pathFinder: PathFinder;
+	private pathToFollow: Point[] = [];
+	private checkpointPositions: Point[][];
 	private pointsCalculator: (moveDistance: number) => number;
-	private validPositions: Point[];
 
 	constructor(
 		id: string,
@@ -20,19 +23,24 @@ export default class ComputerPlayer extends Player {
 		language: string,
 		difficulty: Difficulty,
 		nextActionTimeStamp: number,
+		pathFinder: PathFinder,
+		checkpointPositions: Point[][],
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		super(id, startLocation, name, status, inventory, schoolGrade, language);
 		this.difficulty = difficulty;
 		this.nextActionTimeStamp = nextActionTimeStamp;
+		this.pathFinder = pathFinder;
+		this.checkpointPositions = checkpointPositions;
 		this.pointsCalculator = pointsCalculator;
 	}
 
 	public handleActions(): void {
 		//console.log(`Computer players array: ${this.id}`);
-		if (this.isReadyForNextAction && this.nextActionTimeStamp <= Clock.now()) {
+		if (this.isReadyForNextAction) {
+			// && this.nextActionTimeStamp <= Clock.now()
 			if (this.generateRandomValue()) {
-				this.moveTo(Clock.now(), this.getRandomLocation(), this.pointsCalculator);
+				this.moveTo(Clock.now(), this.getNextPosition(), this.pointsCalculator);
 			}
 
 			this.setTimeForNextAction();
@@ -41,18 +49,22 @@ export default class ComputerPlayer extends Player {
 		if (this.hasArrived()) this.isReadyForNextAction = true;
 	}
 
-	public update(): void {
-		super.update();
-		//console.log(`Players array: ${this.id}`);
-	}
+	private getNextPosition(): Point {
+		if (this.pathToFollow.length === 0) {
+			this.pathToFollow = this.pathFinder.findPath(this.getPosition(), this.findNextCheckpoint());
+		}
 
-	private getRandomLocation(): Point {
-		const pos = this.getPosition();
-		return { x: pos.x + 1, y: pos.y };
+		return this.pathToFollow.shift();
 	}
 
 	public generateRandomValue(): boolean {
 		return Math.random() < this.difficulty;
+	}
+
+	private findNextCheckpoint(): Point {
+		const nextCheckpoints = this.checkpointPositions.shift();
+		this.checkpointPositions.push(nextCheckpoints);
+		return nextCheckpoints[Math.floor(Math.random() * nextCheckpoints.length)]; //to select a random checkpoint positions from all possible checkpoint positions
 	}
 
 	private setTimeForNextAction(): void {

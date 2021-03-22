@@ -27,7 +27,7 @@ import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
-import ComputerPlayer from "./player/ComputerPlayer";
+import ComputerPlayer from "./player/ComputerPlayer/ComputerPlayer";
 import Player from "./player/Player";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
@@ -45,7 +45,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private state: GameState = GameState.RaceGame;
 	private isSinglePlayer: boolean;
 	private computerPlayers: ComputerPlayer[];
-	private randTimestamp: number = Clock.now() + 5000;
 
 	constructor(
 		gameTime: number,
@@ -122,13 +121,9 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		if (!this.isGameCreated) this.emitGameCreatedEvent();
 		if (this.timeRemaining <= 0) this.gameFinished();
 
-		if (this.randTimestamp < Clock.now()) {
-			this.computerPlayers[0].id = "test";
-		}
-
 		this.resolveInputs();
 		super.update();
-		this.handleComputerPlayerActions();
+		if (this.isGameStarted) this.handleComputerPlayerActions();
 		this.handleItemsRespawn();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}

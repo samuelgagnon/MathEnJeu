@@ -5,7 +5,8 @@ import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
 import ItemFactory from "./items/ItemFactory";
-import ComputerPlayer, { Difficulty } from "./player/ComputerPlayer";
+import ComputerPlayer, { Difficulty } from "./player/ComputerPlayer/ComputerPlayer";
+import PathFinder from "./player/ComputerPlayer/PathFinder";
 import Inventory from "./player/Inventory";
 import Player from "./player/Player";
 import PlayerFactory from "./player/PlayerFactory";
@@ -62,7 +63,7 @@ export default class RaceGameFactory {
 				}
 			}
 		}
-		let raceGrid = new RaceGrid(tiles, gridWidth, gridHeight, []);
+		let raceGrid = new RaceGrid(tiles, gridWidth, gridHeight, [], RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS);
 		for (let i = 0; i < RACE_PARAMETERS.CIRCUIT.NUMBER_OF_ITEMS; i++) {
 			raceGrid.generateNewItem([], isSinglePlayer);
 		}
@@ -81,13 +82,14 @@ export default class RaceGameFactory {
 		return players;
 	}
 
-	public static generateComputerPlayers(difficulties: Difficulty[], startingPositions: Point[], gameStartTimeStamp: number) {
+	public static generateComputerPlayers(difficulties: Difficulty[], startingPositions: Point[], gameStartTimeStamp: number, raceGrid: RaceGrid) {
 		let computerPlayers: ComputerPlayer[] = [];
 		difficulties.forEach((difficulty: Difficulty, index: number) => {
 			let currentIndex = index;
 			if (index >= startingPositions.length) {
 				currentIndex = index % startingPositions.length;
 			}
+			const pathFinder = new PathFinder(raceGrid);
 			computerPlayers.push(
 				PlayerFactory.creatComputerPlayer(
 					`bot-${index}`,
@@ -95,7 +97,9 @@ export default class RaceGameFactory {
 					difficulty,
 					StatusFactory.create(StatusType.NormalStatus),
 					new Inventory(),
-					gameStartTimeStamp
+					gameStartTimeStamp,
+					pathFinder,
+					raceGrid.getCheckpointPositions()
 				)
 			);
 		});
@@ -121,6 +125,12 @@ export default class RaceGameFactory {
 			tiles[startingRaceGridInfo.width * itemState.location.y + itemState.location.x].setItem(ItemFactory.create(itemState.type, itemState.location));
 		});
 
-		return new RaceGrid(tiles, startingRaceGridInfo.width, startingRaceGridInfo.height, startingRaceGridInfo.itemStates);
+		return new RaceGrid(
+			tiles,
+			startingRaceGridInfo.width,
+			startingRaceGridInfo.height,
+			startingRaceGridInfo.itemStates,
+			RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS
+		);
 	}
 }

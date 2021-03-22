@@ -8,12 +8,14 @@ export default class RaceGrid {
 	private items: ItemState[] = [];
 	private width: number;
 	private height: number;
+	private numberOfCheckpoints: number;
 
-	constructor(tiles: Tile[], width: number, height: number, items: ItemState[]) {
+	constructor(tiles: Tile[], width: number, height: number, items: ItemState[], numberOfCheckpoints: number) {
 		this.tiles = tiles;
 		this.width = width;
 		this.height = height;
 		this.items = items;
+		this.numberOfCheckpoints = numberOfCheckpoints;
 	}
 
 	public getItemsState(): ItemState[] {
@@ -100,12 +102,34 @@ export default class RaceGrid {
 		return this.tiles;
 	}
 
+	/**
+	 * @returns an array that contains multiple arrays of checkpoints positionned based on the checkpoint group.
+	 *
+	 * For exemple, if you have 4 checkpoint positions and have 2 of each group, you would have: [[cp1, cp2], [c3, cp4]]. cp1 and cp2 are from
+	 * checkpoint group 1 and c3 and cp4 are from checkpoint group 2.
+	 */
+	public getCheckpointPositions(): Point[][] {
+		let checkpointPositions: Point[][] = [];
+		for (let i = 1; i <= this.numberOfCheckpoints; i++) {
+			checkpointPositions.push(
+				this.getTiles()
+					.filter((tile: Tile) => {
+						return tile.checkpointGroup === i;
+					})
+					.map((tile: Tile) => {
+						return tile.getPosition();
+					})
+			);
+		}
+		return checkpointPositions;
+	}
+
 	public getStartingPositions(): Point[] {
 		return this.getTiles()
 			.filter((tile: Tile) => {
 				return tile.isStartPosition;
 			})
-			.map((tile) => {
+			.map((tile: Tile) => {
 				return tile.getPosition();
 			});
 	}
@@ -125,7 +149,7 @@ export default class RaceGrid {
 			.filter((tile: Tile) => {
 				return !tile.isWalkable;
 			})
-			.map((tile) => {
+			.map((tile: Tile) => {
 				return tile.getPosition();
 			});
 	}
