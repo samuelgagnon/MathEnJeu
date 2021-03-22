@@ -45,7 +45,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	currentPlayerMovement: number;
 	isReadyToGetPossiblePositions: boolean; //Needed to make sure the scene doesn't always recalculate the possible position
-	isThrowingBanana: boolean = true;
+	isThrowingBanana: boolean;
 
 	readonly tileActiveState: number = 1;
 	readonly tileInactiveState: number = 0;
@@ -72,6 +72,7 @@ export default class RaceScene extends Phaser.Scene {
 	init(data: any) {
 		this.characterSprites = [];
 		this.pointsForPosition = [];
+		this.isThrowingBanana = false;
 		this.lag = 0;
 		this.raceGame = data.gameController;
 		this.roomId = data.roomId;
