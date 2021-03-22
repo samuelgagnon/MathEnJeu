@@ -16,7 +16,7 @@ import { StatusType } from "./playerStatus/StatusType";
  */
 
 export default class Player {
-	public id: string;
+	private _id: string;
 	private readonly MAX_BRAINIAC_MOVEMENT = 7;
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;
@@ -37,9 +37,19 @@ export default class Player {
 	private schoolGrade: number;
 	private language: string;
 	private endOfPenaltyTimestamp: number;
+	public pointsCalculator: (moveDistance: number) => number;
 
-	constructor(id: string, startLocation: Point, name: string, status: Status, inventory: Inventory, schoolGrade: number, language: string) {
-		this.id = id;
+	constructor(
+		id: string,
+		startLocation: Point,
+		name: string,
+		status: Status,
+		inventory: Inventory,
+		schoolGrade: number,
+		language: string,
+		pointsCalculator: (moveDistance: number) => number
+	) {
+		this._id = id;
 		this.position = startLocation;
 		this.move = new Move(Clock.now(), startLocation, startLocation);
 		this.name = name;
@@ -47,7 +57,12 @@ export default class Player {
 		this.schoolGrade = schoolGrade;
 		this.language = language;
 		this.endOfPenaltyTimestamp = 0;
+		this.pointsCalculator = pointsCalculator;
 		this.transitionTo(status);
+	}
+
+	public get id(): string {
+		return this._id;
 	}
 
 	public update(): void {
@@ -84,6 +99,10 @@ export default class Player {
 			schoolGrade: this.schoolGrade,
 			language: this.language,
 		};
+	}
+
+	public getId(): string {
+		return this.id;
 	}
 
 	public isInPenaltyState(): boolean {
@@ -195,12 +214,12 @@ export default class Player {
 	 * Use it when a question is answered correctly
 	 * @param pointsCalculatorCallBack callback function that allows its caller to choose which method it uses for the player to calculate its points.
 	 */
-	public moveTo(startTimestamp: number, targetLocation: Point, pointsCalculatorCallBack: (moveDistance: number) => number): void {
+	public moveTo(startTimestamp: number, targetLocation: Point): void {
 		const isMoveDiagonal = Math.abs(targetLocation.x - this.position.x) > 0 && Math.abs(targetLocation.y - this.position.y) > 0;
 		//diagonal movement is not permitted
 		if (this.move.getHasArrived() && !isMoveDiagonal && !this.isInPenaltyState()) {
 			this.move = new Move(startTimestamp, this.position, targetLocation);
-			this.addPoints(pointsCalculatorCallBack(this.move.getDistance()));
+			this.addPoints(this.pointsCalculator(this.move.getDistance()));
 		}
 	}
 

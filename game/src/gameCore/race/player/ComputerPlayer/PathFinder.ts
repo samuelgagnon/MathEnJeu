@@ -23,7 +23,7 @@ export default class PathFinder {
 			let row: number[] = [];
 			for (let x = 0; x < grid.getWidth(); x++) {
 				const tile = grid.getTile(<Point>{ x, y });
-				const walkableValue = tile.isWalkable ? 0 : 1;
+				const walkableValue = tile.isWalkable ? 0 : 1; //walkable = 0 / non walkable = 1
 				row.push(walkableValue);
 			}
 			matrix.push(row);

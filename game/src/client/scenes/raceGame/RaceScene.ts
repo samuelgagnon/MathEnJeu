@@ -410,6 +410,7 @@ export default class RaceScene extends Phaser.Scene {
 			y: playerTile.getData("gridPosition").y,
 		});
 
+		const player = this.raceGame.getCurrentPlayer();
 		this.clearTileInteractions();
 
 		possiblePositions.forEach((pos: PossiblePositions) => {
@@ -422,7 +423,7 @@ export default class RaceScene extends Phaser.Scene {
 
 			//showing points for each tile
 			let points = this.add
-				.text(tile.getData("position").x, tile.getData("position").y, this.raceGame.getPointsForMoveDistance(distanceToTile).toString(), {
+				.text(tile.getData("position").x, tile.getData("position").y, player.pointsCalculator(distanceToTile).toString(), {
 					fontFamily: "Courier",
 					fontSize: "30px",
 					color: "#FDFFB5",

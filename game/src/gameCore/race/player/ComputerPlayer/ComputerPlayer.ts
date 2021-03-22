@@ -11,7 +11,6 @@ export default class ComputerPlayer extends Player {
 	private pathFinder: PathFinder;
 	private pathToFollow: Point[] = [];
 	private checkpointPositions: Point[][];
-	private pointsCalculator: (moveDistance: number) => number;
 
 	constructor(
 		id: string,
@@ -27,20 +26,17 @@ export default class ComputerPlayer extends Player {
 		checkpointPositions: Point[][],
 		pointsCalculator: (moveDistance: number) => number
 	) {
-		super(id, startLocation, name, status, inventory, schoolGrade, language);
+		super(id, startLocation, name, status, inventory, schoolGrade, language, pointsCalculator);
 		this.difficulty = difficulty;
 		this.nextActionTimeStamp = nextActionTimeStamp;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
-		this.pointsCalculator = pointsCalculator;
 	}
 
 	public handleActions(): void {
-		//console.log(`Computer players array: ${this.id}`);
-		if (this.isReadyForNextAction) {
-			// && this.nextActionTimeStamp <= Clock.now()
+		if (this.isReadyForNextAction && this.nextActionTimeStamp <= Clock.now()) {
 			if (this.generateRandomValue()) {
-				this.moveTo(Clock.now(), this.getNextPosition(), this.pointsCalculator);
+				this.moveTo(Clock.now(), this.getNextPosition());
 			}
 
 			this.setTimeForNextAction();

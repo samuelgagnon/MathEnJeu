@@ -90,9 +90,11 @@ export default class RaceGameFactory {
 				currentIndex = index % startingPositions.length;
 			}
 			const pathFinder = new PathFinder(raceGrid);
+			const botName = `bot-${index}`;
 			computerPlayers.push(
-				PlayerFactory.creatComputerPlayer(
-					`bot-${index}`,
+				PlayerFactory.createComputerPlayer(
+					botName,
+					botName,
 					startingPositions[currentIndex],
 					difficulty,
 					StatusFactory.create(StatusType.NormalStatus),

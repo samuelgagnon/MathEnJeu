@@ -10,11 +10,21 @@ import StatusFactory from "./playerStatus/StatusFactory";
 
 export default class PlayerFactory {
 	public static create(user: User, startLocation: Point, status: Status, inventory: Inventory): Player {
-		return new Player(user.userId, startLocation, user.userInfo.name, status, inventory, user.userInfo.schoolGrade, user.userInfo.language);
+		return new Player(
+			user.userId,
+			startLocation,
+			user.userInfo.name,
+			status,
+			inventory,
+			user.userInfo.schoolGrade,
+			user.userInfo.language,
+			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
+		);
 	}
 
-	public static creatComputerPlayer(
+	public static createComputerPlayer(
 		id: string,
+		name: string,
 		startLocation: Point,
 		difficulty: Difficulty,
 		status: Status,
@@ -26,7 +36,7 @@ export default class PlayerFactory {
 		return new ComputerPlayer(
 			id,
 			startLocation,
-			"",
+			name,
 			status,
 			inventory,
 			1,
@@ -47,7 +57,8 @@ export default class PlayerFactory {
 			StatusFactory.create(playerState.statusState.statusType, playerState.statusState.statusTimestamp),
 			new Inventory(playerState.inventoryState.bananaCount, playerState.inventoryState.bookCount, playerState.inventoryState.crystalBallCount),
 			playerState.schoolGrade,
-			playerState.language
+			playerState.language,
+			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
 		);
 	}
 }
