@@ -32,6 +32,10 @@ export class Question {
 		return this.id;
 	}
 
+	public getAnswers(): Answer[] {
+		return this.answers;
+	}
+
 	public getAnswer(answerString: string): Answer {
 		let answer = this.answers.find((answer) => answer.isEquivalentToAnswerString(answerString));
 		if (answer === undefined) {

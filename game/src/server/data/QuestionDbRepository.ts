@@ -28,6 +28,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 		return questionsId;
 	}
 
+	//TODO remove schoolGradeId (normally, we shouldn't have to use that parameter to get a question by ID)
 	async getQuestionById(questionId: number, languageShortName: string, schoolGradeId: number): Promise<GameQuestion> {
 		const queryString = `SELECT answer.answer_id as answerId, answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
 		question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName, 
@@ -81,5 +82,25 @@ export default class QuestionDbRepository implements QuestionRepository {
 		);
 
 		return gameQuestion;
+	}
+
+	async getAllQuestions(): Promise<any[]> {
+		const queryString = `select question_info.question_id as questionId, question_info.question_latex as questionLatex, question_info.feedback_latex as feedbackLatex, \`language\`.short_name as shortName from question_info 
+		INNER JOIN \`language\` 
+		ON question_info.language_id= \`language\`.language_id;`;
+
+		const rows = await getConnection().query(queryString);
+
+		return rows;
+	}
+
+	async getAllAnswers(): Promise<any[]> {
+		const queryString = `select answer_info.answer_id as answerId, answer_info.answer_latex as answerLatex, \`language\`.short_name as shortName from answer_info 
+		INNER JOIN \`language\` 
+		ON answer_info.language_id = \`language\`.language_id;`;
+
+		const rows = await getConnection().query(queryString);
+
+		return rows;
 	}
 }
