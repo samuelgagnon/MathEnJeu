@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@types/node": "^14.0.23",
+    "jsdom": "^16.4.0",
     "axios": "^0.19.2",
     "express": "^4.17.1",
     "mysql": "^2.18.1",
