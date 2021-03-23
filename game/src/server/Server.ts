@@ -6,7 +6,6 @@ import { JSDOM } from "jsdom";
 import path from "path";
 import "reflect-metadata";
 import ErrorReport from "../communication/ErrorReport";
-import { Question } from "../gameCore/race/question/Question";
 import QuestionRepository from "./data/QuestionRepository";
 import ReportedErrorRepository from "./data/ReportedErrorRepository";
 
@@ -36,22 +35,6 @@ export class Server {
 
 		this.app.get("/", (req, res) => {
 			res.sendFile(path.join(__dirname, "../", "/client/index.html"));
-		});
-
-		this.app.get("/questionImage", async (req, res) => {
-			const questionId = req.query.id;
-			const languageShortName = req.query.languageShortName;
-			const schoolGradeId = req.query.schoolGradeId;
-
-			this.questionRepo
-				.getQuestionById(Number(questionId), languageShortName.toString(), Number(schoolGradeId))
-				.then((question) => {
-					res.sendFile(path.join(__dirname, `assets/questions_png/${question.getQuestionRelativePath()}`));
-				})
-				.catch((error) => {
-					console.log("Query status " + error);
-					res.send(error);
-				});
 		});
 
 		this.app.get("/question-style.css", async (req, res) => {
@@ -84,22 +67,6 @@ export class Server {
 			const languageShortName = !!req.query.languageShortName ? req.query.languageShortName : "fr";
 
 			res.sendFile(path.join(__dirname, `assets/question_html/answers_html/answer_${answerId}_${languageShortName}.html`));
-		});
-
-		this.app.get("/questionFeedbackImage", async (req, res) => {
-			const questionId = req.query.id;
-			const languageShortName = req.query.languageShortName;
-			const schoolGradeId = req.query.schoolGradeId;
-
-			this.questionRepo
-				.getQuestionById(Number(questionId), languageShortName.toString(), Number(schoolGradeId))
-				.then((question: Question) => {
-					res.sendFile(path.join(__dirname, `assets/questions_png/${question.getFeedbackRelativePath()}`));
-				})
-				.catch((error) => {
-					console.log("ORM query status " + error);
-					res.send(error);
-				});
 		});
 
 		this.app.post("/errorReport", jsonParser, (req, res) => {
