@@ -19,15 +19,13 @@ export default class ComputerPlayer extends Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
-		schoolGrade: number,
-		language: string,
 		difficulty: Difficulty,
 		nextActionTimeStamp: number,
 		pathFinder: PathFinder,
 		checkpointPositions: Point[][],
 		pointsCalculator: (moveDistance: number) => number
 	) {
-		super(id, startLocation, name, status, inventory, schoolGrade, language, pointsCalculator);
+		super(id, startLocation, name, status, inventory, pointsCalculator);
 		this.difficulty = difficulty;
 		this.nextActionTimeStamp = nextActionTimeStamp;
 		this.pathFinder = pathFinder;

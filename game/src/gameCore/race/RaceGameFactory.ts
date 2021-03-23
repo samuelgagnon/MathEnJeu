@@ -7,6 +7,7 @@ import Tile from "./grid/Tile";
 import ItemFactory from "./items/ItemFactory";
 import ComputerPlayer, { Difficulty } from "./player/ComputerPlayer/ComputerPlayer";
 import PathFinder from "./player/ComputerPlayer/PathFinder";
+import HumanPlayer from "./player/HumanPlayer";
 import Inventory from "./player/Inventory";
 import Player from "./player/Player";
 import PlayerFactory from "./player/PlayerFactory";
@@ -70,19 +71,26 @@ export default class RaceGameFactory {
 		return raceGrid;
 	}
 
-	public static generatePlayers(users: User[], startingPositions: Point[]): Player[] {
-		let players: Player[] = [];
+	public static generateHumanPlayers(users: User[], startingPositions: Point[]): HumanPlayer[] {
+		let players: HumanPlayer[] = [];
 		users.forEach((user: User, index: number) => {
 			let currentIndex = index;
 			if (index >= startingPositions.length) {
 				currentIndex = index % startingPositions.length;
 			}
-			players.push(PlayerFactory.create(user, startingPositions[currentIndex], StatusFactory.create(StatusType.NormalStatus), new Inventory()));
+			players.push(
+				PlayerFactory.createHumanPlayer(user, startingPositions[currentIndex], StatusFactory.create(StatusType.NormalStatus), new Inventory())
+			);
 		});
 		return players;
 	}
 
-	public static generateComputerPlayers(difficulties: Difficulty[], startingPositions: Point[], gameStartTimeStamp: number, raceGrid: RaceGrid) {
+	public static generateComputerPlayers(
+		difficulties: Difficulty[],
+		startingPositions: Point[],
+		gameStartTimeStamp: number,
+		raceGrid: RaceGrid
+	): ComputerPlayer[] {
 		let computerPlayers: ComputerPlayer[] = [];
 		difficulties.forEach((difficulty: Difficulty, index: number) => {
 			let currentIndex = index;

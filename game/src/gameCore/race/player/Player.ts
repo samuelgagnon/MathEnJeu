@@ -1,11 +1,9 @@
-import { InfoForQuestion } from "../../../communication/race/DataInterfaces";
 import PlayerState from "../../../communication/race/PlayerState";
 import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
+import { Question } from "../question/Question";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
-import { Answer } from "./../question/Answer";
-import { Question } from "./../question/Question";
 import Inventory from "./Inventory";
 import Status from "./playerStatus/Status";
 import { StatusType } from "./playerStatus/StatusType";
@@ -17,26 +15,21 @@ import { StatusType } from "./playerStatus/StatusType";
 
 export default class Player {
 	private _id: string;
+	private readonly PENALTY_DURATION = 5 * 1000; //in milliseconds
 	private readonly MAX_BRAINIAC_MOVEMENT = 7;
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;
-	private readonly MOVE_PER_QUESTION = 1;
-	private readonly PENALTY_DURATION = 5 * 1000; //in milliseconds
+	protected readonly MOVE_PER_QUESTION = 1;
+	protected _isAnsweringQuestion: boolean = false; //value will be changed to true depending on its child class
+	private endOfPenaltyTimestamp: number = 0;
 	private maxPossibleMoveDistance: number = 3;
-	private missedQuestionsCount: number = 0;
 	private playerStatus: Status;
-	private lastQuestionPromptTimestamp: number;
-	private activeQuestion: Question;
 	private name: string;
 	private points: number = 0;
 	private position: Point;
 	private move: Move;
 	private inventory: Inventory;
-	private answeredQuestionsId: number[] = []; //includes all answered questions' id, no matter if the answer was right or wrong.
 	private lastValidCheckpoint: number = 0;
-	private schoolGrade: number;
-	private language: string;
-	private endOfPenaltyTimestamp: number;
 	public pointsCalculator: (moveDistance: number) => number;
 
 	constructor(
@@ -45,8 +38,6 @@ export default class Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
-		schoolGrade: number,
-		language: string,
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		this._id = id;
@@ -54,9 +45,6 @@ export default class Player {
 		this.move = new Move(Clock.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
-		this.schoolGrade = schoolGrade;
-		this.language = language;
-		this.endOfPenaltyTimestamp = 0;
 		this.pointsCalculator = pointsCalculator;
 		this.transitionTo(status);
 	}
@@ -93,28 +81,12 @@ export default class Player {
 			points: this.points,
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
-			isAnsweringQuestion: this.isAnsweringQuestion(),
-			missedQuestionsCount: this.missedQuestionsCount,
 			inventoryState: this.inventory.getInventoryState(),
-			schoolGrade: this.schoolGrade,
-			language: this.language,
 		};
 	}
 
 	public getId(): string {
 		return this.id;
-	}
-
-	public isInPenaltyState(): boolean {
-		return Clock.now() < this.endOfPenaltyTimestamp;
-	}
-
-	public getEndOfPenaltyTimestamp(): number {
-		return this.endOfPenaltyTimestamp;
-	}
-
-	private givePenalty(): void {
-		this.endOfPenaltyTimestamp = Clock.now() + this.PENALTY_DURATION;
 	}
 
 	public getCurrentStatus(): StatusType {
@@ -123,10 +95,6 @@ export default class Player {
 
 	public getStatusRemainingTime(): number {
 		return this.playerStatus.getRemainingTime();
-	}
-
-	public isAnsweringQuestion(): boolean {
-		return this.activeQuestion !== undefined;
 	}
 
 	public getInventory(): Inventory {
@@ -162,54 +130,6 @@ export default class Player {
 		return difficulty;
 	}
 
-	public getInfoForQuestion(): InfoForQuestion {
-		return {
-			schoolGrade: this.schoolGrade,
-			language: this.language,
-		};
-	}
-
-	public promptQuestion(question: Question): void {
-		this.activeQuestion = question;
-		this.lastQuestionPromptTimestamp = Clock.now();
-	}
-
-	public getActiveQuestion(): Question {
-		return this.activeQuestion;
-	}
-
-	public getAnswerFromActiveQuestion(answerString: string): Answer {
-		if (this.isAnsweringQuestion()) {
-			return this.activeQuestion.getAnswer(answerString);
-		}
-		return undefined;
-	}
-
-	public getLastQuestionPromptTimestamp() {
-		return this.lastQuestionPromptTimestamp;
-	}
-
-	public getAnsweredQuestionsId(): number[] {
-		return this.answeredQuestionsId;
-	}
-
-	public resetAnsweredQuestionsId(): void {
-		this.answeredQuestionsId = [];
-	}
-
-	public answeredQuestion(isAnswerCorrect: boolean): void {
-		//add answered question to answeredQuestion list so you don't ask the player the same question again
-		this.answeredQuestionsId.push(this.activeQuestion.getId());
-		this.activeQuestion = undefined;
-		if (isAnswerCorrect) {
-			this.addToMoveDistance(this.MOVE_PER_QUESTION);
-		} else {
-			//When player answers incorrectly, a penalty is given
-			this.givePenalty();
-			this.addToMoveDistance(-this.MOVE_PER_QUESTION);
-		}
-	}
-
 	/**
 	 * Use it when a question is answered correctly
 	 * @param pointsCalculatorCallBack callback function that allows its caller to choose which method it uses for the player to calculate its points.
@@ -217,7 +137,8 @@ export default class Player {
 	public moveTo(startTimestamp: number, targetLocation: Point): void {
 		const isMoveDiagonal = Move.isDiagonal(this.getPosition(), targetLocation);
 		//diagonal movement is not permitted
-		if (this.move.getHasArrived() && !isMoveDiagonal && !this.isInPenaltyState()) {
+		if (this.move.getHasArrived() && !isMoveDiagonal) {
+			// && !this.isInPenaltyState()
 			this.move = new Move(startTimestamp, this.position, targetLocation);
 			this.addPoints(this.pointsCalculator(this.move.getDistance()));
 		}
@@ -260,6 +181,14 @@ export default class Player {
 		this.position = this.move.getCurrentPosition();
 	}
 
+	public isAnsweringQuestion(): boolean {
+		return this._isAnsweringQuestion;
+	}
+
+	public promptQuestion(question?: Question) {
+		this._isAnsweringQuestion = true;
+	}
+
 	public useItemType(itemType: ItemType, target: Player): void {
 		const usedItem = this.inventory.getItem(itemType);
 
@@ -268,6 +197,28 @@ export default class Player {
 
 		usedItem.use(target, this);
 		this.inventory.removeItem(itemType);
+	}
+
+	public answeredQuestion(isAnswerCorrect: boolean): void {
+		if (isAnswerCorrect) {
+			this.addToMoveDistance(this.MOVE_PER_QUESTION);
+		} else {
+			this.givePenalty();
+			this.addToMoveDistance(-this.MOVE_PER_QUESTION);
+		}
+		this._isAnsweringQuestion = false;
+	}
+
+	private givePenalty(): void {
+		this.endOfPenaltyTimestamp = Clock.now() + this.PENALTY_DURATION;
+	}
+
+	public isInPenaltyState(): boolean {
+		return Clock.now() < this.endOfPenaltyTimestamp;
+	}
+
+	public getEndOfPenaltyTimestamp(): number {
+		return this.endOfPenaltyTimestamp;
 	}
 
 	public useItem(item: Item): void {

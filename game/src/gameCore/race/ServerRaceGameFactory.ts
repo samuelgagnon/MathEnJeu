@@ -19,8 +19,8 @@ export default class ServerRaceGameFactory {
 			RACE_PARAMETERS.CIRCUIT.GRID,
 			isSinglePlayer
 		);
-		let players = RaceGameFactory.generatePlayers(users, raceGrid.getStartingPositions());
-		let computerPlayers = RaceGameFactory.generateComputerPlayers([Difficulty.HARD], raceGrid.getStartingPositions(), gameStartTimeStamp, raceGrid);
+		const players = RaceGameFactory.generateHumanPlayers(users, raceGrid.getStartingPositions());
+		const computerPlayers = RaceGameFactory.generateComputerPlayers([Difficulty.HARD], raceGrid.getStartingPositions(), gameStartTimeStamp, raceGrid);
 		return new ServerRaceGameController(
 			gameOptions.gameTime * 60 * 1000, //TODO: maybe apply milliseconds conversion before the factory
 			gameStartTimeStamp,

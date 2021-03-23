@@ -3,14 +3,15 @@ import User from "../../../server/rooms/User";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
 import ComputerPlayer, { Difficulty } from "./ComputerPlayer/ComputerPlayer";
 import PathFinder from "./ComputerPlayer/PathFinder";
+import HumanPlayer from "./HumanPlayer";
 import Inventory from "./Inventory";
 import Player from "./Player";
 import Status from "./playerStatus/Status";
 import StatusFactory from "./playerStatus/StatusFactory";
 
 export default class PlayerFactory {
-	public static create(user: User, startLocation: Point, status: Status, inventory: Inventory): Player {
-		return new Player(
+	public static createHumanPlayer(user: User, startLocation: Point, status: Status, inventory: Inventory): HumanPlayer {
+		return new HumanPlayer(
 			user.userId,
 			startLocation,
 			user.userInfo.name,
@@ -39,8 +40,6 @@ export default class PlayerFactory {
 			name,
 			status,
 			inventory,
-			1,
-			"",
 			difficulty,
 			gameStartTimeStamp,
 			pathFinder,
@@ -56,8 +55,6 @@ export default class PlayerFactory {
 			playerState.name,
 			StatusFactory.create(playerState.statusState.statusType, playerState.statusState.statusTimestamp),
 			new Inventory(playerState.inventoryState.bananaCount, playerState.inventoryState.bookCount, playerState.inventoryState.crystalBallCount),
-			playerState.schoolGrade,
-			playerState.language,
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
 		);
 	}

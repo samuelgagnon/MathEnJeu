@@ -28,6 +28,7 @@ import PreGameFactory from "../gameState/StateFactory";
 import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
 import ComputerPlayer from "./player/ComputerPlayer/ComputerPlayer";
+import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
@@ -58,8 +59,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		isSinglePlayer: boolean
 	) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, gameStartTimeStamp, grid, players);
-		this.players = this.players.concat(computerPlayers);
+		super(gameTime, gameStartTimeStamp, grid, players.concat(computerPlayers));
 		this.gameId = gameId;
 		this.computerPlayers = computerPlayers;
 		this.questionRepo = questionRepo;
@@ -213,7 +213,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	public resolveInputs(): void {
 		this.inputBuffer.forEach((input: BufferedInput) => {
 			let inputData: any = input.data;
-			let player: Player;
+			let player: HumanPlayer;
 			switch (input.eventType) {
 				case SE.ITEM_USED:
 					try {
@@ -226,7 +226,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				case SE.MOVE_REQUEST:
 					if (this.isMoveRequestValid(<MoveRequestEvent>inputData)) {
 						try {
-							player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+							player = <HumanPlayer>this.findPlayer((<MoveRequestEvent>inputData).playerId);
 							this.sendQuestionToPlayer(
 								player.getInfoForQuestion().language,
 								player.getInfoForQuestion().schoolGrade,
@@ -241,19 +241,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 				case SE.BOOK_USED:
 					try {
-						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
+						player = <HumanPlayer>this.findPlayer((<BookUsedEvent>inputData).playerId);
 						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
 						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
-						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
-							(question) => {
-								this.context
-									.getNamespace()
-									.to(player.id)
-									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
-										questionDTO: question.getDTO(),
-									});
-							}
-						);
+						const infoForQuestion = player.getInfoForQuestion();
+						this.findQuestionForPlayer(player, infoForQuestion.language, infoForQuestion.schoolGrade, newDifficulty).then((question) => {
+							this.context
+								.getNamespace()
+								.to(player.id)
+								.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+									questionDTO: question.getDTO(),
+								});
+						});
 					} catch (err) {
 						console.log(err);
 					}
@@ -261,7 +260,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 				case SE.QUESTION_ANSWERED:
 					const correctionStartTimestamp = Clock.now();
-					player = this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
+					player = <HumanPlayer>this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
 					if (player.isAnsweringQuestion()) {
 						const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
 						const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
@@ -318,7 +317,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.inputBuffer = [];
 	}
 
-	private async findQuestionForPlayer(player: Player, language: string, schoolGrade: number, requestedDifficulty: number): Promise<Question> {
+	private async findQuestionForPlayer(player: HumanPlayer, language: string, schoolGrade: number, requestedDifficulty: number): Promise<Question> {
 		let questionIdArray: number[];
 		let actualDifficulty = requestedDifficulty;
 		while (!questionIdArray || !questionIdArray.length) {
@@ -352,7 +351,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
-	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
+	private sendQuestionToPlayer(language: string, schoolGrade: number, player: HumanPlayer, targetLocation: Point): void {
 		this.findQuestionForPlayer(player, language, schoolGrade, player.getDifficulty(targetLocation))
 			.then((question) => {
 				player.promptQuestion(question);
@@ -403,7 +402,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
-		const player = this.findPlayer(moveRequestEvent.playerId);
+		const player = <HumanPlayer>this.findPlayer(moveRequestEvent.playerId);
 		if (!player.isAnsweringQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
 			if (
