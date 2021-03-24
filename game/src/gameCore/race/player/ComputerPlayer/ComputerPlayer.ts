@@ -8,7 +8,7 @@ import PathFinder from "./PathFinder";
 export default class ComputerPlayer extends Player {
 	private difficulty: Difficulty;
 	private nextActionTimeStamp: number;
-	private isReadyForNextAction: boolean;
+	private isReadyForNextAction: boolean = true;
 	private pathFinder: PathFinder;
 	private pathToFollow: Point[] = [];
 	private checkpointPositions: Point[][];
@@ -20,19 +20,24 @@ export default class ComputerPlayer extends Player {
 		status: Status,
 		inventory: Inventory,
 		difficulty: Difficulty,
-		nextActionTimeStamp: number,
+		gameStartTimestamp: number,
 		pathFinder: PathFinder,
 		checkpointPositions: Point[][],
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		super(id, startLocation, name, status, inventory, pointsCalculator);
 		this.difficulty = difficulty;
-		this.nextActionTimeStamp = nextActionTimeStamp;
+		this.nextActionTimeStamp = gameStartTimestamp;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
 	}
 
-	public handleActions(): void {
+	public update(): void {
+		super.update();
+		this.handleActions();
+	}
+
+	private handleActions(): void {
 		if (this.isReadyForNextAction && this.nextActionTimeStamp <= Clock.now()) {
 			if (this.generateRandomValue()) {
 				this.moveTo(Clock.now(), this.getNextPosition());
