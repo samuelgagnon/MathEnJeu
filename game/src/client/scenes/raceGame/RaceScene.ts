@@ -11,7 +11,7 @@ import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from
 import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
-import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
+import RaceGrid, { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../../gameCore/race/items/Item";
 import Move from "../../../gameCore/race/Move";
 import Player from "../../../gameCore/race/player/Player";
@@ -25,6 +25,11 @@ import { BackgroundSceneData } from "./BackgroundScene";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
+/**
+ * This class will render the game board and everything no related to it. That also includes characters, tiles and items on the board.
+ * It also controls the interaction with the server. Any action related to the game logic that occured in another scene will be caught
+ * by this scene with an event and will be executed here.
+ */
 export default class RaceScene extends Phaser.Scene {
 	//Room
 	roomId: string;
@@ -91,11 +96,36 @@ export default class RaceScene extends Phaser.Scene {
 		this.items = this.add.group();
 
 		const gameGrid = this.raceGame.getGrid();
-
 		this.boardPosition = { x: <number>this.game.config.width * 0.5, y: <number>this.game.config.height * 0.5 };
-		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
+		this.createGameBoard(gameGrid);
 
-		//creating game board
+		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
+		this.isReadyToGetPossiblePositions = true;
+
+		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//RenderBackground behind everything else
+		this.scene.sendToBack(CST.SCENES.BACKGROUD);
+
+		//Initilalize camera
+		this.render();
+		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
+		this.handleFollowPlayerToggle(this.isFollowingPlayer);
+
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
+		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+		subscribeToEvent(EventNames.useBook, this.useBook, this);
+		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
+		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
+		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
+	}
+
+	private createGameBoard(gameGrid: RaceGrid) {
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
@@ -137,30 +167,6 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
-
-		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		this.isReadyToGetPossiblePositions = true;
-
-		this.scene.launch(CST.SCENES.RACE_GAME_UI);
-
-		//RenderBackground behind everything else
-		this.scene.sendToBack(CST.SCENES.BACKGROUD);
-
-		//Initilalize camera
-		this.render();
-		this.handleFollowPlayerToggle(this.isFollowingPlayer);
-
-		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
-		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
-		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
-		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
-		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
-		subscribeToEvent(EventNames.useBook, this.useBook, this);
-		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
-		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
-		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
-		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
-		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	playerRequestMove(targetLocation: Point) {

@@ -13,27 +13,26 @@ export default class MenuScene extends Phaser.Scene {
 
 		this.add.image(this.game.renderer.width / 2, this.game.renderer.height * 0.2, CST.IMAGES.TITLE).setDepth(1);
 
-		let playButton = this.add.image(this.game.renderer.width / 2, this.game.renderer.height / 2, CST.IMAGES.PLAY).setDepth(1);
+		let playButton = this.add
+			.image(this.game.renderer.width / 2, this.game.renderer.height / 2, CST.IMAGES.PLAY)
+			.setDepth(1)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
-		playButton.setInteractive({
-			useHandCursor: true,
-		});
-
-		playButton.on("pointerover", () => {
-			playButton.setTint(0xffff66);
-		});
-
-		playButton.on("pointerout", () => {
-			playButton.clearTint();
-		});
-
-		playButton.on("pointerdown", () => {
-			playButton.setTint(0x86bfda);
-		});
-
-		playButton.on("pointerup", () => {
-			playButton.clearTint();
-			this.scene.start(CST.SCENES.USERS_SETTING);
-		});
+		playButton
+			.on("pointerover", () => {
+				playButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				playButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				playButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				playButton.clearTint();
+				this.scene.start(CST.SCENES.USERS_SETTING);
+			});
 	}
 }
