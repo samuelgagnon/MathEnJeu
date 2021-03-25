@@ -62,19 +62,6 @@ export default class UsersSettingScene extends Phaser.Scene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		// this.backButton.on("pointerout", () => {
-		// 	this.backButton.clearTint();
-		// });
-
-		// this.backButton.on("pointerdown", () => {
-		// 	this.backButton.setTint(0x86bfda);
-		// });
-
-		// this.backButton.on("pointerup", () => {
-		// 	this.backButton.clearTint();
-		// 	this.scene.start(CST.SCENES.MENU);
-		// });
-
 		this.submitButton
 			.on("pointerover", () => {
 				this.submitButton.setTint(0xffff66);

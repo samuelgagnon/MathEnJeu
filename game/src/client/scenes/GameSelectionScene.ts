@@ -1,4 +1,5 @@
 import { CST } from "../CST";
+import { joinRoom } from "../services/RoomService";
 import BaseScene from "./BaseScene";
 
 export default class GameSelection extends BaseScene {
