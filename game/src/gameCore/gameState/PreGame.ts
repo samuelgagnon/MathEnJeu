@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
-import { GameOptions } from "../../communication/room/DataInterfaces";
+import { GameOptions } from "../../communication/room/EventInterfaces";
 import Room from "../../server/rooms/Room";
 import User from "../../server/rooms/User";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";

@@ -1,11 +1,11 @@
 import { Namespace, Socket } from "socket.io";
+import { HostChangeEvent, JoinRoomAnswerEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
-import { HostChangeEvent, JoinRoomAnswerEvent, RoomInfoEvent, RoomSettings } from "./../../communication/room/DataInterfaces";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
 import User, { UserToDTO } from "./User";
 

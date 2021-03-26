@@ -1,4 +1,4 @@
-import { GameOptions } from "../../communication/room/DataInterfaces";
+import { GameOptions } from "../../communication/room/EventInterfaces";
 import { serviceConstants } from "../../server/context/CommonContext";
 import ServiceLocator from "../../server/context/ServiceLocator";
 import User from "../../server/rooms/User";
