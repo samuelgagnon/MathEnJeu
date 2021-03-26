@@ -1,5 +1,5 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
-import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
+import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/EventInterfaces";
 import { JoinRoomAnswerEvent, JoinRoomRequestEvent, RoomSettings } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";

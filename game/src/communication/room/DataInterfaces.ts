@@ -19,3 +19,12 @@ export interface JoinRoomAnswerEvent {
 export interface JoinRoomRequestEvent {
 	roomId: string;
 }
+
+export interface HostChangeEvent {
+	newHostName: string;
+}
+
+//this includes the games options selected by the host
+export interface GameOptions {
+	gameTime: number;
+}

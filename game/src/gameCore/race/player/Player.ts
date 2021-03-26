@@ -1,5 +1,5 @@
-import { InfoForQuestion } from "../../../communication/race/DataInterfaces";
 import PlayerState from "../../../communication/race/PlayerState";
+import { InfoForQuestion } from "../../../communication/race/QuestionDTO";
 import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";

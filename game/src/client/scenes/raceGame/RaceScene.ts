@@ -5,7 +5,7 @@ import {
 	PlayerLeftEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-} from "../../../communication/race/DataInterfaces";
+} from "../../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
 import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";

@@ -24,3 +24,11 @@ export interface InventoryState {
 	crystalBallCount: number;
 	bookCount: number;
 }
+
+export interface PlayerEndState {
+	playerId: string;
+	points: number;
+	name: string;
+	//TODO: Maybe put the user information here
+	//to know what character model is used and possibly the grade the player is
+}
