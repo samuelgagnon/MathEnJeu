@@ -80,7 +80,6 @@ export default class RoomManager {
 
 	private deleteRoomIfEmpty(roomId: string): void {
 		if (this.roomRepo.getRoomById(roomId).isRoomEmtpty()) {
-			console.log("room deleted");
 			this.roomRepo.deleteRoomById(roomId);
 		}
 	}
