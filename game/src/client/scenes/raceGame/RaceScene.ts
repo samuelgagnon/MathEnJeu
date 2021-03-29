@@ -26,7 +26,7 @@ import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
 /**
- * This class will render the game board and everything no related to it. That also includes characters, tiles and items on the board.
+ * This class will render the game board and everything not related to it. That also includes characters, tiles and items on the board.
  * It also controls the interaction with the server. Any action related to the game logic that occured in another scene will be caught
  * by this scene with an event and will be executed here.
  */
