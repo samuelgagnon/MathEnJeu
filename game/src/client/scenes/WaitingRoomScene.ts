@@ -228,6 +228,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
 			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_INITIALIZED, <GameOptions>{
 				gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
+				computerPlayerCount: Number((<HTMLInputElement>this.gameOptions.getChildByID("computerPlayerCount")).value),
 			});
 		});
 

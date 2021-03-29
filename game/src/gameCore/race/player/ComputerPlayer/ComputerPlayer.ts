@@ -6,7 +6,6 @@ import Status from "../playerStatus/Status";
 import PathFinder from "./PathFinder";
 
 export default class ComputerPlayer extends Player {
-	private difficulty: Difficulty;
 	private nextActionTimeStamp: number;
 	private isReadyForNextAction: boolean = true;
 	private pathFinder: PathFinder;
@@ -19,14 +18,12 @@ export default class ComputerPlayer extends Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
-		difficulty: Difficulty,
 		gameStartTimestamp: number,
 		pathFinder: PathFinder,
 		checkpointPositions: Point[][],
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		super(id, startLocation, name, status, inventory, pointsCalculator);
-		this.difficulty = difficulty;
 		this.nextActionTimeStamp = gameStartTimestamp;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
@@ -58,7 +55,7 @@ export default class ComputerPlayer extends Player {
 	}
 
 	public generateRandomValue(): boolean {
-		return Math.random() < this.difficulty;
+		return Math.random() < 0.5;
 	}
 
 	private findNextCheckpoint(): Point {
@@ -89,32 +86,7 @@ export default class ComputerPlayer extends Player {
 	}
 
 	private setTimeForNextAction(): void {
-		let timeForNextAction: number;
-
-		switch (this.difficulty) {
-			case Difficulty.EASY:
-				timeForNextAction = 15;
-				break;
-
-			case Difficulty.MEDIUM:
-				timeForNextAction = 10;
-				break;
-
-			case Difficulty.HARD:
-				timeForNextAction = 5;
-				break;
-
-			default:
-				break;
-		}
-
 		//1000 milliseconds in 1 second
-		this.nextActionTimeStamp = Clock.now() + timeForNextAction * 1000;
+		this.nextActionTimeStamp = Clock.now() + 10 * 1000;
 	}
-}
-
-export enum Difficulty {
-	EASY = 0.2,
-	MEDIUM = 0.4,
-	HARD = 0.8,
 }

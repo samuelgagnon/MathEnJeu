@@ -30,6 +30,7 @@ export interface GameCreatedEvent {
 //this includes the games options selected by the host
 export interface GameOptions {
 	gameTime: number;
+	computerPlayerCount: number;
 }
 
 export interface GameEndEvent {

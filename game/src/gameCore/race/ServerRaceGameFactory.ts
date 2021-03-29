@@ -3,7 +3,6 @@ import { serviceConstants } from "../../server/context/CommonContext";
 import ServiceLocator from "../../server/context/ServiceLocator";
 import User from "../../server/rooms/User";
 import { Clock } from "../clock/Clock";
-import { Difficulty } from "./player/ComputerPlayer/ComputerPlayer";
 import RaceGameFactory from "./RaceGameFactory";
 import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 import ServerRaceGameController from "./ServerRaceGameController";
@@ -20,7 +19,12 @@ export default class ServerRaceGameFactory {
 			isSinglePlayer
 		);
 		const players = RaceGameFactory.generateHumanPlayers(users, raceGrid.getStartingPositions());
-		const computerPlayers = RaceGameFactory.generateComputerPlayers([Difficulty.HARD], raceGrid.getStartingPositions(), gameStartTimeStamp, raceGrid);
+		const computerPlayers = RaceGameFactory.generateComputerPlayers(
+			gameOptions.computerPlayerCount,
+			raceGrid.getStartingPositions(),
+			gameStartTimeStamp,
+			raceGrid
+		);
 		return new ServerRaceGameController(
 			gameOptions.gameTime * 60 * 1000, //TODO: maybe apply milliseconds conversion before the factory
 			gameStartTimeStamp,

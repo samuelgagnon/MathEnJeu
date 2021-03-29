@@ -5,7 +5,7 @@ import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
 import ItemFactory from "./items/ItemFactory";
-import ComputerPlayer, { Difficulty } from "./player/ComputerPlayer/ComputerPlayer";
+import ComputerPlayer from "./player/ComputerPlayer/ComputerPlayer";
 import PathFinder from "./player/ComputerPlayer/PathFinder";
 import HumanPlayer from "./player/HumanPlayer";
 import Inventory from "./player/Inventory";
@@ -86,13 +86,13 @@ export default class RaceGameFactory {
 	}
 
 	public static generateComputerPlayers(
-		difficulties: Difficulty[],
+		numberOfBots: number,
 		startingPositions: Point[],
 		gameStartTimeStamp: number,
 		raceGrid: RaceGrid
 	): ComputerPlayer[] {
 		let computerPlayers: ComputerPlayer[] = [];
-		difficulties.forEach((difficulty: Difficulty, index: number) => {
+		for (let index = 0; index < numberOfBots; index++) {
 			let currentIndex = index;
 			if (index >= startingPositions.length) {
 				currentIndex = index % startingPositions.length;
@@ -104,7 +104,6 @@ export default class RaceGameFactory {
 					botName,
 					botName,
 					startingPositions[currentIndex],
-					difficulty,
 					StatusFactory.create(StatusType.NormalStatus),
 					new Inventory(),
 					gameStartTimeStamp,
@@ -112,8 +111,7 @@ export default class RaceGameFactory {
 					raceGrid.getCheckpointPositions()
 				)
 			);
-		});
-
+		}
 		return computerPlayers;
 	}
 

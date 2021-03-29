@@ -1,7 +1,7 @@
 import PlayerState from "../../../communication/race/PlayerState";
 import User from "../../../server/rooms/User";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
-import ComputerPlayer, { Difficulty } from "./ComputerPlayer/ComputerPlayer";
+import ComputerPlayer from "./ComputerPlayer/ComputerPlayer";
 import PathFinder from "./ComputerPlayer/PathFinder";
 import HumanPlayer from "./HumanPlayer";
 import Inventory from "./Inventory";
@@ -27,7 +27,6 @@ export default class PlayerFactory {
 		id: string,
 		name: string,
 		startLocation: Point,
-		difficulty: Difficulty,
 		status: Status,
 		inventory: Inventory,
 		gameStartTimeStamp: number,
@@ -40,7 +39,6 @@ export default class PlayerFactory {
 			name,
 			status,
 			inventory,
-			difficulty,
 			gameStartTimeStamp,
 			pathFinder,
 			checkpointPositions,
