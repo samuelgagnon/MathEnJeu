@@ -572,7 +572,6 @@ export default class RaceScene extends Phaser.Scene {
 			(this.raceGame.getGrid().getWidth() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * this.cameraOffset,
 			(this.raceGame.getGrid().getHeight() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * yOffset
 		);
-		console.log(this.cameras.main.getBounds());
 	}
 }
 
