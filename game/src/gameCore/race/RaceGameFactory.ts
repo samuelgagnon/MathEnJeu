@@ -1,5 +1,5 @@
-import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
+import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import User from "../../server/rooms/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";

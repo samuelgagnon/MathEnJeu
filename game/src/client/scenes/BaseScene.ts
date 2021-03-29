@@ -1,4 +1,4 @@
-import { JoinRoomAnswerEvent } from "../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { Clock } from "../../gameCore/clock/Clock";
 import { JOIN_ROOM_ERROR_NAME } from "../../server/rooms/JoinRoomErrors";

@@ -1,7 +1,7 @@
-import { GameCreatedEvent, GameEndEvent, GameOptions, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
+import { GameCreatedEvent, GameEndEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
-import PlayerState from "../../communication/race/PlayerState";
-import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterfaces";
+import PlayerState, { PlayerEndState } from "../../communication/race/PlayerState";
+import { GameOptions, HostChangeEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";

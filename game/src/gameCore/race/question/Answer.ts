@@ -1,4 +1,4 @@
-import { AnswerDTO } from "../../../communication/race/DataInterfaces";
+import { AnswerDTO } from "../../../communication/race/AnswerDTO";
 
 export class Answer {
 	private id: number;

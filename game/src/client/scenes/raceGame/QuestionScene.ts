@@ -1,4 +1,4 @@
-import { QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import { QuestionFoundFromBookEvent } from "../../../communication/race/EventInterfaces";
 import { Clock } from "../../../gameCore/clock/Clock";
 import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";

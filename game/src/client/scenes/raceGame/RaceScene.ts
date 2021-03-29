@@ -5,9 +5,9 @@ import {
 	PlayerLeftEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-} from "../../../communication/race/DataInterfaces";
+} from "../../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
-import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";

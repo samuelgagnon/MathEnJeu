@@ -1,21 +1,21 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
+	AnswerCorrectedEvent,
 	BookUsedEvent,
 	GameCreatedEvent,
 	GameEndEvent,
 	ItemUsedEvent,
 	MoveRequestEvent,
-	PlayerEndState,
 	PlayerLeftEvent,
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	StartingRaceGridInfo,
-} from "../../communication/race/DataInterfaces";
+} from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
-import PlayerState from "../../communication/race/PlayerState";
+import PlayerState, { PlayerEndState } from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
+import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import UserInfo from "../../communication/user/UserInfo";
 import QuestionRepository from "../../server/data/QuestionRepository";
 import Room from "../../server/rooms/Room";
@@ -25,7 +25,6 @@ import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
-import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
 import Player from "./player/Player";
 import { Question } from "./question/Question";

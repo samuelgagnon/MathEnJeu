@@ -1,4 +1,4 @@
-import { JoinRoomRequestEvent } from "../../communication/room/DataInterfaces";
+import { JoinRoomRequestEvent } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { CST } from "../CST";
 import { connectToRoomSelectionNamespace } from "../services/RoomService";

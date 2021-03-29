@@ -1,4 +1,4 @@
-import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/DataInterfaces";
+import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";

@@ -1,4 +1,4 @@
-import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/DataInterfaces";
+import { TimeRequestEvent, TimeResponseEvent } from "../../communication/clock/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/clock/EventNames";
 import { arithmeticMean, median, standardDeviation } from "../../utils/Utils";
 
