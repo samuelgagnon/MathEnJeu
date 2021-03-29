@@ -45,7 +45,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	currentPlayerMovement: number;
 	isReadyToGetPossiblePositions: boolean; //Needed to make sure the scene doesn't always recalculate the possible position
-	isThrowingBanana: boolean = true;
+	isThrowingBanana: boolean = false;
 
 	readonly tileActiveState: number = 1;
 	readonly tileInactiveState: number = 0;
@@ -53,6 +53,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	readonly maxZoom: number = 1.5;
 	readonly minZoom: number = 0.8;
+	readonly cameraOffset: number = 400;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -73,6 +74,8 @@ export default class RaceScene extends Phaser.Scene {
 		this.characterSprites = [];
 		this.pointsForPosition = [];
 		this.lag = 0;
+		this.isThrowingBanana = false;
+		this.isFollowingPlayer = true;
 		this.raceGame = data.gameController;
 		this.roomId = data.roomId;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
@@ -527,12 +530,18 @@ export default class RaceScene extends Phaser.Scene {
 
 	private zoomIn(): void {
 		const cam = this.cameras.main;
-		if (cam.zoom <= this.maxZoom) cam.zoom += 0.1;
+		if (cam.zoom < this.maxZoom) {
+			cam.zoom += 0.1;
+			this.reajustCameraBounds(cam.zoom);
+		}
 	}
 
 	private zoomOut(): void {
 		const cam = this.cameras.main;
-		if (cam.zoom >= this.minZoom) cam.zoom -= 0.1;
+		if (cam.zoom > this.minZoom) {
+			cam.zoom -= 0.1;
+			this.reajustCameraBounds(cam.zoom);
+		}
 	}
 
 	private createCameraBounds(x: number, y: number, boardWidth: number, boardHeight: number): void {
@@ -547,11 +556,21 @@ export default class RaceScene extends Phaser.Scene {
 		);
 
 		this.cameras.main.setBounds(
-			x - 200,
-			y - 200,
-			boardWidth * this.distanceBetweenTwoTiles + 600,
-			boardHeight * this.distanceBetweenTwoTiles + 600,
-			true
+			x - this.cameraOffset,
+			y - this.cameraOffset,
+			(boardWidth - 1) * this.distanceBetweenTwoTiles + 2 * this.cameraOffset,
+			(boardHeight - 1) * this.distanceBetweenTwoTiles + 2 * this.cameraOffset
+		);
+	}
+
+	private reajustCameraBounds(zoomFactor: number): void {
+		const yOffset = zoomFactor === this.minZoom ? 75 : this.cameraOffset;
+
+		this.cameras.main.setBounds(
+			this.boardPosition.x - zoomFactor * this.cameraOffset,
+			this.boardPosition.y - zoomFactor * yOffset,
+			(this.raceGame.getGrid().getWidth() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * this.cameraOffset,
+			(this.raceGame.getGrid().getHeight() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * yOffset
 		);
 	}
 }
