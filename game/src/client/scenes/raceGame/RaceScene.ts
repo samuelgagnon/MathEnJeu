@@ -41,7 +41,7 @@ export default class RaceScene extends Phaser.Scene {
 	//Buffer
 	readonly distanceBetweenTwoTiles: number = 66;
 	boardPosition: Point;
-	keyboardInputs;
+	keyboardInputs: Phaser.Types.Input.Keyboard.CursorKeys;
 	isFollowingPlayer: boolean = true;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
