@@ -221,6 +221,21 @@ export default class RaceGameUI extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
+		this.zoomInButton
+			.on("pointerover", () => {
+				this.zoomInButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.zoomInButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.zoomInButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.zoomInButton.clearTint();
+				sceneEvents.emit(EventNames.zoomIn);
+			});
+
 		this.zoomOutButton = this.add
 			.text(100, Number(this.game.config.height) * 0.9, "-", {
 				fontFamily: "Courier",
@@ -265,57 +280,21 @@ export default class RaceGameUI extends Phaser.Scene {
 				useHandCursor: true,
 			});
 
-		this.startOptionsButton.on("pointerover", () => {
-			this.startOptionsButton.setTint(0xffff66);
-		});
-
-		this.startOptionsButton.on("pointerout", () => {
-			this.startOptionsButton.clearTint();
-		});
-
-		this.startOptionsButton.on("pointerdown", () => {
-			this.startOptionsButton.setTint(0x86bfda);
-		});
-
-		this.startOptionsButton.on("pointerup", () => {
-			this.startOptionsButton.clearTint();
-			sceneEvents.emit(EventNames.gamePaused);
-			this.scene.launch(CST.SCENES.IN_GAME_MENU);
-		});
-
-		this.zoomInButton.on("pointerover", () => {
-			this.zoomInButton.setTint(0xffff66);
-		});
-
-		this.zoomInButton.on("pointerout", () => {
-			this.zoomInButton.clearTint();
-		});
-
-		this.zoomInButton.on("pointerdown", () => {
-			this.zoomInButton.setTint(0x86bfda);
-		});
-
-		this.zoomInButton.on("pointerup", () => {
-			this.zoomInButton.clearTint();
-			sceneEvents.emit(EventNames.zoomIn);
-		});
-
-		this.zoomOutButton.on("pointerover", () => {
-			this.zoomOutButton.setTint(0xffff66);
-		});
-
-		this.zoomOutButton.on("pointerout", () => {
-			this.zoomOutButton.clearTint();
-		});
-
-		this.zoomOutButton.on("pointerdown", () => {
-			this.zoomOutButton.setTint(0x86bfda);
-		});
-
-		this.zoomOutButton.on("pointerup", () => {
-			this.zoomOutButton.clearTint();
-			sceneEvents.emit(EventNames.zoomOut);
-		});
+		this.startOptionsButton
+			.on("pointerover", () => {
+				this.startOptionsButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.startOptionsButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.startOptionsButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.startOptionsButton.clearTint();
+				sceneEvents.emit(EventNames.gamePaused);
+				this.scene.launch(CST.SCENES.IN_GAME_MENU);
+			});
 
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);

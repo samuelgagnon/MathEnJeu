@@ -97,16 +97,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			fontStyle: "bold",
 		});
 
-		this.applySettingsText = this.add
-			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.5, "Apply settings", {
-				fontFamily: "Courier",
-				fontSize: "30px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setInteractive({ useHandCursor: true });
-
 		this.isPrivateText = this.add.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.6, "Private: ", {
 			fontFamily: "Courier",
 			fontSize: "30px",
@@ -154,25 +144,33 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			.setVisible(false)
 			.setActive(false);
 
-		this.applySettingsText.on("pointerover", () => {
-			this.applySettingsText.setTint(0xffff66);
-		});
+		this.applySettingsText = this.add
+			.text(this.game.renderer.width * 0.65, this.game.renderer.height * 0.5, "Apply settings", {
+				fontFamily: "Courier",
+				fontSize: "30px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
 
-		this.applySettingsText.on("pointerout", () => {
-			this.applySettingsText.clearTint();
-		});
-
-		this.applySettingsText.on("pointerdown", () => {
-			this.applySettingsText.setTint(0x86bfda);
-		});
-
-		this.applySettingsText.on("pointerup", () => {
-			this.startButton.clearTint();
-			this.gameSocket.emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
-				isPrivate: (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked,
-				maxPlayerCount: Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value),
+		this.applySettingsText
+			.on("pointerover", () => {
+				this.applySettingsText.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.applySettingsText.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.applySettingsText.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.startButton.clearTint();
+				this.gameSocket.emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
+					isPrivate: (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked,
+					maxPlayerCount: Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value),
+				});
 			});
-		});
 
 		this.kickButton = this.add
 			.text(this.game.renderer.width * 0.32, this.game.renderer.height * 0.58, "kick", {
@@ -184,22 +182,20 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.kickButton.on("pointerover", () => {
-			this.kickButton.setTint(0xffff66);
-		});
-
-		this.kickButton.on("pointerout", () => {
-			this.kickButton.clearTint();
-		});
-
-		this.kickButton.on("pointerdown", () => {
-			this.kickButton.setTint(0x86bfda);
-		});
-
-		this.kickButton.on("pointerup", () => {
-			this.kickButton.clearTint();
-			this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.KICK_PLAYER, (<HTMLInputElement>this.kickPlayerInput.getChildByID("playerField")).value);
-		});
+		this.kickButton
+			.on("pointerover", () => {
+				this.kickButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.kickButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.kickButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.kickButton.clearTint();
+				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.KICK_PLAYER, (<HTMLInputElement>this.kickPlayerInput.getChildByID("playerField")).value);
+			});
 
 		this.startButton = this.add
 			.text(this.game.renderer.width * 0.55, this.game.renderer.height * 0.9, "Start Game", {
@@ -211,25 +207,23 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.startButton.on("pointerover", () => {
-			this.startButton.setTint(0xffff66);
-		});
-
-		this.startButton.on("pointerout", () => {
-			this.startButton.clearTint();
-		});
-
-		this.startButton.on("pointerdown", () => {
-			this.startButton.setTint(0x86bfda);
-		});
-
-		this.startButton.on("pointerup", () => {
-			this.startButton.clearTint();
-			this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
-			this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_INITIALIZED, <GameOptions>{
-				gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
+		this.startButton
+			.on("pointerover", () => {
+				this.startButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.startButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.startButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.startButton.clearTint();
+				this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
+				this.gameSocket.emit(CLIENT_EVENT_NAMES.GAME_INITIALIZED, <GameOptions>{
+					gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
+				});
 			});
-		});
 
 		this.readyButton = this.add
 			.text(this.game.renderer.width * 0.8, this.game.renderer.height * 0.9, "Ready", {
@@ -241,22 +235,20 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.readyButton.on("pointerover", () => {
-			this.readyButton.setTint(0xffff66);
-		});
-
-		this.readyButton.on("pointerout", () => {
-			this.readyButton.clearTint();
-		});
-
-		this.readyButton.on("pointerdown", () => {
-			this.readyButton.setTint(0x86bfda);
-		});
-
-		this.readyButton.on("pointerup", () => {
-			this.readyButton.clearTint();
-			this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.READY);
-		});
+		this.readyButton
+			.on("pointerover", () => {
+				this.readyButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.readyButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.readyButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.readyButton.clearTint();
+				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.READY);
+			});
 
 		this.quitButton = this.add
 			.text(this.game.renderer.width * 0.05, this.game.renderer.height * 0.1, "<- Leave Room", {
@@ -268,22 +260,20 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.quitButton.on("pointerover", () => {
-			this.quitButton.setTint(0xffff66);
-		});
-
-		this.quitButton.on("pointerout", () => {
-			this.quitButton.clearTint();
-		});
-
-		this.quitButton.on("pointerdown", () => {
-			this.quitButton.setTint(0x86bfda);
-		});
-
-		this.quitButton.on("pointerup", () => {
-			this.quitButton.clearTint();
-			this.quitScene();
-		});
+		this.quitButton
+			.on("pointerover", () => {
+				this.quitButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.quitButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.quitButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.quitButton.clearTint();
+				this.quitScene();
+			});
 
 		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, (data: RoomInfoEvent) => {
 			this.hostName = `Current host: ${data.hostName}`;

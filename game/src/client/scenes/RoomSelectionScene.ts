@@ -58,6 +58,22 @@ export default class RoomSelection extends BaseScene {
 			})
 			.setInteractive({ useHandCursor: true });
 
+		this.joinRoomButton
+			.on("pointerover", () => {
+				this.joinRoomButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.joinRoomButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.joinRoomButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.joinRoomButton.clearTint();
+				const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
+				this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: roomId });
+			});
+
 		this.backButton = this.add
 			.text(10, 10, "<- back", {
 				fontFamily: "Courier",
@@ -68,36 +84,20 @@ export default class RoomSelection extends BaseScene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.joinRoomButton.on("pointerout", () => {
-			this.joinRoomButton.clearTint();
-		});
-
-		this.joinRoomButton.on("pointerdown", () => {
-			this.joinRoomButton.setTint(0x86bfda);
-		});
-
-		this.joinRoomButton.on("pointerup", () => {
-			this.joinRoomButton.clearTint();
-			const roomId = (<HTMLInputElement>this.inputHtml.getChildByName("roomField")).value;
-			this.gameSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: roomId });
-		});
-
-		this.backButton.on("pointerover", () => {
-			this.backButton.setTint(0xffff66);
-		});
-
-		this.backButton.on("pointerout", () => {
-			this.backButton.clearTint();
-		});
-
-		this.backButton.on("pointerdown", () => {
-			this.backButton.setTint(0x86bfda);
-		});
-
-		this.backButton.on("pointerup", () => {
-			this.backButton.clearTint();
-			this.scene.start(CST.SCENES.GAME_SELECTION);
-		});
+		this.backButton
+			.on("pointerover", () => {
+				this.backButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.backButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.backButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.backButton.clearTint();
+				this.scene.start(CST.SCENES.GAME_SELECTION);
+			});
 	}
 
 	update() {}
