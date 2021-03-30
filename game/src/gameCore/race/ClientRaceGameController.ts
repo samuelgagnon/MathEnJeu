@@ -48,7 +48,6 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public getCurrentPlayer(): Player {
-		//TODO find a better way to do this than casting to HumanPlayer
 		return this.findPlayer(this.currentPlayerId);
 	}
 
