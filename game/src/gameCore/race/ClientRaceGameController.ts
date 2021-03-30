@@ -7,6 +7,7 @@ import { ClientGame } from "../Game";
 import RaceGrid, { PossiblePositions } from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
+import PlayerRepository from "./player/playerRepository/PlayerRepository";
 import { Answer } from "./question/Answer";
 import RaceGameController from "./RaceGameController";
 
@@ -21,11 +22,11 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		gameTime: number,
 		gameStartTimeStamp: number,
 		grid: RaceGrid,
-		players: Player[],
+		playerRepo: PlayerRepository,
 		currentPlayerId: string,
 		playerSocket: SocketIOClient.Socket
 	) {
-		super(gameTime, gameStartTimeStamp, grid, players);
+		super(gameTime, gameStartTimeStamp, grid, playerRepo);
 		this.currentPlayerId = currentPlayerId;
 		this.playerSocket = playerSocket;
 		this.handleSocketEvents();
@@ -40,7 +41,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public getPlayers(): Player[] {
-		return this.players;
+		return this.playerRepo.getAllPlayers();
 	}
 
 	public getGrid(): RaceGrid {
@@ -48,7 +49,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public getCurrentPlayer(): Player {
-		return this.findPlayer(this.currentPlayerId);
+		return this.playerRepo.findPlayer(this.currentPlayerId);
 	}
 
 	public getCurrentPlayerSocket(): SocketIOClient.Socket {
@@ -83,7 +84,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		const lag = gameState.timeStamp - Clock.now();
 		//Ajusting client game time only if it has a difference of 1.5 seconds (1500 millisecondes)
 		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime + lag;
-		this.players.forEach((player: Player) => {
+		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			player.updateFromPlayerState(
 				gameState.players.find((playerState) => playerState.id === player.id),
 				lag
@@ -108,7 +109,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 
 		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
-			this.removePlayer(data.playerId);
+			this.playerRepo.removePlayer(data.playerId);
 		});
 	}
 

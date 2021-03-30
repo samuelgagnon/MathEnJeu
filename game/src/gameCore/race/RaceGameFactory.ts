@@ -1,5 +1,6 @@
 import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
+import PlayerState from "../../communication/race/PlayerState";
 import User from "../../server/rooms/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
@@ -9,8 +10,9 @@ import ComputerPlayer from "./player/ComputerPlayer/ComputerPlayer";
 import PathFinder from "./player/ComputerPlayer/PathFinder";
 import HumanPlayer from "./player/HumanPlayer";
 import Inventory from "./player/Inventory";
-import Player from "./player/Player";
 import PlayerFactory from "./player/PlayerFactory";
+import PlayerInMemoryRepository from "./player/playerRepository/PlayerInMemoryRepository";
+import PlayerRepository from "./player/playerRepository/PlayerRepository";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
 import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
@@ -21,12 +23,12 @@ export default class RaceGameFactory {
 		gameTime: number,
 		gameStartTimestamp: number,
 		startingRaceGridInfo: StartingRaceGridInfo,
-		players: Player[],
+		playerRepo: PlayerRepository,
 		currentPlayerId: string,
 		playerSocket: SocketIOClient.Socket
 	): ClientRaceGameController {
 		const raceGrid = this.generateClientRaceGrid(startingRaceGridInfo);
-		return new ClientRaceGameController(gameTime, gameStartTimestamp, raceGrid, players, currentPlayerId, playerSocket);
+		return new ClientRaceGameController(gameTime, gameStartTimestamp, raceGrid, playerRepo, currentPlayerId, playerSocket);
 	}
 
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
@@ -140,5 +142,13 @@ export default class RaceGameFactory {
 			startingRaceGridInfo.itemStates,
 			RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS
 		);
+	}
+
+	public static createClientPlayers(playersState: PlayerState[]): PlayerRepository {
+		let playerRepo: PlayerRepository = new PlayerInMemoryRepository();
+		playersState.forEach((playerState: PlayerState) => {
+			playerRepo.addPlayer(PlayerFactory.createFromPlayerState(playerState));
+		});
+		return playerRepo;
 	}
 }

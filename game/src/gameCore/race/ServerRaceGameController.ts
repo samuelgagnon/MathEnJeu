@@ -27,9 +27,9 @@ import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
-import ComputerPlayer from "./player/ComputerPlayer/ComputerPlayer";
 import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
+import PlayerRepository from "./player/playerRepository/PlayerRepository";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
 import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
@@ -50,15 +50,14 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		gameTime: number,
 		gameStartTimeStamp: number,
 		grid: RaceGrid,
-		players: Player[],
-		computerPlayers: ComputerPlayer[],
+		playerRepo: PlayerRepository,
 		users: User[],
 		gameId: string,
 		questionRepo: QuestionRepository,
 		isSinglePlayer: boolean
 	) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, gameStartTimeStamp, grid, players.concat(computerPlayers));
+		super(gameTime, gameStartTimeStamp, grid, playerRepo);
 		this.gameId = gameId;
 		this.questionRepo = questionRepo;
 		this.isSinglePlayer = isSinglePlayer;
@@ -80,7 +79,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private emitGameCreatedEvent(): void {
 		this.context
 			.getStatsRepo()
-			.addGameStats(this.gameDuration, "RaceGame", this.players.length, new Date())
+			.addGameStats(this.gameDuration, "RaceGame", this.playerRepo.getAllPlayers().length, new Date())
 			.then((res) => (this.gameDbId = res))
 			.catch((err) => console.log(err));
 
@@ -107,7 +106,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private getGameState(): RaceGameState {
 		let gameState: RaceGameState = { timeStamp: 0, itemsState: [], players: [], remainingTime: this.timeRemaining };
 		gameState.itemsState = this.grid.getItemsState();
-		this.players.forEach((player: Player) => {
+		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());
 		});
 
@@ -126,7 +125,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	protected gameFinished(): void {
-		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.players.length, new Date());
+		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.playerRepo.getAllPlayers().length, new Date());
 		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
 			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
 		});
@@ -144,7 +143,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public userLeft(user: User): void {
-		this.removePlayer(user.userId);
+		this.playerRepo.removePlayer(user.userId);
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
@@ -208,7 +207,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private findHumanPlayer(playerId: string): HumanPlayer {
-		const player = this.players.find((player) => player.id == playerId);
+		const player = this.playerRepo.findPlayer(playerId);
 		if (!(player instanceof HumanPlayer)) {
 			throw new Error("No human player found");
 		}
@@ -378,14 +377,14 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private getPlayersState(): PlayerState[] {
 		let playersState: PlayerState[] = [];
-		this.players.forEach((player: Player) => {
+		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			playersState.push(player.getPlayerState());
 		});
 		return playersState;
 	}
 
 	protected handleItemCollisions(): void {
-		this.players.forEach((player) => {
+		this.playerRepo.getAllPlayers().forEach((player) => {
 			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
 			if (itemPickedUp) {
 				this.itemPickUpTimestamps.push(Clock.now());
@@ -398,7 +397,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			if (Clock.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);
 				this.grid.generateNewItem(
-					this.players.map((player) => player.getPosition()),
+					this.playerRepo.getAllPlayers().map((player) => player.getPosition()),
 					this.isSinglePlayer
 				);
 			}

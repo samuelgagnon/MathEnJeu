@@ -1,12 +1,9 @@
 import { GameCreatedEvent, GameEndEvent, GameOptions, HostChangeEvent, PlayerEndState } from "../../communication/race/DataInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
-import PlayerState from "../../communication/race/PlayerState";
 import { RoomInfoEvent, RoomSettings } from "../../communication/room/DataInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
-import Player from "../../gameCore/race/player/Player";
-import PlayerFactory from "../../gameCore/race/player/PlayerFactory";
 import RaceGameFactory from "../../gameCore/race/RaceGameFactory";
 import { CST } from "../CST";
 import { getUserHighScore } from "../services/UserInformationService";
@@ -51,7 +48,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				gameInfo.gameTime,
 				gameInfo.gameStartTimeStamp,
 				gameInfo.grid,
-				this.createPlayers(gameInfo.players),
+				RaceGameFactory.createClientPlayers(gameInfo.players),
 				this.gameSocket.id,
 				this.gameSocket
 			);
@@ -313,14 +310,6 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
 		this.gameSocket.close();
 		this.scene.start(CST.SCENES.GAME_SELECTION);
-	}
-
-	private createPlayers(playersState: PlayerState[]): Player[] {
-		let players: Player[] = [];
-		playersState.forEach((playerState: PlayerState) => {
-			players.push(PlayerFactory.createFromPlayerState(playerState));
-		});
-		return players;
 	}
 
 	private updateUsersList(): void {
