@@ -1,5 +1,6 @@
 import randomNormal from "random-normal";
 import { Clock } from "../../../clock/Clock";
+import { ItemType } from "../../items/Item";
 import Move from "../../Move";
 import Inventory from "../Inventory";
 import Player from "../Player";
@@ -55,7 +56,8 @@ export default class ComputerPlayer extends Player {
 		if (this.isReadyForNextAction && this.nextActionTimestamp <= Clock.now()) {
 			//TODO: add logic to throw a banana here or use any other item.
 			if (this.getInventory().getInventoryState().bananaCount > 0 && Math.random() * 0.3) {
-				this.targetablePlayers.getAllPlayers()[Math.floor(Math.random() * this.targetablePlayers.getAllPlayers().length)];
+				const targetedPlayer = this.targetablePlayers.getAllPlayers()[Math.floor(Math.random() * this.targetablePlayers.getAllPlayers().length)];
+				this.useItemType(ItemType.Banana, targetedPlayer);
 			}
 			this.promptQuestion();
 			this.isReadyForNextAction = false;
