@@ -1,3 +1,4 @@
+import randomNormal from "random-normal";
 import { Clock } from "../../../clock/Clock";
 import Move from "../../Move";
 import Inventory from "../Inventory";
@@ -6,11 +7,17 @@ import Status from "../playerStatus/Status";
 import PathFinder from "./PathFinder";
 
 export default class ComputerPlayer extends Player {
-	private nextActionTimeStamp: number;
+	private nextActionTimestamp: number;
+	private answeringQuestionTimestamp: number;
 	private isReadyForNextAction: boolean = true;
 	private pathFinder: PathFinder;
 	private pathToFollow: Point[] = [];
 	private checkpointPositions: Point[][];
+	//In seconds. The centre of the normal curve
+	private readonly MEAN_TIME: number = 30;
+	//In seconds The deviation for the normal curve. If mean is 30 and deviation is 10, then 70% of the values will be between 20 and 40
+	private readonly DEVIATION_TIME: number = 10;
+	private readonly ANSWERING_TIME: number = 3;
 
 	constructor(
 		id: string,
@@ -24,7 +31,8 @@ export default class ComputerPlayer extends Player {
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		super(id, startLocation, name, status, inventory, pointsCalculator);
-		this.nextActionTimeStamp = gameStartTimestamp;
+		this.nextActionTimestamp = gameStartTimestamp;
+		this.answeringQuestionTimestamp = gameStartTimestamp + this.ANSWERING_TIME;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
 	}
@@ -34,16 +42,25 @@ export default class ComputerPlayer extends Player {
 		this.handleActions();
 	}
 
-	private handleActions(): void {
-		if (this.isReadyForNextAction && this.nextActionTimeStamp <= Clock.now()) {
-			if (this.generateRandomValue()) {
-				this.moveTo(Clock.now(), this.getNextPosition());
-			}
+	public promptQuestion(): void {
+		super.promptQuestion();
+		this.answeringQuestionTimestamp = this.nextActionTimestamp + this.ANSWERING_TIME * 1000;
+	}
 
-			this.setTimeForNextAction();
+	private handleActions(): void {
+		if (this.isReadyForNextAction && this.nextActionTimestamp <= Clock.now()) {
+			//TODO: add logic to throw a banana here or use any other item.
+			this.promptQuestion();
 			this.isReadyForNextAction = false;
+		} else if (this.answeringQuestionTimestamp <= Clock.now() && this.isAnsweringQuestion()) {
+			this.answeredQuestion(true);
+			this.moveTo(Clock.now(), this.getNextPosition());
+			this.setTimeForNextAction();
 		}
-		if (this.hasArrived()) this.isReadyForNextAction = true;
+
+		if (this.hasArrived() && !this.isAnsweringQuestion()) {
+			this.isReadyForNextAction = true;
+		}
 	}
 
 	private getNextPosition(): Point {
@@ -52,10 +69,6 @@ export default class ComputerPlayer extends Player {
 		}
 
 		return this.selectRandomPositionFromPath();
-	}
-
-	public generateRandomValue(): boolean {
-		return Math.random() < 0.5;
 	}
 
 	private findNextCheckpoint(): Point {
@@ -88,6 +101,6 @@ export default class ComputerPlayer extends Player {
 
 	private setTimeForNextAction(): void {
 		//1000 milliseconds in 1 second
-		this.nextActionTimeStamp = Clock.now() + 10 * 1000;
+		this.nextActionTimestamp = Clock.now() + randomNormal({ mean: this.MEAN_TIME, dev: this.DEVIATION_TIME }) * 1000;
 	}
 }
