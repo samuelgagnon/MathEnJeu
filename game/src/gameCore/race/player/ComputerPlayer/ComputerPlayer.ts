@@ -65,7 +65,8 @@ export default class ComputerPlayer extends Player {
 	}
 
 	/**
-	 * Selects and returns an accessible point to the ComputerPlayer within its movable distance and removes everyone before it.
+	 * Selects and returns an accessible point to the ComputerPlayer within its generated path and
+	 * its maximum movable distance. Also, removes every crossed point along the path to reach the selected point.
 	 * @returns The selected point where the computer player will move to.
 	 */
 	private selectRandomPositionFromPath(): Point {
