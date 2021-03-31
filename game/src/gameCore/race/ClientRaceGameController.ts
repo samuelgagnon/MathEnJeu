@@ -7,7 +7,7 @@ import { ClientGame } from "../Game";
 import RaceGrid, { PossiblePositions } from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
-import PlayerRepository from "./player/playerRepository/PlayerRepository";
+import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
 import { Answer } from "./question/Answer";
 import RaceGameController from "./RaceGameController";
 

@@ -3,6 +3,7 @@ import { Clock } from "../../../clock/Clock";
 import Move from "../../Move";
 import Inventory from "../Inventory";
 import Player from "../Player";
+import { TargetablePlayers } from "../playerRepository/PlayerRepository";
 import Status from "../playerStatus/Status";
 import PathFinder from "./PathFinder";
 
@@ -13,6 +14,7 @@ export default class ComputerPlayer extends Player {
 	private pathFinder: PathFinder;
 	private pathToFollow: Point[] = [];
 	private checkpointPositions: Point[][];
+	private targetablePlayers: TargetablePlayers;
 	//In seconds. The centre of the normal curve
 	private readonly MEAN_TIME: number = 30;
 	//In seconds The deviation for the normal curve. If mean is 30 and deviation is 10, then 70% of the values will be between 20 and 40
@@ -28,6 +30,7 @@ export default class ComputerPlayer extends Player {
 		gameStartTimestamp: number,
 		pathFinder: PathFinder,
 		checkpointPositions: Point[][],
+		targetablePlayers: TargetablePlayers,
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		super(id, startLocation, name, status, inventory, pointsCalculator);
@@ -35,6 +38,7 @@ export default class ComputerPlayer extends Player {
 		this.answeringQuestionTimestamp = gameStartTimestamp + this.ANSWERING_TIME;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
+		this.targetablePlayers = targetablePlayers;
 	}
 
 	public update(): void {

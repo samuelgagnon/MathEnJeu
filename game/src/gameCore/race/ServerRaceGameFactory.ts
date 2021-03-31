@@ -19,21 +19,22 @@ export default class ServerRaceGameFactory {
 			RACE_PARAMETERS.CIRCUIT.GRID,
 			isSinglePlayer
 		);
-		let playerRepo = new PlayerInMemoryRepository();
+		let playerRepository = new PlayerInMemoryRepository();
 		const humanPlayers = RaceGameFactory.generateHumanPlayers(users, raceGrid.getStartingPositions());
 		const computerPlayers = RaceGameFactory.generateComputerPlayers(
 			gameOptions.computerPlayerCount,
 			raceGrid.getStartingPositions(),
 			gameStartTimeStamp,
-			raceGrid
+			raceGrid,
+			playerRepository
 		);
-		humanPlayers.forEach((player) => playerRepo.addPlayer(player));
-		computerPlayers.forEach((player) => playerRepo.addPlayer(player));
+		humanPlayers.forEach((player) => playerRepository.addPlayer(player));
+		computerPlayers.forEach((player) => playerRepository.addPlayer(player));
 		return new ServerRaceGameController(
 			gameOptions.gameTime * 60 * 1000, //TODO: maybe apply milliseconds conversion before the factory
 			gameStartTimeStamp,
 			raceGrid,
-			playerRepo,
+			playerRepository,
 			users,
 			gameId,
 			ServiceLocator.resolve(serviceConstants.QUESTION_REPOSITORY_CLASS),

@@ -29,7 +29,7 @@ import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces"
 import RaceGrid from "./grid/RaceGrid";
 import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
-import PlayerRepository from "./player/playerRepository/PlayerRepository";
+import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
 import { RACE_PARAMETERS } from "./RACE_PARAMETERS";

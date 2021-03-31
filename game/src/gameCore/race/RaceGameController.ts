@@ -3,7 +3,7 @@ import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
 import Item, { ItemType } from "./items/Item";
 import Player from "./player/Player";
-import PlayerRepository from "./player/playerRepository/PlayerRepository";
+import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
 
 export default abstract class RaceGameController {
 	protected isGameStarted: boolean = false;

@@ -12,7 +12,7 @@ import HumanPlayer from "./player/HumanPlayer";
 import Inventory from "./player/Inventory";
 import PlayerFactory from "./player/PlayerFactory";
 import PlayerInMemoryRepository from "./player/playerRepository/PlayerInMemoryRepository";
-import PlayerRepository from "./player/playerRepository/PlayerRepository";
+import { PlayerRepository, TargetablePlayers } from "./player/playerRepository/PlayerRepository";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
 import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
@@ -91,7 +91,8 @@ export default class RaceGameFactory {
 		numberOfBots: number,
 		startingPositions: Point[],
 		gameStartTimeStamp: number,
-		raceGrid: RaceGrid
+		raceGrid: RaceGrid,
+		playerRepository: TargetablePlayers
 	): ComputerPlayer[] {
 		let computerPlayers: ComputerPlayer[] = [];
 		for (let index = 0; index < numberOfBots; index++) {
@@ -110,7 +111,8 @@ export default class RaceGameFactory {
 					new Inventory(),
 					gameStartTimeStamp,
 					pathFinder,
-					raceGrid.getCheckpointPositions()
+					raceGrid.getCheckpointPositions(),
+					playerRepository
 				)
 			);
 		}

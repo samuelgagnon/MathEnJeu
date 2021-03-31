@@ -1,7 +1,7 @@
 import Player from "../Player";
-import PlayerRepository from "./PlayerRepository";
+import { PlayerRepository, TargetablePlayers } from "./PlayerRepository";
 
-export default class PlayerInMemoryRepository implements PlayerRepository {
+export default class PlayerInMemoryRepository implements PlayerRepository, TargetablePlayers {
 	private players: Player[] = [];
 
 	public findPlayer(playerId: string): Player {

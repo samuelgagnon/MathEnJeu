@@ -6,6 +6,7 @@ import PathFinder from "./ComputerPlayer/PathFinder";
 import HumanPlayer from "./HumanPlayer";
 import Inventory from "./Inventory";
 import Player from "./Player";
+import { TargetablePlayers } from "./playerRepository/PlayerRepository";
 import Status from "./playerStatus/Status";
 import StatusFactory from "./playerStatus/StatusFactory";
 
@@ -31,7 +32,8 @@ export default class PlayerFactory {
 		inventory: Inventory,
 		gameStartTimeStamp: number,
 		pathFinder: PathFinder,
-		checkpointPositions: Point[][]
+		checkpointPositions: Point[][],
+		targetablePlayers: TargetablePlayers
 	): ComputerPlayer {
 		return new ComputerPlayer(
 			id,
@@ -42,6 +44,7 @@ export default class PlayerFactory {
 			gameStartTimeStamp,
 			pathFinder,
 			checkpointPositions,
+			targetablePlayers,
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
 		);
 	}
