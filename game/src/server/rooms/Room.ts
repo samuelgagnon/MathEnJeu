@@ -88,6 +88,10 @@ export default class Room {
 		return this.users.every((user) => user.isReady);
 	}
 
+	public unreadyUsers(): void {
+		this.users.forEach((user) => (user.isReady = false));
+	}
+
 	public transitionTo(nextState: State): void {
 		this.state = nextState;
 		this.state.setContext(this);

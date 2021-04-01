@@ -20,6 +20,7 @@ export default class PreGame implements State {
 
 	public setContext(context: Room): void {
 		this.context = context;
+		this.context.unreadyUsers();
 	}
 
 	public userJoined(user: User): void {
