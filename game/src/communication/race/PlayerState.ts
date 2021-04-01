@@ -6,12 +6,8 @@ export default interface PlayerState {
 	name: string;
 	points: number;
 	move: MoveState;
-	isAnsweringQuestion: boolean;
-	missedQuestionsCount: number;
 	statusState: StatusState;
 	inventoryState: InventoryState;
-	schoolGrade: number;
-	language: string;
 }
 
 export interface StatusState {

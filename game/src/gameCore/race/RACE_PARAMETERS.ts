@@ -1,4 +1,4 @@
-export const RACE_CST = {
+export const RACE_PARAMETERS = {
 	MOVE: {
 		SPEED: 0.001, //in tile per millisecond.
 	},
@@ -26,6 +26,33 @@ export const RACE_CST = {
 			"x.....5....|.1.....x" +
 			"xx....5.....|1....xx",
 		NUMBER_OF_ITEMS: 60,
+		POINTS_CALCULATOR: (moveDistance: number): number => {
+			let points = 0;
+			switch (moveDistance) {
+				case 1:
+					points = 2;
+					break;
+				case 2:
+					points = 3;
+					break;
+				case 3:
+					points = 5;
+					break;
+				case 4:
+					points = 8;
+					break;
+				case 5:
+					points = 13;
+					break;
+				case 6:
+					points = 21;
+					break;
+				case 7:
+					points = 34;
+					break;
+			}
+			return points;
+		},
 	},
 	QUESTION: {
 		MIN_DIFFICULTY: 1,

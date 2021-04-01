@@ -50,7 +50,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	currentPlayerMovement: number;
 	isReadyToGetPossiblePositions: boolean; //Needed to make sure the scene doesn't always recalculate the possible position
-	isThrowingBanana: boolean = false;
+	isThrowingBanana: boolean;
 
 	readonly tileActiveState: number = 1;
 	readonly tileInactiveState: number = 0;
@@ -78,6 +78,7 @@ export default class RaceScene extends Phaser.Scene {
 	init(data: any) {
 		this.characterSprites = [];
 		this.pointsForPosition = [];
+		this.isThrowingBanana = false;
 		this.lag = 0;
 		this.isThrowingBanana = false;
 		this.isFollowingPlayer = true;
@@ -419,6 +420,7 @@ export default class RaceScene extends Phaser.Scene {
 			y: playerTile.getData("gridPosition").y,
 		});
 
+		const player = this.raceGame.getCurrentPlayer();
 		this.clearTileInteractions();
 
 		possiblePositions.forEach((pos: PossiblePositions) => {
@@ -431,7 +433,7 @@ export default class RaceScene extends Phaser.Scene {
 
 			//showing points for each tile
 			let points = this.add
-				.text(tile.getData("position").x, tile.getData("position").y, this.raceGame.getPointsForMoveDistance(distanceToTile).toString(), {
+				.text(tile.getData("position").x, tile.getData("position").y, player.pointsCalculator(distanceToTile).toString(), {
 					fontFamily: "Courier",
 					fontSize: "30px",
 					color: "#FDFFB5",
