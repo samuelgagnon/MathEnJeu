@@ -12,7 +12,6 @@ export default abstract class RaceGameController {
 	protected readonly gameStartTimeStamp: number;
 	protected grid: RaceGrid;
 	protected playerRepo: PlayerRepository;
-	//protected players: Player[] = [];
 	protected items: Item[];
 
 	constructor(gameDuration: number, gameStartTimeStamp: number, grid: RaceGrid, playerRepo: PlayerRepository) {
@@ -56,18 +55,10 @@ export default abstract class RaceGameController {
 
 	protected abstract gameFinished(): void;
 
-	// public removePlayer(playerId: string) {
-	// 	this.players = this.players.filter((player) => player.id !== playerId);
-	// }
-
 	public movePlayerTo(playerId: string, startTimestamp: number, targetLocation: Point): void {
 		const movedPlayer = this.playerRepo.findPlayer(playerId);
 		movedPlayer.moveTo(startTimestamp, targetLocation);
 	}
-
-	// protected findPlayer(playerId: string): Player {
-	// 	return this.players.find((player) => player.id == playerId);
-	// }
 
 	protected itemUsed(itemType: ItemType, targetPlayerId: string, fromPlayerId: string): void {
 		const target: Player = this.playerRepo.findPlayer(targetPlayerId);
