@@ -10,17 +10,20 @@ import PathFinder from "./PathFinder";
 
 export default class ComputerPlayer extends Player {
 	private nextActionTimestamp: number;
-	private answeringQuestionTimestamp: number;
 	private isReadyForNextAction: boolean = true;
 	private pathFinder: PathFinder;
 	private pathToFollow: Point[] = [];
 	private checkpointPositions: Point[][];
 	private targetablePlayers: TargetablePlayers;
-	//In seconds. The centre of the normal curve
-	private readonly MEAN_TIME: number = 30;
-	//In seconds The deviation for the normal curve. If mean is 30 and deviation is 10, then 70% of the values will be between 20 and 40
-	private readonly DEVIATION_TIME: number = 10;
-	private readonly ANSWERING_TIME: number = 3;
+	private readonly BANANA_USE_PROBABILITY: number = 0.3;
+	//In milliseconds. The average time needed for a ComputerPlayer to answer a question.
+	private readonly ANSWERING_TIME_AVG: number = 30 * 1000;
+	//In milliseconds. The standard deviation for ComputerPlayer answering time.
+	//If the average answering time is 30 sec and the standard deviation is 10,
+	//then 70% of the times, the time needed for a ComputerPlayer to answer a question will be between 20 and 40 sec.
+	private readonly ANSWERING_TIME_SD: number = 10 * 1000;
+	//In milliseconds. The minimum amount of time needed for a ComputerPlayer to answer a question.
+	private readonly ANSWERING_TIME_MIN: number = 3 * 1000;
 
 	constructor(
 		id: string,
@@ -36,7 +39,6 @@ export default class ComputerPlayer extends Player {
 	) {
 		super(id, startLocation, name, status, inventory, pointsCalculator);
 		this.nextActionTimestamp = gameStartTimestamp;
-		this.answeringQuestionTimestamp = gameStartTimestamp + this.ANSWERING_TIME;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
 		this.targetablePlayers = targetablePlayers;
@@ -49,22 +51,24 @@ export default class ComputerPlayer extends Player {
 
 	public promptQuestion(): void {
 		super.promptQuestion();
-		this.answeringQuestionTimestamp = this.nextActionTimestamp + this.ANSWERING_TIME * 1000;
 	}
 
 	private handleActions(): void {
-		if (this.isReadyForNextAction && this.nextActionTimestamp <= Clock.now()) {
-			//TODO: add logic to throw a banana here or use any other item.
-			if (this.getInventory().getInventoryState().bananaCount > 0 && Math.random() < 0.3) {
-				const targetedPlayer = this.targetablePlayers.getAllPlayers()[Math.floor(Math.random() * this.targetablePlayers.getAllPlayers().length)];
-				this.useItemType(ItemType.Banana, targetedPlayer);
+		if (Clock.now() >= this.nextActionTimestamp) {
+			if (this.isReadyForNextAction) {
+				//TODO: add logic to throw a banana here or use any other item.
+				if (this.getInventory().getInventoryState().bananaCount > 0 && Math.random() < this.BANANA_USE_PROBABILITY) {
+					const targetedPlayer = this.targetablePlayers.getAllPlayers()[Math.floor(Math.random() * this.targetablePlayers.getAllPlayers().length)];
+					this.useItemType(ItemType.Banana, targetedPlayer);
+				}
+				this.promptQuestion();
+				this.isReadyForNextAction = false;
+				this.setTimeForNextAction();
+				//ComputerPlayer always has the right answer. It just takes a random amount of time before it gives its answer.
+			} else if (this.isAnsweringQuestion()) {
+				this.answeredQuestion(true);
+				this.moveTo(Clock.now(), this.getNextPosition());
 			}
-			this.promptQuestion();
-			this.isReadyForNextAction = false;
-		} else if (this.answeringQuestionTimestamp <= Clock.now() && this.isAnsweringQuestion()) {
-			this.answeredQuestion(true);
-			this.moveTo(Clock.now(), this.getNextPosition());
-			this.setTimeForNextAction();
 		}
 
 		if (this.hasArrived() && !this.isAnsweringQuestion()) {
@@ -110,6 +114,12 @@ export default class ComputerPlayer extends Player {
 
 	private setTimeForNextAction(): void {
 		//1000 milliseconds in 1 second
-		this.nextActionTimestamp = Clock.now() + randomNormal({ mean: this.MEAN_TIME, dev: this.DEVIATION_TIME }) * 1000;
+		this.nextActionTimestamp = Clock.now() + this.generateTimeBeforeNextAction();
+	}
+
+	private generateTimeBeforeNextAction(): number {
+		let timeBeforeNextAction = randomNormal({ mean: this.ANSWERING_TIME_AVG, dev: this.ANSWERING_TIME_SD });
+		if (timeBeforeNextAction < this.ANSWERING_TIME_MIN) timeBeforeNextAction = this.ANSWERING_TIME_MIN;
+		return timeBeforeNextAction;
 	}
 }
