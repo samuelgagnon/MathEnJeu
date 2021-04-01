@@ -1,5 +1,5 @@
 import io from "socket.io-client";
-import { JoinRoomRequestEvent, RoomSettings } from "../../communication/room/DataInterfaces";
+import { JoinRoomRequestEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 

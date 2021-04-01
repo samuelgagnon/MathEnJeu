@@ -33,6 +33,23 @@ export default class RoomCreation extends BaseScene {
 			})
 			.setInteractive({ useHandCursor: true });
 
+		this.createRoomButton
+			.on("pointerover", () => {
+				this.createRoomButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.createRoomButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.createRoomButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.createRoomButton.clearTint();
+				const numberOfPlayers = Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value);
+				const isPrivate = (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked;
+				createRoom(this.gameSocket, { isPrivate, maxPlayerCount: numberOfPlayers });
+			});
+
 		this.backButton = this.add
 			.text(10, 10, "<- back", {
 				fontFamily: "Courier",
@@ -43,41 +60,20 @@ export default class RoomCreation extends BaseScene {
 			})
 			.setInteractive({ useHandCursor: true });
 
-		this.createRoomButton.on("pointerover", () => {
-			this.createRoomButton.setTint(0xffff66);
-		});
-
-		this.createRoomButton.on("pointerout", () => {
-			this.createRoomButton.clearTint();
-		});
-
-		this.createRoomButton.on("pointerdown", () => {
-			this.createRoomButton.setTint(0x86bfda);
-		});
-
-		this.createRoomButton.on("pointerup", () => {
-			this.createRoomButton.clearTint();
-			const numberOfPlayers = Number((<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value);
-			const isPrivate = (<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked;
-			createRoom(this.gameSocket, { isPrivate, maxPlayerCount: numberOfPlayers });
-		});
-
-		this.backButton.on("pointerover", () => {
-			this.backButton.setTint(0xffff66);
-		});
-
-		this.backButton.on("pointerout", () => {
-			this.backButton.clearTint();
-		});
-
-		this.backButton.on("pointerdown", () => {
-			this.backButton.setTint(0x86bfda);
-		});
-
-		this.backButton.on("pointerup", () => {
-			this.backButton.clearTint();
-			this.scene.start(CST.SCENES.GAME_SELECTION);
-		});
+		this.backButton
+			.on("pointerover", () => {
+				this.backButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.backButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.backButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.backButton.clearTint();
+				this.scene.start(CST.SCENES.GAME_SELECTION);
+			});
 	}
 
 	update() {}

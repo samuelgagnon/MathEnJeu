@@ -1,4 +1,4 @@
-import { QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import { QuestionFoundFromBookEvent } from "../../../communication/race/EventInterfaces";
 import { Clock } from "../../../gameCore/clock/Clock";
 import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";
@@ -147,32 +147,35 @@ export default class QuestionScene extends Phaser.Scene {
 			.sprite(Number(this.game.config.width) * 0.1, Number(this.game.config.height) * 0.9, CST.IMAGES.BOOK)
 			.setInteractive({ useHandCursor: true })
 			.setScale(0.1);
+
+		this.bookIcon
+			.on("pointerdown", () => {
+				this.bookIcon.setTint(0xffea00);
+			})
+			.on("pointerover", () => {
+				this.bookIcon.clearTint();
+			})
+			.on("pointerup", () => {
+				this.bookIcon.clearTint();
+				sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
+			});
+
 		this.crystalBallIcon = this.add
 			.sprite(Number(this.game.config.width) * 0.2, Number(this.game.config.height) * 0.9, CST.IMAGES.CRYSTAL_BALL)
 			.setInteractive({ useHandCursor: true })
 			.setScale(0.1);
 
-		this.bookIcon.on("pointerdown", () => {
-			this.bookIcon.setTint(0xffea00);
-		});
-		this.bookIcon.on("pointerover", () => {
-			this.bookIcon.clearTint();
-		});
-		this.bookIcon.on("pointerup", () => {
-			this.bookIcon.clearTint();
-			sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
-		});
-
-		this.crystalBallIcon.on("pointerdown", () => {
-			this.crystalBallIcon.setTint(0xffea00);
-		});
-		this.crystalBallIcon.on("pointerover", () => {
-			this.crystalBallIcon.clearTint();
-		});
-		this.crystalBallIcon.on("pointerup", () => {
-			this.crystalBallIcon.clearTint();
-			this.useCrystalBall();
-		});
+		this.crystalBallIcon
+			.on("pointerdown", () => {
+				this.crystalBallIcon.setTint(0xffea00);
+			})
+			.on("pointerover", () => {
+				this.crystalBallIcon.clearTint();
+			})
+			.on("pointerup", () => {
+				this.crystalBallIcon.clearTint();
+				this.useCrystalBall();
+			});
 
 		this.bookCount = this.add
 			.text(this.bookIcon.getTopRight().x - 7, this.bookIcon.getTopRight().y, "0", {

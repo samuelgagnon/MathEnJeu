@@ -27,73 +27,73 @@ export default class UsersSettingScene extends Phaser.Scene {
 			(<HTMLInputElement>this.userSettingsHTML.getChildByID("schoolGrades")).value = userInfo.schoolGrade.toString();
 		}
 
-		this.backButton = this.add.text(10, 10, "<- back", {
-			fontFamily: "Courier",
-			fontSize: "32px",
-			align: "center",
-			color: "#FDFFB5",
-			fontStyle: "bold",
-		});
+		this.backButton = this.add
+			.text(10, 10, "<- back", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
 
-		this.submitButton = this.add.text(this.game.renderer.width * 0.46, this.game.renderer.height * 0.5, "Submit", {
-			fontFamily: "Courier",
-			fontSize: "32px",
-			align: "center",
-			color: "#FDFFB5",
-			fontStyle: "bold",
-		});
+		this.backButton
+			.on("pointerover", () => {
+				this.backButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.backButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.backButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.backButton.clearTint();
+				this.scene.start(CST.SCENES.MENU);
+			});
 
-		this.backButton.setInteractive({ useHandCursor: true });
-		this.submitButton.setInteractive({ useHandCursor: true });
+		this.submitButton = this.add
+			.text(this.game.renderer.width * 0.46, this.game.renderer.height * 0.5, "Submit", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
 
-		this.backButton.on("pointerover", () => {
-			this.backButton.setTint(0xffff66);
-		});
+		this.submitButton
+			.on("pointerover", () => {
+				this.submitButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.submitButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.submitButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.submitButton.clearTint();
+				this.submit();
+			});
+	}
 
-		this.backButton.on("pointerout", () => {
-			this.backButton.clearTint();
-		});
+	private submit(): void {
+		const name = (<HTMLInputElement>this.userSettingsHTML.getChildByID("nameInput")).value;
+		const language = (<HTMLInputElement>this.userSettingsHTML.getChildByID("language")).value;
+		const role = (<HTMLInputElement>this.userSettingsHTML.getChildByID("playerRole")).value;
+		const schoolGrade = Number((<HTMLInputElement>this.userSettingsHTML.getChildByID("schoolGrades")).value);
 
-		this.backButton.on("pointerdown", () => {
-			this.backButton.setTint(0x86bfda);
-		});
+		const userInfo: UserInfo = {
+			name: name,
+			schoolGrade: schoolGrade,
+			language: language,
+			role: role,
+		};
 
-		this.backButton.on("pointerup", () => {
-			this.backButton.clearTint();
-			this.scene.start(CST.SCENES.MENU);
-		});
+		setUserInfo(userInfo);
+		initializeUserStats();
 
-		this.submitButton.on("pointerover", () => {
-			this.submitButton.setTint(0xffff66);
-		});
-
-		this.submitButton.on("pointerout", () => {
-			this.submitButton.clearTint();
-		});
-
-		this.submitButton.on("pointerdown", () => {
-			this.submitButton.setTint(0x86bfda);
-		});
-
-		this.submitButton.on("pointerup", () => {
-			this.submitButton.clearTint();
-
-			const name = (<HTMLInputElement>this.userSettingsHTML.getChildByID("nameInput")).value;
-			const language = (<HTMLInputElement>this.userSettingsHTML.getChildByID("language")).value;
-			const role = (<HTMLInputElement>this.userSettingsHTML.getChildByID("playerRole")).value;
-			const schoolGrade = Number((<HTMLInputElement>this.userSettingsHTML.getChildByID("schoolGrades")).value);
-
-			const userInfo: UserInfo = {
-				name: name,
-				schoolGrade: schoolGrade,
-				language: language,
-				role: role,
-			};
-
-			setUserInfo(userInfo);
-			initializeUserStats();
-
-			this.scene.start(CST.SCENES.GAME_SELECTION);
-		});
+		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
 }

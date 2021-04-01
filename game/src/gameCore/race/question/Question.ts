@@ -1,4 +1,4 @@
-import { QuestionDTO } from "../../../communication/race/DataInterfaces";
+import { QuestionDTO } from "../../../communication/race/QuestionDTO";
 import { Answer } from "./Answer";
 
 export class Question {

@@ -5,13 +5,13 @@ import {
 	PlayerLeftEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-} from "../../../communication/race/DataInterfaces";
+} from "../../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
-import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/DataInterfaces";
+import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
-import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
+import RaceGrid, { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../../gameCore/race/items/Item";
 import Move from "../../../gameCore/race/Move";
 import Player from "../../../gameCore/race/player/Player";
@@ -25,6 +25,11 @@ import { BackgroundSceneData } from "./BackgroundScene";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
+/**
+ * This class will render the game board and everything not related to it. That also includes characters, tiles and items on the board.
+ * It also controls the interaction with the server. Any action related to the game logic that occured in another scene will be caught
+ * by this scene with an event and will be executed here.
+ */
 export default class RaceScene extends Phaser.Scene {
 	//Room
 	roomId: string;
@@ -36,7 +41,7 @@ export default class RaceScene extends Phaser.Scene {
 	//Buffer
 	readonly distanceBetweenTwoTiles: number = 66;
 	boardPosition: Point;
-	keyboardInputs;
+	keyboardInputs: Phaser.Types.Input.Keyboard.CursorKeys;
 	isFollowingPlayer: boolean = true;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
@@ -53,6 +58,7 @@ export default class RaceScene extends Phaser.Scene {
 
 	readonly maxZoom: number = 1.5;
 	readonly minZoom: number = 0.8;
+	readonly cameraOffset: number = 400;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
@@ -74,6 +80,8 @@ export default class RaceScene extends Phaser.Scene {
 		this.pointsForPosition = [];
 		this.isThrowingBanana = false;
 		this.lag = 0;
+		this.isThrowingBanana = false;
+		this.isFollowingPlayer = true;
 		this.raceGame = data.gameController;
 		this.roomId = data.roomId;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
@@ -92,11 +100,36 @@ export default class RaceScene extends Phaser.Scene {
 		this.items = this.add.group();
 
 		const gameGrid = this.raceGame.getGrid();
-
 		this.boardPosition = { x: <number>this.game.config.width * 0.5, y: <number>this.game.config.height * 0.5 };
-		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
+		this.createGameBoard(gameGrid);
 
-		//creating game board
+		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
+		this.isReadyToGetPossiblePositions = true;
+
+		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//RenderBackground behind everything else
+		this.scene.sendToBack(CST.SCENES.BACKGROUD);
+
+		//Initilalize camera
+		this.render();
+		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
+		this.handleFollowPlayerToggle(this.isFollowingPlayer);
+
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
+		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+		subscribeToEvent(EventNames.useBook, this.useBook, this);
+		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
+		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
+		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
+	}
+
+	private createGameBoard(gameGrid: RaceGrid) {
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
@@ -138,30 +171,6 @@ export default class RaceScene extends Phaser.Scene {
 				}
 			}
 		}
-
-		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		this.isReadyToGetPossiblePositions = true;
-
-		this.scene.launch(CST.SCENES.RACE_GAME_UI);
-
-		//RenderBackground behind everything else
-		this.scene.sendToBack(CST.SCENES.BACKGROUD);
-
-		//Initilalize camera
-		this.render();
-		this.handleFollowPlayerToggle(this.isFollowingPlayer);
-
-		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
-		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
-		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
-		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
-		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
-		subscribeToEvent(EventNames.useBook, this.useBook, this);
-		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
-		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
-		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
-		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
-		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	playerRequestMove(targetLocation: Point) {
@@ -529,12 +538,18 @@ export default class RaceScene extends Phaser.Scene {
 
 	private zoomIn(): void {
 		const cam = this.cameras.main;
-		if (cam.zoom <= this.maxZoom) cam.zoom += 0.1;
+		if (cam.zoom < this.maxZoom) {
+			cam.zoom += 0.1;
+			this.reajustCameraBounds(cam.zoom);
+		}
 	}
 
 	private zoomOut(): void {
 		const cam = this.cameras.main;
-		if (cam.zoom >= this.minZoom) cam.zoom -= 0.1;
+		if (cam.zoom > this.minZoom) {
+			cam.zoom -= 0.1;
+			this.reajustCameraBounds(cam.zoom);
+		}
 	}
 
 	private createCameraBounds(x: number, y: number, boardWidth: number, boardHeight: number): void {
@@ -549,11 +564,21 @@ export default class RaceScene extends Phaser.Scene {
 		);
 
 		this.cameras.main.setBounds(
-			x - 200,
-			y - 200,
-			boardWidth * this.distanceBetweenTwoTiles + 600,
-			boardHeight * this.distanceBetweenTwoTiles + 600,
-			true
+			x - this.cameraOffset,
+			y - this.cameraOffset,
+			(boardWidth - 1) * this.distanceBetweenTwoTiles + 2 * this.cameraOffset,
+			(boardHeight - 1) * this.distanceBetweenTwoTiles + 2 * this.cameraOffset
+		);
+	}
+
+	private reajustCameraBounds(zoomFactor: number): void {
+		const yOffset = zoomFactor === this.minZoom ? 75 : this.cameraOffset;
+
+		this.cameras.main.setBounds(
+			this.boardPosition.x - zoomFactor * this.cameraOffset,
+			this.boardPosition.y - zoomFactor * yOffset,
+			(this.raceGame.getGrid().getWidth() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * this.cameraOffset,
+			(this.raceGame.getGrid().getHeight() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * yOffset
 		);
 	}
 }

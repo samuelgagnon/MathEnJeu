@@ -1,4 +1,5 @@
-import { AnswerDTO, QuestionDTO } from "../../../communication/race/DataInterfaces";
+import { AnswerDTO } from "../../../communication/race/AnswerDTO";
+import { QuestionDTO } from "../../../communication/race/QuestionDTO";
 import { Answer } from "./Answer";
 import { Question } from "./Question";
 
