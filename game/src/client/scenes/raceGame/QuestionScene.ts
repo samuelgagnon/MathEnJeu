@@ -273,6 +273,8 @@ export default class QuestionScene extends Phaser.Scene {
 			this.feedbackHtml.destroy();
 		}
 
+		this.clearAnswers();
+
 		this.questionHtml = createHtmlQuestion(
 			this,
 			Number(this.game.config.width) * 0.45,
@@ -297,14 +299,19 @@ export default class QuestionScene extends Phaser.Scene {
 		}
 	}
 
-	private generateHtmlAnswers() {
-		if (this.answersHtml.length > 0 || this.answersButton.length > 0) {
-			this.answersHtml.forEach((element) => element.destroy());
-			this.answersButton.forEach((element) => element.destroy());
+	private clearAnswers(): void {
+		this.answersHtml.forEach((element: Phaser.GameObjects.DOMElement) => element.destroy());
+		this.answersButton.forEach((element: Phaser.GameObjects.DOMElement) => {
+			element.removeInteractive();
+			element.removeAllListeners();
+			element.destroy();
+		});
 
-			this.answersHtml = [];
-			this.answersButton = [];
-		}
+		this.answersHtml = [];
+		this.answersButton = [];
+	}
+
+	private generateHtmlAnswers() {
 		this.question.getAnswers().forEach((answer: Answer, index: number) => {
 			const answerHtml = createHtmlAnswer(
 				this,
@@ -329,6 +336,7 @@ export default class QuestionScene extends Phaser.Scene {
 
 			invisibleDiv.addListener("click");
 			invisibleDiv.on("click", () => {
+				console.log(this.question.getAnswers()[index]);
 				this.answerQuestion(this.question.getAnswers()[index]);
 			});
 
@@ -360,6 +368,7 @@ export default class QuestionScene extends Phaser.Scene {
 				try {
 					sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
 					this.question.removeWrongAnswer();
+					this.clearAnswers();
 					this.generateHtmlAnswers();
 				} catch (error) {
 					console.log(error);

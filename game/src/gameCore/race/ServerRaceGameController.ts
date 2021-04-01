@@ -248,15 +248,17 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						player = this.findHumanPlayer((<BookUsedEvent>inputData).playerId);
 						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
 						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
-						const infoForQuestion = player.getInfoForQuestion();
-						this.findQuestionForPlayer(player, infoForQuestion.language, infoForQuestion.schoolGrade, newDifficulty).then((question) => {
-							this.context
-								.getNamespace()
-								.to(player.id)
-								.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
-									questionDTO: question.getDTO(),
-								});
-						});
+						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
+							(question) => {
+								player.promptQuestion(question);
+								this.context
+									.getNamespace()
+									.to(player.id)
+									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+										questionDTO: question.getDTO(),
+									});
+							}
+						);
 					} catch (err) {
 						console.log(err);
 					}
