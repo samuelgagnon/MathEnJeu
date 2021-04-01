@@ -55,7 +55,7 @@ export default class ComputerPlayer extends Player {
 	private handleActions(): void {
 		if (this.isReadyForNextAction && this.nextActionTimestamp <= Clock.now()) {
 			//TODO: add logic to throw a banana here or use any other item.
-			if (this.getInventory().getInventoryState().bananaCount > 0 && Math.random() * 0.3) {
+			if (this.getInventory().getInventoryState().bananaCount > 0 && Math.random() < 0.3) {
 				const targetedPlayer = this.targetablePlayers.getAllPlayers()[Math.floor(Math.random() * this.targetablePlayers.getAllPlayers().length)];
 				this.useItemType(ItemType.Banana, targetedPlayer);
 			}
