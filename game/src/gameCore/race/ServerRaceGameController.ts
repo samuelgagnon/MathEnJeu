@@ -237,6 +237,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
 						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
 							(question) => {
+								player.promptQuestion(question);
 								this.context
 									.getNamespace()
 									.to(player.id)
