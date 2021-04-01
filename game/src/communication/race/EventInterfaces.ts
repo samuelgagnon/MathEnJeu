@@ -31,12 +31,6 @@ export interface GameCreatedEvent {
 	isSinglePlayer: boolean;
 }
 
-//this includes the games options selected by the host
-export interface GameOptions {
-	gameTime: number;
-	computerPlayerCount: number;
-}
-
 export interface PlayerLeftEvent {
 	playerId: string;
 }

@@ -1,4 +1,4 @@
-import { InfoForQuestion } from "../../../communication/race/DataInterfaces";
+import { InfoForQuestion } from "../../../communication/race/QuestionDTO";
 import { Clock } from "../../clock/Clock";
 import { Answer } from "../question/Answer";
 import { Question } from "../question/Question";
