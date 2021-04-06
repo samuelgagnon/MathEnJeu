@@ -140,6 +140,7 @@ export class Server {
 				await this.modifyHtmlFiles("questions");
 				await this.modifyHtmlFiles("answers");
 
+				console.log("Process finished");
 				res.sendStatus(200);
 			} catch (error) {
 				console.log(error);
@@ -202,33 +203,34 @@ export class Server {
 		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
 
 		for (const file of files) {
-			console.log(file);
 			const filePath = `${dirPath}/${directory}_html/${file}`;
 			const htmlToModify = await fs.promises.readFile(filePath, { encoding: "utf-8" });
-			await fs.promises.writeFile(filePath, this.modifyHtml(htmlToModify));
+			const newHtml = this.modifyHtml(htmlToModify);
+			await fs.promises.writeFile(filePath, newHtml);
 		}
 	}
 
 	private modifyHtml(html: string): string {
 		const dom = new JSDOM(html);
-		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css>"`;
 
-		dom.window.document.querySelectorAll("embed").forEach((element) => {
-			let image = dom.window.document.createElement("img");
-			image.src = element.src;
-			element.parentElement.replaceChild(image, element);
-		});
+		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css">`;
 
-		dom.window.document.querySelectorAll("img").forEach((element) => {
-			element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
-		});
+		// dom.window.document.querySelectorAll("embed").forEach((element) => {
+		// 	let image = dom.window.document.createElement("img");
+		// 	image.src = element.src;
+		// 	element.parentElement.replaceChild(image, element);
+		// });
 
-		dom.window.document.querySelectorAll("u").forEach((element) => {
-			console.log(`inner html: ${element.innerHTML}`);
-			if (element.innerHTML === "") {
-				element.innerHTML = "___";
-			}
-		});
+		// dom.window.document.querySelectorAll("img").forEach((element) => {
+		// 	element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+		// });
+
+		// dom.window.document.querySelectorAll("u").forEach((element) => {
+		// 	console.log(`inner html: ${element.innerHTML}`);
+		// 	if (element.innerHTML === "") {
+		// 		element.innerHTML = "___";
+		// 	}
+		// });
 
 		return dom.window.document.documentElement.innerHTML;
 	}
