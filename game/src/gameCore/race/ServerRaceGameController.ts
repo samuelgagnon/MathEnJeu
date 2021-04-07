@@ -215,7 +215,6 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	public resolveInputs(): void {
 		this.inputBuffer.forEach((input: BufferedInput) => {
-			//TODO find a better way to do get a human player than casting to HumanPlayer
 			let inputData: any = input.data;
 			let player: HumanPlayer;
 			switch (input.eventType) {
