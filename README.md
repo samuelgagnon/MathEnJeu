@@ -4,7 +4,11 @@ Jeu multijoueur où on répond à des questions mathématiques pour progresser.
 
 ### Database
 
-- questions storage : ./question_png/'question_file_name'/1.png
+- questions storage : ./question_html/answers_html
+./question_html/feedback_html
+./question_html/questions_html
+./question_html/question-style.css
+- questions generation/modification/creation: ./latex_files
 - The database SQL file must be placed in /database.
 - If the file name is, for example, 'mathamaze2.sql', make sure to update the docker-entrypoint-initdb command in /database/Dockerfile for 'ADD mathamaze2.sql /docker-entrypoint-initdb.d'.
 - The SQL file is only executed when the database Docker container is created the first time. You can completely delete the container and recreate it afterward to force the execution of the SQL file. Make sure to create an SQL dump of your current database before doing so if you don't want to lose any data or structure changes. For more details, please refer to the Docker MySQL official image site : https://hub.docker.com/_/mysql
