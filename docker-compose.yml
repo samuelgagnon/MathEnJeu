@@ -9,9 +9,7 @@ services:
     depends_on:
       - db
     volumes: 
-      - ./questions_png:/usr/src/MathEnJeu/dist/server/assets/questions_png
       - ./question_images:/usr/src/MathEnJeu/dist/server/assets/question_images
-      - ./question_latex:/usr/src/MathEnJeu/dist/server/assets/question_latex
       - ./latex_files:/usr/src/MathEnJeu/dist/server/assets/latex_files
       - ./question_html:/usr/src/MathEnJeu/dist/server/assets/question_html
 
