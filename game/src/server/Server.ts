@@ -215,22 +215,22 @@ export class Server {
 
 		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css">`;
 
-		// dom.window.document.querySelectorAll("embed").forEach((element) => {
-		// 	let image = dom.window.document.createElement("img");
-		// 	image.src = element.src;
-		// 	element.parentElement.replaceChild(image, element);
-		// });
+		dom.window.document.querySelectorAll("embed").forEach((element) => {
+			let image = dom.window.document.createElement("img");
+			image.src = element.src;
+			element.parentElement.replaceChild(image, element);
+		});
 
-		// dom.window.document.querySelectorAll("img").forEach((element) => {
-		// 	element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
-		// });
+		dom.window.document.querySelectorAll("img").forEach((element) => {
+			element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+		});
 
-		// dom.window.document.querySelectorAll("u").forEach((element) => {
-		// 	console.log(`inner html: ${element.innerHTML}`);
-		// 	if (element.innerHTML === "") {
-		// 		element.innerHTML = "___";
-		// 	}
-		// });
+		dom.window.document.querySelectorAll("u").forEach((element) => {
+			console.log(`inner html: ${element.innerHTML}`);
+			if (element.innerHTML === "") {
+				element.innerHTML = "___";
+			}
+		});
 
 		return dom.window.document.documentElement.innerHTML;
 	}
