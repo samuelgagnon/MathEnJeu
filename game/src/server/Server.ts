@@ -50,21 +50,21 @@ export class Server {
 
 		this.app.get("/question-html/:id", (req, res) => {
 			const questionId = req.params.id;
-			const languageShortName = !!req.query.languageShortName ? req.query.languageShortName : "fr";
+			const languageShortName = !!req.query.lg ? req.query.lg : "fr";
 
 			res.sendFile(path.join(__dirname, `assets/question_html/questions_html/question_${questionId}_${languageShortName}.html`));
 		});
 
 		this.app.get("/feedback-html/:id", (req, res) => {
 			const feedbackId = req.params.id;
-			const languageShortName = !!req.query.languageShortName ? req.query.languageShortName : "fr";
+			const languageShortName = !!req.query.lg ? req.query.lg : "fr";
 
 			res.sendFile(path.join(__dirname, `assets/question_html/feedback_html/feedback_${feedbackId}_${languageShortName}.html`));
 		});
 
 		this.app.get("/answer-html/:id", (req, res) => {
 			const answerId = req.params.id;
-			const languageShortName = !!req.query.languageShortName ? req.query.languageShortName : "fr";
+			const languageShortName = !!req.query.lg ? req.query.lg : "fr";
 
 			res.sendFile(path.join(__dirname, `assets/question_html/answers_html/answer_${answerId}_${languageShortName}.html`));
 		});

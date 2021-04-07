@@ -5,6 +5,7 @@ import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
+import { getUserInfo } from "../../services/UserInformationService";
 import { createHtmlAnswer, createHtmlFeedback, createHtmlQuestion, createInvisibleDiv } from "../CustomHtml";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
@@ -39,12 +40,15 @@ export default class QuestionScene extends Phaser.Scene {
 	showFeedbackTime: boolean;
 	background: Phaser.GameObjects.Rectangle;
 
+	language: string;
+
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
 		super(sceneConfig);
 	}
 
 	init(data: QuestionSceneData) {
+		this.language = getUserInfo().language;
 		this.question = data.question;
 		this.targetLocation = data.targetLocation;
 		this.showFeedbackTime = false;
@@ -281,7 +285,8 @@ export default class QuestionScene extends Phaser.Scene {
 			Number(this.game.config.height) * 0.25,
 			800,
 			300,
-			this.question.getId()
+			this.question.getId(),
+			this.language
 		);
 		this.feedbackHtml = createHtmlFeedback(
 			this,
@@ -289,7 +294,8 @@ export default class QuestionScene extends Phaser.Scene {
 			Number(this.game.config.height) * 0.25,
 			800,
 			300,
-			this.question.getId()
+			this.question.getId(),
+			this.language
 		).setAlpha(0);
 
 		if (this.question.getAnswerType() === "MULTIPLE_CHOICE") {
@@ -319,7 +325,8 @@ export default class QuestionScene extends Phaser.Scene {
 				Number(this.game.config.height) * 0.65,
 				150,
 				150,
-				answer.getId()
+				answer.getId(),
+				this.language
 			)
 				.setDepth(1)
 				.setAlpha(0);
