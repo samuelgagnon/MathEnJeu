@@ -1,4 +1,5 @@
-import { AnswerDTO, QuestionDTO } from "../../../communication/race/DataInterfaces";
+import { AnswerDTO } from "../../../communication/race/AnswerDTO";
+import { QuestionDTO } from "../../../communication/race/QuestionDTO";
 import { Answer } from "./Answer";
 import { Question } from "./Question";
 
@@ -15,11 +16,11 @@ export default class QuestionMapper {
 
 	private static mapAnswersFromDTO(answers: AnswerDTO[]): Answer[] {
 		return answers.map((answerDTO) => {
-			return new Answer(answerDTO.id, answerDTO.label);
+			return new Answer(answerDTO.id, answerDTO.label, answerDTO.isRight);
 		});
 	}
 
 	public static mapAnswer(answerDTO: AnswerDTO): Answer {
-		return new Answer(answerDTO.id, answerDTO.label);
+		return new Answer(answerDTO.id, answerDTO.label, answerDTO.isRight);
 	}
 }

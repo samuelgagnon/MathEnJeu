@@ -17,12 +17,10 @@ export default class GameManager {
 	}
 
 	private update() {
-		setTimeout(() => {
+		setInterval(() => {
 			this.gameRepo.getAllGames().forEach((game: ServerGame) => {
 				game.update();
 			});
-
-			this.update();
 		}, this.FREQUENCY);
 	}
 }

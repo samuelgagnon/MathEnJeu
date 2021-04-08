@@ -1,17 +1,21 @@
-import { StartingRaceGridInfo } from "../../communication/race/DataInterfaces";
 import ItemState from "../../communication/race/ItemState";
-import User from "../../server/data/User";
+import PlayerState from "../../communication/race/PlayerState";
+import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
+import User from "../../server/rooms/User";
 import ClientRaceGameController from "./ClientRaceGameController";
 import RaceGrid from "./grid/RaceGrid";
 import Tile from "./grid/Tile";
-import Item, { ItemType } from "./items/Item";
 import ItemFactory from "./items/ItemFactory";
+import ComputerPlayer from "./player/ComputerPlayer/ComputerPlayer";
+import PathFinder from "./player/ComputerPlayer/PathFinder";
+import HumanPlayer from "./player/HumanPlayer";
 import Inventory from "./player/Inventory";
-import Player from "./player/Player";
 import PlayerFactory from "./player/PlayerFactory";
+import PlayerInMemoryRepository from "./player/playerRepository/PlayerInMemoryRepository";
+import { PlayerRepository, TargetablePlayers } from "./player/playerRepository/PlayerRepository";
 import StatusFactory from "./player/playerStatus/StatusFactory";
 import { StatusType } from "./player/playerStatus/StatusType";
-import { RACE_CST } from "./RACE_CST";
+import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 
 //RaceGameController was split in 2 to prevent unused dependencies to be sent to the client
 export default class RaceGameFactory {
@@ -19,18 +23,17 @@ export default class RaceGameFactory {
 		gameTime: number,
 		gameStartTimestamp: number,
 		startingRaceGridInfo: StartingRaceGridInfo,
-		players: Player[],
+		playerRepo: PlayerRepository,
 		currentPlayerId: string,
 		playerSocket: SocketIOClient.Socket
 	): ClientRaceGameController {
 		const raceGrid = this.generateClientRaceGrid(startingRaceGridInfo);
-		return new ClientRaceGameController(gameTime, gameStartTimestamp, raceGrid, players, currentPlayerId, playerSocket);
+		return new ClientRaceGameController(gameTime, gameStartTimestamp, raceGrid, playerRepo, currentPlayerId, playerSocket);
 	}
 
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
 	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string, isSinglePlayer: boolean): RaceGrid {
 		let tiles: Tile[] = [];
-		let itemsState: ItemState[] = [];
 		for (let y = 0; y < gridHeight; y++) {
 			for (let x = 0; x < gridWidth; x++) {
 				const tileSymbol = grid.charAt(gridWidth * y + x);
@@ -43,18 +46,9 @@ export default class RaceGameFactory {
 				} else if (tileSymbol === "|") {
 					tiles.push(new Tile(<Point>{ x, y }, true, true, true));
 				} else {
-					let item: Item = undefined;
-					if ((gridWidth * y + x) % 4 == 0) {
-						let itemType: ItemType = ItemFactory.generateItemType(isSinglePlayer);
-						const itemState: ItemState = { type: itemType, location: <Point>{ x, y } };
-						itemsState.push(itemState);
-
-						item = ItemFactory.create(itemType, <Point>{ x, y });
-					}
-
 					//Tile is Walkable
 					if (tileSymbol == ".") {
-						tiles.push(new Tile(<Point>{ x, y }, true, false, false, item));
+						tiles.push(new Tile(<Point>{ x, y }, true, false, false));
 
 						//Tile is Checkpoint
 					} else {
@@ -62,8 +56,8 @@ export default class RaceGameFactory {
 						if (checkpointGroup == NaN) {
 							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
 						} else {
-							if (checkpointGroup >= 1 && checkpointGroup <= RACE_CST.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
-								tiles.push(new Tile(<Point>{ x, y }, true, false, false, item, Number(tileSymbol)));
+							if (checkpointGroup >= 1 && checkpointGroup <= RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+								tiles.push(new Tile(<Point>{ x, y }, true, false, false, undefined, Number(tileSymbol)));
 							} else {
 								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
 							}
@@ -72,23 +66,57 @@ export default class RaceGameFactory {
 				}
 			}
 		}
-
-		return new RaceGrid(tiles, gridWidth, gridHeight, itemsState);
+		let raceGrid = new RaceGrid(tiles, gridWidth, gridHeight, [], RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS);
+		for (let i = 0; i < RACE_PARAMETERS.CIRCUIT.NUMBER_OF_ITEMS; i++) {
+			raceGrid.generateNewItem([], isSinglePlayer);
+		}
+		return raceGrid;
 	}
 
-	public static generatePlayers(users: User[], startingPositions: Point[]): Player[] {
-		let players: Player[] = [];
-		let i: number = 0;
-		users.forEach((user: User) => {
-			let currentIndex = i;
-			if (i >= startingPositions.length) {
-				currentIndex = i % startingPositions.length;
+	public static generateHumanPlayers(users: User[], startingPositions: Point[]): HumanPlayer[] {
+		let players: HumanPlayer[] = [];
+		users.forEach((user: User, index: number) => {
+			let currentIndex = index;
+			if (index >= startingPositions.length) {
+				currentIndex = index % startingPositions.length;
 			}
-			players.push(PlayerFactory.create(user, startingPositions[currentIndex], StatusFactory.create(StatusType.NormalStatus), new Inventory()));
-			i++;
+			players.push(
+				PlayerFactory.createHumanPlayer(user, startingPositions[currentIndex], StatusFactory.create(StatusType.NormalStatus), new Inventory())
+			);
 		});
-
 		return players;
+	}
+
+	public static generateComputerPlayers(
+		numberOfBots: number,
+		startingPositions: Point[],
+		gameStartTimeStamp: number,
+		raceGrid: RaceGrid,
+		playerRepository: TargetablePlayers
+	): ComputerPlayer[] {
+		let computerPlayers: ComputerPlayer[] = [];
+		for (let index = 0; index < numberOfBots; index++) {
+			let currentIndex = index;
+			if (index >= startingPositions.length) {
+				currentIndex = index % startingPositions.length;
+			}
+			const pathFinder = new PathFinder(raceGrid);
+			const botName = `bot-${index}`;
+			computerPlayers.push(
+				PlayerFactory.createComputerPlayer(
+					botName,
+					botName,
+					startingPositions[currentIndex],
+					StatusFactory.create(StatusType.NormalStatus),
+					new Inventory(),
+					gameStartTimeStamp,
+					pathFinder,
+					raceGrid.getCheckpointPositions(),
+					playerRepository
+				)
+			);
+		}
+		return computerPlayers;
 	}
 
 	public static generateClientRaceGrid(startingRaceGridInfo: StartingRaceGridInfo): RaceGrid {
@@ -109,6 +137,20 @@ export default class RaceGameFactory {
 			tiles[startingRaceGridInfo.width * itemState.location.y + itemState.location.x].setItem(ItemFactory.create(itemState.type, itemState.location));
 		});
 
-		return new RaceGrid(tiles, startingRaceGridInfo.width, startingRaceGridInfo.height, startingRaceGridInfo.itemStates);
+		return new RaceGrid(
+			tiles,
+			startingRaceGridInfo.width,
+			startingRaceGridInfo.height,
+			startingRaceGridInfo.itemStates,
+			RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS
+		);
+	}
+
+	public static createClientPlayers(playersState: PlayerState[]): PlayerRepository {
+		let playerRepo: PlayerRepository = new PlayerInMemoryRepository();
+		playersState.forEach((playerState: PlayerState) => {
+			playerRepo.addPlayer(PlayerFactory.createFromPlayerState(playerState));
+		});
+		return playerRepo;
 	}
 }

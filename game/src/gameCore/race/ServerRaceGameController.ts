@@ -1,41 +1,43 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
+	AnswerCorrectedEvent,
 	BookUsedEvent,
+	GameCreatedEvent,
 	GameEndEvent,
-	GameStartEvent,
 	ItemUsedEvent,
 	MoveRequestEvent,
-	PlayerEndState,
 	PlayerLeftEvent,
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	StartingRaceGridInfo,
-} from "../../communication/race/DataInterfaces";
+} from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
-import PlayerState from "../../communication/race/PlayerState";
+import PlayerState, { PlayerEndState } from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
+import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import UserInfo from "../../communication/user/UserInfo";
 import QuestionRepository from "../../server/data/QuestionRepository";
-import User from "../../server/data/User";
 import Room from "../../server/rooms/Room";
+import User from "../../server/rooms/User";
 import { getObjectValues } from "../../utils/Utils";
 import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
-import { AnswerCorrectedEvent } from "./../../communication/race/DataInterfaces";
 import RaceGrid from "./grid/RaceGrid";
+import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
+import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
 import { Question } from "./question/Question";
 import RaceGameController from "./RaceGameController";
+import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 
 export default class ServerRaceGameController extends RaceGameController implements State, ServerGame {
 	private readonly ITEM_RESPAWN_DURATION: number = 30 * 1000;
 	private context: Room;
 	private inputBuffer: BufferedInput[] = [];
-	private isGameStarted: boolean = false;
+	private isGameCreated: boolean = false;
 	private gameId: string;
 	private gameDbId: number = null;
 	private itemPickUpTimestamps: Number[] = [];
@@ -45,15 +47,16 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	constructor(
 		gameTime: number,
+		gameStartTimeStamp: number,
 		grid: RaceGrid,
-		players: Player[],
+		playerRepo: PlayerRepository,
 		users: User[],
 		gameId: string,
 		questionRepo: QuestionRepository,
 		isSinglePlayer: boolean
 	) {
 		//The server has the truth regarding the start timestamp.
-		super(gameTime, Clock.now(), grid, players);
+		super(gameTime, gameStartTimeStamp, grid, playerRepo);
 		this.gameId = gameId;
 		this.questionRepo = questionRepo;
 		this.isSinglePlayer = isSinglePlayer;
@@ -72,19 +75,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		return this.state;
 	}
 
-	private emitStartGameEvent(): void {
+	private emitGameCreatedEvent(): void {
 		this.context
 			.getStatsRepo()
-			.addGameStats(this.gameTime, "RaceGame", this.players.length, new Date())
+			.addGameStats(this.gameDuration, "RaceGame", this.playerRepo.getAllPlayers().length, new Date())
 			.then((res) => (this.gameDbId = res))
 			.catch((err) => console.log(err));
 
-		this.isGameStarted = true;
+		this.isGameCreated = true;
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
-			.emit(CE.GAME_START, <GameStartEvent>{
-				gameTime: this.gameTime,
+			.emit(CE.GAME_CREATED, <GameCreatedEvent>{
+				gameTime: this.gameDuration,
 				gameStartTimeStamp: this.gameStartTimeStamp,
 				grid: <StartingRaceGridInfo>{
 					width: this.grid.getWidth(),
@@ -102,7 +105,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	private getGameState(): RaceGameState {
 		let gameState: RaceGameState = { timeStamp: 0, itemsState: [], players: [], remainingTime: this.timeRemaining };
 		gameState.itemsState = this.grid.getItemsState();
-		this.players.forEach((player: Player) => {
+		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());
 		});
 
@@ -111,16 +114,17 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public update(): void {
-		if (!this.isGameStarted) this.emitStartGameEvent();
+		if (!this.isGameCreated) this.emitGameCreatedEvent();
+		if (this.timeRemaining <= 0) this.gameFinished();
+
 		this.resolveInputs();
 		super.update();
-		if (this.timeRemaining <= 0) this.gameFinished();
 		this.handleItemsRespawn();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
 	}
 
 	protected gameFinished(): void {
-		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.players.length, new Date());
+		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.playerRepo.getAllPlayers().length, new Date());
 		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
 			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
 		});
@@ -138,12 +142,16 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	public userLeft(user: User): void {
-		this.removePlayer(user.userId);
+		this.playerRepo.removePlayer(user.userId);
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
 			.emit(CE.PLAYER_LEFT, <PlayerLeftEvent>{ playerId: user.userId });
 		this.removeSocketEvents(user.socket);
+
+		if (this.context.isRoomEmtpty()) {
+			this.context.removeGameFromRepo(this);
+		}
 	}
 
 	private handleSocketEvents(socket: Socket): void {
@@ -153,8 +161,11 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		});
 
 		socket.on(SE.MOVE_REQUEST, (data: MoveRequestEvent) => {
-			const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
-			this.inputBuffer.push(newInput);
+			//We're just ignoring the request if the game isn't started yet.
+			if (this.isGameStarted) {
+				const newInput: BufferedInput = { eventType: SE.MOVE_REQUEST, data: data };
+				this.inputBuffer.push(newInput);
+			}
 		});
 
 		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
@@ -194,10 +205,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		users.forEach((user) => this.removeSocketEvents(user.socket));
 	}
 
+	private findHumanPlayer(playerId: string): HumanPlayer {
+		const player = this.playerRepo.findPlayer(playerId);
+		if (!(player instanceof HumanPlayer)) {
+			throw new Error("No human player found");
+		}
+		return player;
+	}
+
 	public resolveInputs(): void {
 		this.inputBuffer.forEach((input: BufferedInput) => {
 			let inputData: any = input.data;
-			let player: Player;
+			let player: HumanPlayer;
 			switch (input.eventType) {
 				case SE.ITEM_USED:
 					try {
@@ -210,7 +229,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 				case SE.MOVE_REQUEST:
 					if (this.isMoveRequestValid(<MoveRequestEvent>inputData)) {
 						try {
-							player = this.findPlayer((<MoveRequestEvent>inputData).playerId);
+							player = this.findHumanPlayer((<MoveRequestEvent>inputData).playerId);
 							this.sendQuestionToPlayer(
 								player.getInfoForQuestion().language,
 								player.getInfoForQuestion().schoolGrade,
@@ -225,11 +244,12 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 				case SE.BOOK_USED:
 					try {
-						player = this.findPlayer((<BookUsedEvent>inputData).playerId);
+						player = this.findHumanPlayer((<BookUsedEvent>inputData).playerId);
 						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
 						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
-						this.findQuestionForPlayer(player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
+						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
 							(question) => {
+								player.promptQuestion(question);
 								this.context
 									.getNamespace()
 									.to(player.id)
@@ -244,53 +264,57 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					break;
 
 				case SE.QUESTION_ANSWERED:
-					const correctionStartTimestamp = Clock.now();
-					player = this.findPlayer((<QuestionAnsweredEvent>inputData).playerId);
-					if (player.isAnsweringQuestion()) {
-						const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
-						const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
-						const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
-						const clientAnswerId = (<QuestionAnsweredEvent>inputData).answer.id;
-						const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswerLabel);
-						let answerIsRight = false;
-						if (correspondingAnswer !== undefined) {
-							answerIsRight =
-								correspondingAnswer.isKnownAsRight() ||
-								clientAnswerLabel == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
-						}
-						const questionId = player.getActiveQuestion().getId();
-						const moveTimestamp = answerTimestamp + (Clock.now() - correctionStartTimestamp);
+					try {
+						const correctionStartTimestamp = Clock.now();
+						player = this.findHumanPlayer((<QuestionAnsweredEvent>inputData).playerId);
+						if (player.isAnsweringQuestion()) {
+							const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
+							const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+							const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
+							const clientAnswerId = (<QuestionAnsweredEvent>inputData).answer.id;
+							const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswerLabel);
+							let answerIsRight = false;
+							if (correspondingAnswer !== undefined) {
+								answerIsRight =
+									correspondingAnswer.getIsRight() ||
+									clientAnswerLabel == "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"; //DEBUG
+							}
+							const questionId = player.getActiveQuestion().getId();
+							const moveTimestamp = answerTimestamp + (Clock.now() - correctionStartTimestamp);
 
-						super.playerAnsweredQuestion(
-							answerIsRight,
-							(<QuestionAnsweredEvent>inputData).targetLocation,
-							(<QuestionAnsweredEvent>inputData).playerId,
-							moveTimestamp
-						);
-						//Send answer correction to client
-						this.context
-							.getNamespace()
-							.to(player.id)
-							.emit(CE.ANSWER_CORRECTED, <AnswerCorrectedEvent>{
-								answerIsRight: answerIsRight,
-								targetLocation: (<QuestionAnsweredEvent>inputData).targetLocation,
-								correctionTimestamp: moveTimestamp,
-							});
-
-						//Save answer for stats
-						this.context
-							.getStatsRepo()
-							.addAnsweredQuestionStats(
-								this.gameDbId,
-								userInfo,
-								new Date(player.getLastQuestionPromptTimestamp()),
-								new Date(Clock.now()),
-								questionId,
-								clientAnswerLabel,
-								clientAnswerId
+							super.playerAnsweredQuestion(
+								answerIsRight,
+								(<QuestionAnsweredEvent>inputData).targetLocation,
+								(<QuestionAnsweredEvent>inputData).playerId,
+								moveTimestamp
 							);
-					} else {
-						console.log(`Error: Player tried to give an answer while not having active question.`);
+							//Send answer correction to client
+							this.context
+								.getNamespace()
+								.to(player.id)
+								.emit(CE.ANSWER_CORRECTED, <AnswerCorrectedEvent>{
+									answerIsRight: answerIsRight,
+									targetLocation: (<QuestionAnsweredEvent>inputData).targetLocation,
+									correctionTimestamp: moveTimestamp,
+								});
+
+							//Save answer for stats
+							this.context
+								.getStatsRepo()
+								.addAnsweredQuestionStats(
+									this.gameDbId,
+									userInfo,
+									new Date(player.getLastQuestionPromptTimestamp()),
+									new Date(Clock.now()),
+									questionId,
+									clientAnswerLabel,
+									clientAnswerId
+								);
+						} else {
+							console.log(`Error: Player tried to give an answer while not having active question.`);
+						}
+					} catch (error) {
+						console.log(error);
 					}
 
 					break;
@@ -302,14 +326,42 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.inputBuffer = [];
 	}
 
-	private async findQuestionForPlayer(language: string, schoolGrade: number, difficulty: number): Promise<Question> {
-		const questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, difficulty);
+	private async findQuestionForPlayer(player: HumanPlayer, language: string, schoolGrade: number, requestedDifficulty: number): Promise<Question> {
+		let questionIdArray: number[];
+		let actualDifficulty = requestedDifficulty;
+		while (!questionIdArray || !questionIdArray.length) {
+			questionIdArray = await this.questionRepo.getQuestionsIdByDifficulty(language, schoolGrade, actualDifficulty);
+			//Remove questions already answered by the player
+			questionIdArray = questionIdArray.filter(
+				(questionId) => !player.getAnsweredQuestionsId().some((answeredQuestionId) => answeredQuestionId == questionId)
+			);
+			//Basically, if there are no unanswered question left of the given difficulty, we lower the difficulty.
+			//If it's not possible, we increase the difficulty
+			//If it's not possible, we simply reset the player answered questions id
+			if (!questionIdArray || !questionIdArray.length) {
+				if (actualDifficulty <= requestedDifficulty) {
+					if (actualDifficulty != RACE_PARAMETERS.QUESTION.MIN_DIFFICULTY) {
+						actualDifficulty--;
+					} else if (requestedDifficulty != RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
+						actualDifficulty = requestedDifficulty + 1;
+					} else {
+						player.resetAnsweredQuestionsId();
+						actualDifficulty = requestedDifficulty;
+					}
+				} else if (actualDifficulty == RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
+					player.resetAnsweredQuestionsId();
+					actualDifficulty = requestedDifficulty;
+				} else {
+					actualDifficulty++;
+				}
+			}
+		}
 		const randomPosition = Math.floor(Math.random() * questionIdArray.length);
 		return this.questionRepo.getQuestionById(questionIdArray[randomPosition], language, schoolGrade);
 	}
 
-	private sendQuestionToPlayer(language: string, schoolGrade: number, player: Player, targetLocation: Point): void {
-		this.findQuestionForPlayer(language, schoolGrade, player.getDifficulty(targetLocation))
+	private sendQuestionToPlayer(language: string, schoolGrade: number, player: HumanPlayer, targetLocation: Point): void {
+		this.findQuestionForPlayer(player, language, schoolGrade, player.getDifficulty(targetLocation))
 			.then((question) => {
 				player.promptQuestion(question);
 				this.context
@@ -325,14 +377,14 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private getPlayersState(): PlayerState[] {
 		let playersState: PlayerState[] = [];
-		this.players.forEach((player: Player) => {
+		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			playersState.push(player.getPlayerState());
 		});
 		return playersState;
 	}
 
 	protected handleItemCollisions(): void {
-		this.players.forEach((player) => {
+		this.playerRepo.getAllPlayers().forEach((player) => {
 			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
 			if (itemPickedUp) {
 				this.itemPickUpTimestamps.push(Clock.now());
@@ -345,15 +397,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			if (Clock.now() - itemPickUpTimestamp >= this.ITEM_RESPAWN_DURATION) {
 				this.itemPickUpTimestamps.splice(index, 1);
 				this.grid.generateNewItem(
-					this.players.map((player) => player.getPosition()),
+					this.playerRepo.getAllPlayers().map((player) => player.getPosition()),
 					this.isSinglePlayer
 				);
 			}
 		});
 	}
 
-	isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
-		const player = this.findPlayer(moveRequestEvent.playerId);
+	private isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
+		const player = this.findHumanPlayer(moveRequestEvent.playerId);
 		if (!player.isAnsweringQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
 			if (

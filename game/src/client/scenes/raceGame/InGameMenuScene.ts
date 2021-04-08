@@ -43,6 +43,20 @@ export default class InGameMenuScene extends Phaser.Scene {
 				useHandCursor: true,
 			});
 
+		this.resumeText
+			.on("pointerover", () => {
+				this.quitText.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.quitText.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.quitText.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.resumeGame();
+			});
+
 		this.reportProblemText = this.add
 			.text(this.width / 2 - 75, this.height * 0.5, "Report problem", {
 				fontFamily: "Courier",
@@ -54,6 +68,23 @@ export default class InGameMenuScene extends Phaser.Scene {
 			.setScrollFactor(0)
 			.setInteractive({
 				useHandCursor: true,
+			});
+
+		this.reportProblemText
+			.on("pointerover", () => {
+				this.reportProblemText.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.reportProblemText.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.reportProblemText.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				sceneEvents.emit(EventNames.errorWindowOpened);
+				this.scene.launch(CST.SCENES.REPORT_ERROR, {
+					questionId: null, //Send null because the error report isn't tied to a question
+				});
 			});
 
 		this.quitText = this.add
@@ -69,60 +100,26 @@ export default class InGameMenuScene extends Phaser.Scene {
 				useHandCursor: true,
 			});
 
-		this.resumeText.on("pointerover", () => {
-			this.quitText.setTint(0xffff66);
-		});
-
-		this.resumeText.on("pointerout", () => {
-			this.quitText.clearTint();
-		});
-
-		this.resumeText.on("pointerdown", () => {
-			this.quitText.setTint(0x86bfda);
-		});
-
-		this.resumeText.on("pointerup", () => {
-			this.resumeGame();
-		});
-
-		this.quitText.on("pointerover", () => {
-			this.quitText.setTint(0xffff66);
-		});
-
-		this.quitText.on("pointerout", () => {
-			this.quitText.clearTint();
-		});
-
-		this.quitText.on("pointerdown", () => {
-			this.quitText.setTint(0x86bfda);
-		});
-
-		this.quitText.on("pointerup", () => {
-			sceneEvents.emit(EventNames.quitGame);
-		});
-
-		this.reportProblemText.on("pointerover", () => {
-			this.reportProblemText.setTint(0xffff66);
-		});
-
-		this.reportProblemText.on("pointerout", () => {
-			this.reportProblemText.clearTint();
-		});
-
-		this.reportProblemText.on("pointerdown", () => {
-			this.reportProblemText.setTint(0x86bfda);
-		});
-
-		this.reportProblemText.on("pointerup", () => {
-			sceneEvents.emit(EventNames.errorWindowOpened);
-			this.scene.launch(CST.SCENES.REPORT_ERROR, {
-				questionId: null, //Send null because the error report isn't tied to a question
+		this.quitText
+			.on("pointerover", () => {
+				this.quitText.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.quitText.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.quitText.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				sceneEvents.emit(EventNames.quitGame);
 			});
-		});
 
 		subscribeToEvent(EventNames.errorWindowOpened, this.errorWindowOpened, this);
 		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
+
+	update() {}
 
 	private resumeGame(): void {
 		sceneEvents.emit(EventNames.gameResumed);

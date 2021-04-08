@@ -1,8 +1,17 @@
-import { GameEndEvent, PlayerLeftEvent, QuestionFoundEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
+import { Pinch } from "phaser3-rex-plugins/plugins/gestures.js";
+import {
+	AnswerCorrectedEvent,
+	GameEndEvent,
+	PlayerLeftEvent,
+	QuestionFoundEvent,
+	QuestionFoundFromBookEvent,
+} from "../../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { JoinRoomAnswerEvent as JoinRoomAnswerEvent, JoinRoomRequestEvent } from "../../../communication/room/EventInterfaces";
+import { ROOM_EVENT_NAMES } from "../../../communication/room/EventNames";
 import AffineTransform from "../../../gameCore/race/AffineTransform";
 import ClientRaceGameController from "../../../gameCore/race/ClientRaceGameController";
-import { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
+import RaceGrid, { PossiblePositions } from "../../../gameCore/race/grid/RaceGrid";
 import { ItemType } from "../../../gameCore/race/items/Item";
 import Move from "../../../gameCore/race/Move";
 import Player from "../../../gameCore/race/player/Player";
@@ -10,44 +19,56 @@ import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
-import { updateUserHighScore } from "../../services/UserInformationService";
+import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
+import { LocalizedString } from "./../../Localization";
+import { BackgroundSceneData } from "./BackgroundScene";
 import { QuestionSceneData } from "./QuestionScene";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 
+/**
+ * This class will render the game board and everything not related to it. That also includes characters, tiles and items on the board.
+ * It also controls the interaction with the server. Any action related to the game logic that occured in another scene will be caught
+ * by this scene with an event and will be executed here.
+ */
 export default class RaceScene extends Phaser.Scene {
+	//Room
+	roomId: string;
 	//Loops
 	lag: number;
-	physTimestep: number;
+	physTimestep: number = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 	//GameCore
 	raceGame: ClientRaceGameController;
 	//Buffer
-	distanceBetweenTwoTiles: number;
+	readonly distanceBetweenTwoTiles: number = 66;
 	boardPosition: Point;
-	keyboardInputs;
-	background: Phaser.GameObjects.TileSprite;
-	isFollowingPlayer: boolean;
+	keyboardInputs: Phaser.Types.Input.Keyboard.CursorKeys;
+	isFollowingPlayer: boolean = true;
 	currentPlayerSprite: Phaser.GameObjects.Sprite;
 	pointsForPosition: Phaser.GameObjects.Text[];
 
 	targetLocation: Point;
 
 	currentPlayerMovement: number;
-	isReadyToGetPossiblePositions: boolean; //Needed to make sure the program doesn't always recalculate the possible position
+	isReadyToGetPossiblePositions: boolean; //Needed to make sure the scene doesn't always recalculate the possible position
 	isThrowingBanana: boolean;
 
-	tileActiveState: number;
-	tileInactiveState: number;
-	activeTileColor: number;
+	readonly tileActiveState: number = 1;
+	readonly tileInactiveState: number = 0;
+	readonly activeTileColor: number = 0xadff2f;
+
+	readonly maxZoom: number = 1.5;
+	readonly minZoom: number = 0.8;
+	readonly cameraOffset: number = 400;
 
 	characterSprites: CharacterSprites[];
 	tiles: Phaser.GameObjects.Group;
 	items: Phaser.GameObjects.Group;
 
+	//Error
+	triedToReconnectAfterSocketError: boolean;
+
 	constructor() {
-		const sceneConfig = {
-			key: CST.SCENES.RACE_GAME,
-		};
-		super(sceneConfig);
+		super({ key: CST.SCENES.RACE_GAME });
 	}
 
 	preload() {
@@ -55,39 +76,60 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	init(data: any) {
-		this.raceGame = data.gameController;
-		this.lag = 0;
-		this.physTimestep = 15; //physics checks every 15ms (~66 times/sec - framerate is generally 60 fps)
 		this.characterSprites = [];
 		this.pointsForPosition = [];
-		this.isFollowingPlayer = false;
 		this.isThrowingBanana = false;
+		this.lag = 0;
+		this.isThrowingBanana = false;
+		this.isFollowingPlayer = true;
+		this.raceGame = data.gameController;
+		this.roomId = data.roomId;
 		this.currentPlayerMovement = this.raceGame.getCurrentPlayer().getMaxMovementDistance();
-		this.activeTileColor = 0xadff2f;
-		this.tileInactiveState = 0;
-		this.tileActiveState = 1;
+		this.triedToReconnectAfterSocketError = false;
 		this.handleSocketEvents(this.raceGame.getCurrentPlayerSocket());
 	}
 
 	create() {
+		this.scene.launch(CST.SCENES.BACKGROUD, <BackgroundSceneData>{ backgroundImage: CST.IMAGES.BACKGROUD });
+
 		this.draggableCameraControls();
 
-		this.background = this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0);
-		this.background.setScrollFactor(0);
-
-		this.cameras.main.centerOn(0, 0);
 		this.keyboardInputs = this.input.keyboard.createCursorKeys();
 
 		this.tiles = this.add.group();
 		this.items = this.add.group();
 
 		const gameGrid = this.raceGame.getGrid();
+		this.boardPosition = { x: <number>this.game.config.width * 0.5, y: <number>this.game.config.height * 0.5 };
+		this.createGameBoard(gameGrid);
 
-		//TODO : Find a way to store those "Magic Numbers"
-		this.distanceBetweenTwoTiles = 66;
-		this.boardPosition = { x: <number>this.game.config.width / 2.3, y: <number>this.game.config.height / 7 };
+		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
+		this.isReadyToGetPossiblePositions = true;
 
-		//creating game board
+		this.scene.launch(CST.SCENES.RACE_GAME_UI);
+
+		//RenderBackground behind everything else
+		this.scene.sendToBack(CST.SCENES.BACKGROUD);
+
+		//Initilalize camera
+		this.render();
+		this.createCameraBounds(this.boardPosition.x, this.boardPosition.y, gameGrid.getWidth(), gameGrid.getHeight());
+		this.handleFollowPlayerToggle(this.isFollowingPlayer);
+
+		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
+		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
+		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
+		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
+		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
+		subscribeToEvent(EventNames.useBook, this.useBook, this);
+		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
+		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
+		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
+		subscribeToEvent(EventNames.zoomOut, this.zoomOut, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
+	}
+
+	private createGameBoard(gameGrid: RaceGrid) {
 		for (let y = 0; y < gameGrid.getHeight(); y++) {
 			for (let x = 0; x < gameGrid.getWidth(); x++) {
 				const currentTile = gameGrid.getTile({ x, y });
@@ -122,29 +164,19 @@ export default class RaceScene extends Phaser.Scene {
 
 							//TODO verify if has arrived logic should be moved to player
 							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().isAnsweringQuestion()) {
-								this.raceGame.playerMoveRequest({ x: x, y: y });
+								this.playerRequestMove(<Point>{ x: x, y: y });
 							}
 						}
 					});
 				}
 			}
 		}
+	}
 
-		this.targetLocation = this.raceGame.getCurrentPlayer().getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		this.isReadyToGetPossiblePositions = false;
-		this.activateAccessiblePositions();
-
-		this.scene.launch(CST.SCENES.RACE_GAME_UI);
-
-		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
-		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
-		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
-		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
-		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
-		subscribeToEvent(EventNames.useBook, this.useBook, this);
-		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
-		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
-		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
+	playerRequestMove(targetLocation: Point) {
+		//To keep target location in memory when we get the answer from question scene
+		this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(targetLocation);
+		this.raceGame.playerMoveRequest(targetLocation);
 	}
 
 	update(timestamp: number, elapsed: number) {
@@ -159,14 +191,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	render() {
-		this.renderBackground();
 		this.renderPlayerSprites();
 		this.renderGameBoard();
 		this.renderAccessiblePositions();
-	}
-
-	private renderBackground() {
-		this.background.setScale(1 / this.cameras.main.zoom, 1 / this.cameras.main.zoom);
 	}
 
 	private renderPlayerSprites() {
@@ -257,18 +284,20 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	private renderAccessiblePositions() {
-		const currentPlayer = this.raceGame.getCurrentPlayer();
-		const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
-		if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
-			this.activateAccessiblePositions();
-		} else if (
-			//If a player gets affected by a banana or any other state change without moving
-			currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
-			this.playerHasArrived(currentPosition) &&
-			!currentPlayer.isAnsweringQuestion()
-		) {
-			this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
-			this.activateAccessiblePositions();
+		if (this.raceGame.getIsGameStarted()) {
+			const currentPlayer = this.raceGame.getCurrentPlayer();
+			const currentPosition = currentPlayer.getMove().getCurrentRenderedPosition(this.getCoreGameToPhaserPositionRendering());
+			if (this.playerHasArrived(currentPosition) && this.isReadyToGetPossiblePositions) {
+				this.activateAccessiblePositions();
+			} else if (
+				//If a player gets affected by a banana or any other state change without moving
+				currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
+				this.playerHasArrived(currentPosition) &&
+				!currentPlayer.isAnsweringQuestion()
+			) {
+				this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
+				this.activateAccessiblePositions();
+			}
 		}
 	}
 
@@ -305,11 +334,11 @@ export default class RaceScene extends Phaser.Scene {
 		this.raceGame.clientPlayerAnswersQuestion(answer, <Point>{ x: position.x, y: position.y });
 	}
 
-	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number, position: Point): void {
+	questionCorrected(isAnswerRight: boolean, correctionTimestamp: number): void {
 		this.raceGame.playerAnsweredQuestion(isAnswerRight, this.targetLocation, this.raceGame.getCurrentPlayer().id, correctionTimestamp);
 		this.clearTileInteractions();
-		if (isAnswerRight) {
-			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(position);
+		if (!isAnswerRight) {
+			this.targetLocation = this.getCoreGameToPhaserPositionRendering().apply(this.raceGame.getCurrentPlayer().getPosition());
 		}
 		this.isReadyToGetPossiblePositions = true;
 	}
@@ -321,12 +350,11 @@ export default class RaceScene extends Phaser.Scene {
 		});
 
 		socket.on(CE.GAME_END, (data: GameEndEvent) => {
-			updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
-			this.raceGame.gameFinished();
-			this.scene.stop(CST.SCENES.REPORT_ERROR);
-			this.scene.stop(CST.SCENES.RACE_GAME_UI);
-			this.scene.stop(CST.SCENES.QUESTION_WINDOW);
-			this.scene.start(CST.SCENES.WAITING_ROOM, { lastGameData: data, socket: this.raceGame.getCurrentPlayerSocket() });
+			this.endGame();
+			this.scene.start(CST.SCENES.WAITING_ROOM, {
+				lastGameData: data,
+				socket: this.raceGame.getCurrentPlayerSocket(),
+			});
 		});
 
 		socket.on(CE.QUESTION_FOUND, (data: QuestionFoundEvent) => {
@@ -334,6 +362,55 @@ export default class RaceScene extends Phaser.Scene {
 			this.raceGame.getCurrentPlayer().promptQuestion(questionFound);
 			this.createQuestionWindow(data.targetLocation, questionFound);
 		});
+
+		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
+			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
+			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
+		});
+
+		socket.on("connect_error", (error) => {
+			this.handleSocketError(error);
+		});
+		socket.on("error", (error) => {
+			this.handleSocketError(error);
+		});
+
+		socket.once(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, (data: JoinRoomAnswerEvent) => {
+			if (data.error) {
+				//Dans le cas où la reconnexion à la présente salle a été refusée.
+				this.abortGame();
+			} else {
+				//Dans le cas où la reconnexion à la présente salle a été acceptée.
+				this.endGame();
+				this.scene.start(CST.SCENES.WAITING_ROOM, { socket: socket });
+			}
+		});
+	}
+
+	private handleSocketError(error): void {
+		if (this.raceGame.hasServerStoppedSendingUpdates()) {
+			if (!this.triedToReconnectAfterSocketError) {
+				this.raceGame.getCurrentPlayerSocket().emit(ROOM_EVENT_NAMES.JOIN_ROOM_REQUEST, <JoinRoomRequestEvent>{ roomId: this.roomId });
+				this.triedToReconnectAfterSocketError = true;
+			} else {
+				this.abortGame();
+			}
+		}
+	}
+
+	private abortGame() {
+		const errorMsg: LocalizedString = {
+			fr: "Erreur de connexion. Vous avez été éjecté de la salle.",
+			en: "Connection error. You've been kicked out of the room.",
+		};
+		alert(errorMsg[getUserInfo().language]);
+		this.quitGame();
+	}
+
+	private endGame(): void {
+		updateUserHighScore(this.raceGame.getCurrentPlayer().getPoints());
+		this.raceGame.gameFinished();
+		sceneEvents.emit(EventNames.gameEnds);
 	}
 
 	private activateAccessiblePositions(): void {
@@ -343,6 +420,7 @@ export default class RaceScene extends Phaser.Scene {
 			y: playerTile.getData("gridPosition").y,
 		});
 
+		const player = this.raceGame.getCurrentPlayer();
 		this.clearTileInteractions();
 
 		possiblePositions.forEach((pos: PossiblePositions) => {
@@ -355,7 +433,7 @@ export default class RaceScene extends Phaser.Scene {
 
 			//showing points for each tile
 			let points = this.add
-				.text(tile.getData("position").x, tile.getData("position").y, this.raceGame.getPointsForMoveDistance(distanceToTile).toString(), {
+				.text(tile.getData("position").x, tile.getData("position").y, player.pointsCalculator(distanceToTile).toString(), {
 					fontFamily: "Courier",
 					fontSize: "30px",
 					color: "#FDFFB5",
@@ -396,12 +474,9 @@ export default class RaceScene extends Phaser.Scene {
 	}
 
 	public quitGame(): void {
-		this.scene.stop(CST.SCENES.IN_GAME_MENU);
-		this.scene.stop(CST.SCENES.RACE_GAME_UI);
-		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
 		this.raceGame.getCurrentPlayerSocket().close();
-		this.scene.stop(CST.SCENES.RACE_GAME);
-		this.scene.start(CST.SCENES.ROOM_SELECTION);
+		sceneEvents.emit(EventNames.gameEnds);
+		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
 
 	private pauseGame(): void {
@@ -459,6 +534,52 @@ export default class RaceScene extends Phaser.Scene {
 				this.cameras.main.scrollY += 4;
 			}
 		}
+	}
+
+	private zoomIn(): void {
+		const cam = this.cameras.main;
+		if (cam.zoom < this.maxZoom) {
+			cam.zoom += 0.1;
+			this.reajustCameraBounds(cam.zoom);
+		}
+	}
+
+	private zoomOut(): void {
+		const cam = this.cameras.main;
+		if (cam.zoom > this.minZoom) {
+			cam.zoom -= 0.1;
+			this.reajustCameraBounds(cam.zoom);
+		}
+	}
+
+	private createCameraBounds(x: number, y: number, boardWidth: number, boardHeight: number): void {
+		let pinch = new Pinch(this);
+		pinch.on(
+			"pinch",
+			(pinch) => {
+				var scaleFactor = pinch.scaleFactor;
+				this.cameras.main.zoom *= scaleFactor;
+			},
+			this
+		);
+
+		this.cameras.main.setBounds(
+			x - this.cameraOffset,
+			y - this.cameraOffset,
+			(boardWidth - 1) * this.distanceBetweenTwoTiles + 2 * this.cameraOffset,
+			(boardHeight - 1) * this.distanceBetweenTwoTiles + 2 * this.cameraOffset
+		);
+	}
+
+	private reajustCameraBounds(zoomFactor: number): void {
+		const yOffset = zoomFactor === this.minZoom ? 75 : this.cameraOffset;
+
+		this.cameras.main.setBounds(
+			this.boardPosition.x - zoomFactor * this.cameraOffset,
+			this.boardPosition.y - zoomFactor * yOffset,
+			(this.raceGame.getGrid().getWidth() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * this.cameraOffset,
+			(this.raceGame.getGrid().getHeight() - 1) * this.distanceBetweenTwoTiles + 2 * zoomFactor * yOffset
+		);
 	}
 }
 

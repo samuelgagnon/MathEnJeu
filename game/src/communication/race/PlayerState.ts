@@ -6,12 +6,8 @@ export default interface PlayerState {
 	name: string;
 	points: number;
 	move: MoveState;
-	isAnsweringQuestion: boolean;
-	missedQuestionsCount: number;
 	statusState: StatusState;
 	inventoryState: InventoryState;
-	schoolGrade: number;
-	language: string;
 }
 
 export interface StatusState {
@@ -23,4 +19,12 @@ export interface InventoryState {
 	bananaCount: number;
 	crystalBallCount: number;
 	bookCount: number;
+}
+
+export interface PlayerEndState {
+	playerId: string;
+	points: number;
+	name: string;
+	//TODO: Maybe put the user information here
+	//to know what character model is used and possibly the grade the player is
 }

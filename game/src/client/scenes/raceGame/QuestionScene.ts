@@ -1,12 +1,12 @@
-import { AnswerCorrectedEvent, QuestionFoundFromBookEvent } from "../../../communication/race/DataInterfaces";
-import { CLIENT_EVENT_NAMES as CE } from "../../../communication/race/EventNames";
+import { QuestionFoundFromBookEvent } from "../../../communication/race/EventInterfaces";
 import { Clock } from "../../../gameCore/clock/Clock";
+import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
-import { getBase64ImageForQuestion, getBase64ImageForQuestionFeedback } from "../../services/QuestionsService";
 import { getUserInfo } from "../../services/UserInformationService";
+import { createHtmlAnswer, createHtmlFeedback, createHtmlQuestion, createInvisibleDiv } from "../CustomHtml";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
@@ -17,17 +17,16 @@ export default class QuestionScene extends Phaser.Scene {
 	sizeFactor: number;
 	targetLocation: Point;
 	question: Question;
-	questionConstant: string;
-	feedbackConstant: string;
 
-	feedbackImage: Phaser.GameObjects.Image;
-	questionImage: Phaser.GameObjects.Image;
-	questionTexture: Phaser.Textures.Texture;
+	answersButton: Phaser.GameObjects.DOMElement[];
+	answersHtml: Phaser.GameObjects.DOMElement[];
+	questionHtml: Phaser.GameObjects.DOMElement;
+	feedbackHtml: Phaser.GameObjects.DOMElement;
 
 	enterButton: Phaser.GameObjects.Text;
+	continueButton: Phaser.GameObjects.Text;
 	correctAnswer: Phaser.GameObjects.Text;
 	inputHtml: Phaser.GameObjects.DOMElement;
-	answersList: Phaser.GameObjects.DOMElement;
 	reportProblemButton: Phaser.GameObjects.Text;
 
 	bookIcon: Phaser.GameObjects.Sprite;
@@ -39,6 +38,9 @@ export default class QuestionScene extends Phaser.Scene {
 	feedbackStartTimeStamp: number;
 	feedbackRemainingTimeTxt: Phaser.GameObjects.Text;
 	showFeedbackTime: boolean;
+	background: Phaser.GameObjects.Rectangle;
+
+	language: string;
 
 	constructor() {
 		const sceneConfig = { key: CST.SCENES.QUESTION_WINDOW };
@@ -46,59 +48,30 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	init(data: QuestionSceneData) {
+		this.language = getUserInfo().language;
 		this.question = data.question;
 		this.targetLocation = data.targetLocation;
 		this.showFeedbackTime = false;
-		this.questionImage = undefined;
-		this.feedbackImage = undefined;
 		this.feedbackStartTimeStamp = undefined;
-		this.feedbackConstant = "feedback";
-		this.questionConstant = "question";
+		this.answersButton = [];
+		this.answersHtml = [];
 
 		this.sizeFactor = 0.9;
 		this.width = Number(this.game.config.width) * 0.9;
 		this.height = Number(this.game.config.height) * 0.9;
 
-		var x = Number(this.game.config.width) * 0.05;
-		var y = Number(this.game.config.height) * 0.05;
+		var x = Number(this.game.config.width) * 0.5;
+		var y = Number(this.game.config.height) * 0.5;
 		this.position = { x: x, y: y };
 	}
 
 	create() {
-		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
-		this.cameras.main.setBackgroundColor(0xffffff);
+		this.background = this.add.rectangle(this.position.x, this.position.y, this.width, this.height, 0xffffff);
 
 		this.inputHtml = this.add.dom(this.width * 0.4, this.height * 0.85).createFromCache(CST.HTML.ANSWER_INPUT);
-		this.answersList = this.add.dom(this.width * 0.8, this.height * 0.6).createFromCache(CST.HTML.ANSWERS_LIST);
 
 		this.enterButton = this.add
-			.text(this.width * 0.6, this.height * 0.85, "enter", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0)
-			.setInteractive({
-				useHandCursor: true,
-			});
-
-		this.correctAnswer = this.add
-			.text(this.width * 0.8, this.height * 0.85, "correct answer", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0)
-			.setInteractive({
-				useHandCursor: true,
-			});
-
-		this.reportProblemButton = this.add
-			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
+			.text(this.width * 0.65, this.height * 0.9, "enter", {
 				fontFamily: "Courier",
 				fontSize: "32px",
 				align: "center",
@@ -114,6 +87,38 @@ export default class QuestionScene extends Phaser.Scene {
 			this.answerQuestion();
 		});
 
+		this.continueButton = this.add
+			.text(this.width * 0.8, this.height * 0.9, "Continue", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			})
+			.setVisible(false)
+			.setActive(false);
+
+		this.continueButton.on("pointerup", () => {
+			this.destroyScene();
+		});
+
+		this.correctAnswer = this.add
+			.text(this.width * 0.8, this.height * 0.9, "correct answer", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
+
 		//DEBUG
 		this.correctAnswer.on("pointerup", () => {
 			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(
@@ -121,6 +126,19 @@ export default class QuestionScene extends Phaser.Scene {
 				this.targetLocation
 			);
 		});
+
+		this.reportProblemButton = this.add
+			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
+				fontFamily: "Courier",
+				fontSize: "32px",
+				align: "center",
+				color: "#000000",
+				fontStyle: "bold",
+			})
+			.setScrollFactor(0)
+			.setInteractive({
+				useHandCursor: true,
+			});
 
 		this.reportProblemButton.on("pointerup", () => {
 			sceneEvents.emit(EventNames.errorWindowOpened);
@@ -130,35 +148,38 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.bookIcon = this.add
-			.sprite(this.width * 0.05, this.height * 0.9, CST.IMAGES.BOOK)
+			.sprite(Number(this.game.config.width) * 0.1, Number(this.game.config.height) * 0.9, CST.IMAGES.BOOK)
 			.setInteractive({ useHandCursor: true })
 			.setScale(0.1);
+
+		this.bookIcon
+			.on("pointerdown", () => {
+				this.bookIcon.setTint(0xffea00);
+			})
+			.on("pointerover", () => {
+				this.bookIcon.clearTint();
+			})
+			.on("pointerup", () => {
+				this.bookIcon.clearTint();
+				sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
+			});
+
 		this.crystalBallIcon = this.add
-			.sprite(this.width * 0.15, this.height * 0.9, CST.IMAGES.CRYSTAL_BALL)
+			.sprite(Number(this.game.config.width) * 0.2, Number(this.game.config.height) * 0.9, CST.IMAGES.CRYSTAL_BALL)
 			.setInteractive({ useHandCursor: true })
 			.setScale(0.1);
 
-		this.bookIcon.on("pointerdown", () => {
-			this.bookIcon.setTint(0xffea00);
-		});
-		this.bookIcon.on("pointerover", () => {
-			this.bookIcon.clearTint();
-		});
-		this.bookIcon.on("pointerup", () => {
-			this.bookIcon.clearTint();
-			sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
-		});
-
-		this.crystalBallIcon.on("pointerdown", () => {
-			this.crystalBallIcon.setTint(0xffea00);
-		});
-		this.crystalBallIcon.on("pointerover", () => {
-			this.crystalBallIcon.clearTint();
-		});
-		this.crystalBallIcon.on("pointerup", () => {
-			this.crystalBallIcon.clearTint();
-			this.useCrystalBall();
-		});
+		this.crystalBallIcon
+			.on("pointerdown", () => {
+				this.crystalBallIcon.setTint(0xffea00);
+			})
+			.on("pointerover", () => {
+				this.crystalBallIcon.clearTint();
+			})
+			.on("pointerup", () => {
+				this.crystalBallIcon.clearTint();
+				this.useCrystalBall();
+			});
 
 		this.bookCount = this.add
 			.text(this.bookIcon.getTopRight().x - 7, this.bookIcon.getTopRight().y, "0", {
@@ -180,39 +201,15 @@ export default class QuestionScene extends Phaser.Scene {
 			})
 			.setScrollFactor(0);
 
-		this.textures.on(
-			"addtexture",
-			(textureId: string) => {
-				if (textureId === this.questionConstant && !this.questionImage) {
-					this.questionImage = this.add.image(this.width * 0.5, this.height * 0.35, this.questionConstant).setScale(0.3);
-					if (this.questionImage.displayHeight > 500 && this.questionImage.displayHeight < 800) this.questionImage.setScale(0.2);
-					if (this.questionImage.displayHeight >= 800) this.questionImage.setScale(0.15);
-				} else if (textureId === this.feedbackConstant && !this.feedbackImage) {
-					this.feedbackImage = this.add
-						.image(this.width * 0.5, this.height * 0.35, this.feedbackConstant)
-						.setScale(0.3)
-						.setAlpha(0);
-					if (this.feedbackImage.displayHeight > 500 && this.questionImage.displayHeight < 800) this.questionImage.setScale(0.2);
-					if (this.feedbackImage.displayHeight >= 800) this.questionImage.setScale(0.15);
-				}
-			},
-			this
-		);
-
-		this.getTexturesForQuestion();
+		this.getHtmlForQuestion();
 
 		subscribeToEvent(EventNames.gameResumed, this.resumeGame, this);
 		subscribeToEvent(EventNames.gamePaused, this.pauseGame, this);
 		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 		subscribeToEvent(EventNames.errorWindowOpened, this.pauseGame, this);
 		subscribeToEvent(EventNames.newQuestionFound, this.handleNewQuestionFound, this);
-
-		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket().removeEventListener(CE.ANSWER_CORRECTED);
-			this.clearQuestionTextures();
-		});
-
-		this.handleSocketEvents((<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame.getCurrentPlayerSocket());
+		subscribeToEvent(EventNames.questionCorrected, this.questionCorrected, this);
+		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);
 	}
 
 	update() {
@@ -223,22 +220,9 @@ export default class QuestionScene extends Phaser.Scene {
 			if (feedbackRemainingTime > 0) {
 				this.feedbackRemainingTimeTxt.setText(Math.ceil(feedbackRemainingTime / 1000).toString());
 			} else if (!raceGame.getCurrentPlayer().isInPenaltyState()) {
+				this.feedbackRemainingTimeTxt.setActive(false).setVisible(false);
 				this.endPenalty();
 			}
-		}
-
-		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
-			let answersList = <HTMLInputElement>this.answersList.getChildByID("answersList");
-
-			while (answersList.firstChild) {
-				answersList.removeChild(answersList.firstChild);
-			}
-
-			this.question.getDTO().answers.forEach((answer) => {
-				var li = document.createElement("li");
-				li.appendChild(document.createTextNode(answer.label));
-				answersList.appendChild(li);
-			});
 		}
 
 		const inventoryState = raceGame.getCurrentPlayer().getInventory().getInventoryState();
@@ -247,33 +231,31 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private endPenalty(): void {
-		//TODO: Instead of destroying this scene instantly, show a button used to quit the feedback (at this scene in general).
-		this.destroyScene();
+		this.continueButton.setActive(true).setVisible(true);
 	}
 
-	private handleSocketEvents(socket: SocketIOClient.Socket): void {
-		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight, data.correctionTimestamp, this.targetLocation);
-			if (data.answerIsRight) {
-				this.destroyScene();
-			} else {
-				this.startFeedback();
-			}
-		});
+	private questionCorrected(isAnswerRight: boolean): void {
+		if (isAnswerRight) {
+			this.destroyScene();
+		} else {
+			this.startFeedback();
+		}
 	}
 
 	private startFeedback() {
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
-		this.inputHtml.setAlpha(0);
-		this.enterButton.setAlpha(0);
-		this.answersList.setAlpha(0);
-		this.correctAnswer.setAlpha(0);
+		this.answersHtml.forEach((answer) => answer.setAlpha(0).setActive(false).setVisible(false));
+		this.answersButton.forEach((answer) => answer.setAlpha(0).setActive(false).setVisible(false));
+		this.inputHtml.setAlpha(0).setActive(false).setVisible(false);
+		this.enterButton.setAlpha(0).setActive(false).setVisible(false);
+		this.correctAnswer.setAlpha(0).setActive(false).setVisible(false);
+		this.questionHtml.setAlpha(0).setActive(false).setVisible(false);
 		this.feedbackStartTimeStamp = Clock.now();
 		//Approximation of feedbackMaxTime by checking remaining time.
 		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now();
 
 		this.feedbackRemainingTimeTxt = this.add
-			.text(this.width * 0.8, this.height * 0.1, this.feedbackMaxTime.toString(), {
+			.text(Number(this.game.config.width) * 0.8, Number(this.game.config.height) * 0.15, this.feedbackMaxTime.toString(), {
 				fontFamily: "Courier",
 				fontSize: "26px",
 				align: "center",
@@ -281,24 +263,103 @@ export default class QuestionScene extends Phaser.Scene {
 				fontStyle: "bold",
 			})
 			.setScrollFactor(0);
-		this.feedbackImage.setAlpha(1);
+		this.feedbackHtml.setAlpha(1).setVisible(true);
 
 		this.showFeedbackTime = true;
 	}
 
-	private getTexturesForQuestion(): void {
-		const userInfo = getUserInfo();
-		getBase64ImageForQuestion(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
-			this.textures.addBase64(this.questionConstant, value);
-		});
+	private getHtmlForQuestion(): void {
+		//debug
+		console.log(`QuestionId: ${this.question.getId()}`);
 
-		getBase64ImageForQuestionFeedback(this.question.getId(), userInfo.language, userInfo.schoolGrade).then((value) => {
-			this.textures.addBase64(this.feedbackConstant, value);
-		});
+		if (!!this.questionHtml || !!this.feedbackHtml) {
+			this.questionHtml.destroy();
+			this.feedbackHtml.destroy();
+		}
+
+		this.clearAnswers();
+
+		this.questionHtml = createHtmlQuestion(
+			this,
+			Number(this.game.config.width) * 0.45,
+			Number(this.game.config.height) * 0.25,
+			800,
+			300,
+			this.question.getId(),
+			this.language
+		);
+		this.feedbackHtml = createHtmlFeedback(
+			this,
+			Number(this.game.config.width) * 0.45,
+			Number(this.game.config.height) * 0.25,
+			800,
+			300,
+			this.question.getId(),
+			this.language
+		).setAlpha(0);
+
+		if (this.question.getAnswerType() === "MULTIPLE_CHOICE") {
+			this.generateHtmlAnswers();
+		} else {
+			this.inputHtml.setAlpha(1);
+		}
 	}
 
-	private answerQuestion(): void {
-		const answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+	private clearAnswers(): void {
+		this.answersHtml.forEach((element: Phaser.GameObjects.DOMElement) => element.destroy());
+		this.answersButton.forEach((element: Phaser.GameObjects.DOMElement) => {
+			element.removeInteractive();
+			element.removeAllListeners();
+			element.destroy();
+		});
+
+		this.answersHtml = [];
+		this.answersButton = [];
+	}
+
+	private generateHtmlAnswers() {
+		this.question.getAnswers().forEach((answer: Answer, index: number) => {
+			const answerHtml = createHtmlAnswer(
+				this,
+				Number(this.game.config.width) * 0.2 + 200 * index + 20,
+				Number(this.game.config.height) * 0.65,
+				150,
+				150,
+				answer.getId(),
+				this.language
+			)
+				.setDepth(1)
+				.setAlpha(0);
+
+			this.answersHtml.push(answerHtml);
+
+			const invisibleDiv = createInvisibleDiv(
+				this,
+				Number(this.game.config.width) * 0.2 + 200 * index + 20,
+				Number(this.game.config.height) * 0.65,
+				150,
+				150
+			).setDepth(3);
+
+			invisibleDiv.addListener("click");
+			invisibleDiv.on("click", () => {
+				console.log(this.question.getAnswers()[index]);
+				this.answerQuestion(this.question.getAnswers()[index]);
+			});
+
+			this.answersButton.push(invisibleDiv);
+
+			this.inputHtml.setAlpha(0);
+			this.enterButton.setAlpha(0);
+		});
+
+		this.answersHtml.forEach((answer) => answer.setAlpha(1));
+	}
+
+	private answerQuestion(answer?: Answer): void {
+		if (!answer) {
+			answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+		}
 		sceneEvents.emit(EventNames.answerQuestion, answer, this.targetLocation);
 	}
 
@@ -310,11 +371,15 @@ export default class QuestionScene extends Phaser.Scene {
 	private useCrystalBall(): void {
 		//TODO: Make constants of the types
 		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
-			try {
-				sceneEvents.emit(EventNames.useCrystalBall);
-				this.question.removeWrongAnswer();
-			} catch (error) {
-				console.log(error);
+			if (!this.question.areAllAnswersRight()) {
+				try {
+					sceneEvents.emit(EventNames.useCrystalBall, ItemType.CrystalBall);
+					this.question.removeWrongAnswer();
+					this.clearAnswers();
+					this.generateHtmlAnswers();
+				} catch (error) {
+					console.log(error);
+				}
 			}
 		} else {
 			alert("must be a multiple choice question");
@@ -322,39 +387,31 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private newQuestionFound(question: Question): void {
-		this.clearQuestionTextures();
-		this.destroyImages();
 		this.question = question;
-		this.getTexturesForQuestion();
-	}
-
-	private clearQuestionTextures(): void {
-		if (this.textures.exists(this.questionConstant)) this.textures.remove(this.questionConstant);
-		if (this.textures.exists(this.feedbackConstant)) this.textures.remove(this.feedbackConstant);
-	}
-
-	private destroyImages(): void {
-		this.questionImage.destroy();
-		this.feedbackImage.destroy();
-		this.questionImage = undefined;
-		this.feedbackImage = undefined;
+		this.getHtmlForQuestion();
 	}
 
 	private pauseGame() {
-		this.inputHtml.setActive(false).setVisible(false);
-		this.answersList.setActive(false).setVisible(false);
+		this.feedbackHtml.setAlpha(0).setActive(false).setVisible(false);
+		this.questionHtml.setAlpha(0).setActive(false).setVisible(false);
+		this.answersHtml.forEach((element) => element.setAlpha(0).setActive(false).setVisible(false));
+		this.answersButton.forEach((element) => element.setAlpha(0).setActive(false).setVisible(false));
 		this.input.enabled = false;
 	}
 
 	private resumeGame() {
-		this.inputHtml.setActive(true).setVisible(true);
-		this.answersList.setActive(true).setVisible(true);
+		const questionAlpha = this.showFeedbackTime ? 0 : 1;
+		const feedbackAlpha = this.showFeedbackTime ? 1 : 0;
+
+		this.feedbackHtml.setAlpha(feedbackAlpha).setVisible(this.showFeedbackTime).setActive(this.showFeedbackTime);
+		this.questionHtml.setAlpha(questionAlpha).setVisible(!this.showFeedbackTime).setActive(!this.showFeedbackTime);
+		this.answersHtml.forEach((element) => element.setAlpha(questionAlpha).setActive(!this.showFeedbackTime).setVisible(!this.showFeedbackTime));
+		this.answersButton.forEach((element) => element.setAlpha(questionAlpha).setActive(!this.showFeedbackTime).setVisible(!this.showFeedbackTime));
 		this.input.enabled = true;
 	}
 
 	private errorWindowClosed(isFromQuestionScene: boolean) {
 		this.inputHtml.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
-		this.answersList.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
 		this.input.enabled = isFromQuestionScene;
 	}
 

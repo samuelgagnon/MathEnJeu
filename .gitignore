@@ -1,2 +1,7 @@
-/questions_png
+/question_images
+/latex_files
+/question_html/feedback_html
+/question_html/questions_html
+/question_html/answers_html
+*.zip
 *.env

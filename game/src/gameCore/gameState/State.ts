@@ -1,5 +1,5 @@
-import User from "../../server/data/User";
 import gameFSM from "../../server/rooms/Room";
+import User from "../../server/rooms/User";
 
 export enum GameState {
 	PreGame = "PreGame",

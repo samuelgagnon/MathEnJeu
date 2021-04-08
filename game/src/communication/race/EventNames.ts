@@ -8,7 +8,7 @@ export const SERVER_EVENT_NAMES = {
 
 //Events the client controller is subscribed to
 export const CLIENT_EVENT_NAMES = {
-	GAME_START: "game-start",
+	GAME_CREATED: "game-created",
 	GAME_INITIALIZED: "game-initialized",
 	GAME_END: "game-end",
 	GAME_UPDATE: "game-update",
@@ -16,9 +16,4 @@ export const CLIENT_EVENT_NAMES = {
 	QUESTION_FOUND: "question-found",
 	QUESTION_FOUND_WITH_BOOK: "question-found-with-book",
 	ANSWER_CORRECTED: "answer-corrected",
-};
-
-export const WAITING_ROOM_EVENT_NAMES = {
-	CURRENT_USERS: "current-users",
-	SCENE_LOADED: "scene-loaded",
 };

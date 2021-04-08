@@ -1,5 +1,7 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
+import { ROOM_SELECTION_EVENT_NAMES } from "../../communication/roomSelection/EventNames";
 import RoomRepository from "../data/RoomRepository";
+import Room from "../rooms/Room";
 
 export default class RoomSelectionNamespace {
 	private io: SocketIOServer;
@@ -17,22 +19,27 @@ export default class RoomSelectionNamespace {
 
 	private handleSocketEvents(): void {
 		this.nsp.on("connection", (socket: Socket) => {
-			this.nsp.emit(
-				"room-update",
-				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
-			);
+			this.nsp.emit(ROOM_SELECTION_EVENT_NAMES.ROOM_UPDATE, this.getRoomsInfo());
 
 			this.sendRoomsToClient(socket);
+
+			socket.on(ROOM_SELECTION_EVENT_NAMES.UPDATE_REQUEST, () => {
+				socket.emit(ROOM_SELECTION_EVENT_NAMES.ROOM_UPDATE, this.getRoomsInfo());
+			});
 		});
 	}
 
 	private sendRoomsToClient(socket: Socket) {
 		setTimeout(() => {
-			socket.emit(
-				"room-update",
-				this.roomRepo.getAllRooms().map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`)
-			);
+			socket.emit(ROOM_SELECTION_EVENT_NAMES.ROOM_UPDATE, this.getRoomsInfo());
 			this.sendRoomsToClient(socket);
 		}, this.ROOM_UPDATE_TIME_INTERVAL);
+	}
+
+	private getRoomsInfo(): string[] {
+		return this.roomRepo
+			.getAllRooms()
+			.filter((room: Room) => !room.getIsPrivate())
+			.map((room) => `Id: ${room.getId()} - Currently in: ${room.getGameState()}`);
 	}
 }

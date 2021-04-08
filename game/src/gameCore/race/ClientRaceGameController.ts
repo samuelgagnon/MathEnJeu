@@ -1,4 +1,4 @@
-import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/DataInterfaces";
+import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
@@ -7,23 +7,26 @@ import { ClientGame } from "../Game";
 import RaceGrid, { PossiblePositions } from "./grid/RaceGrid";
 import { ItemType } from "./items/Item";
 import Player from "./player/Player";
+import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
 import { Answer } from "./question/Answer";
 import RaceGameController from "./RaceGameController";
 
 export default class ClientRaceGameController extends RaceGameController implements ClientGame {
 	private currentPlayerId: string;
 	private playerSocket: SocketIOClient.Socket;
+	private lastServerUpdateTimestamp: number = 0;
 	private readonly MAX_TIME_DIFFERENCE = 1500; //milliseconds
+	private readonly NO_MORE_SERVER_UPDATE_THRESHOLD = 1000;
 
 	constructor(
 		gameTime: number,
 		gameStartTimeStamp: number,
 		grid: RaceGrid,
-		players: Player[],
+		playerRepo: PlayerRepository,
 		currentPlayerId: string,
 		playerSocket: SocketIOClient.Socket
 	) {
-		super(gameTime, gameStartTimeStamp, grid, players);
+		super(gameTime, gameStartTimeStamp, grid, playerRepo);
 		this.currentPlayerId = currentPlayerId;
 		this.playerSocket = playerSocket;
 		this.handleSocketEvents();
@@ -38,7 +41,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public getPlayers(): Player[] {
-		return this.players;
+		return this.playerRepo.getAllPlayers();
 	}
 
 	public getGrid(): RaceGrid {
@@ -46,7 +49,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	}
 
 	public getCurrentPlayer(): Player {
-		return this.findPlayer(this.currentPlayerId);
+		return this.playerRepo.findPlayer(this.currentPlayerId);
 	}
 
 	public getCurrentPlayerSocket(): SocketIOClient.Socket {
@@ -81,13 +84,18 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		const lag = gameState.timeStamp - Clock.now();
 		//Ajusting client game time only if it has a difference of 1.5 seconds (1500 millisecondes)
 		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime + lag;
-		this.players.forEach((player: Player) => {
+		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			player.updateFromPlayerState(
 				gameState.players.find((playerState) => playerState.id === player.id),
 				lag
 			);
 		});
 		this.grid.updateFromItemStates(gameState.itemsState);
+		this.lastServerUpdateTimestamp = Clock.now();
+	}
+
+	public hasServerStoppedSendingUpdates() {
+		return Clock.now() - this.lastServerUpdateTimestamp > this.NO_MORE_SERVER_UPDATE_THRESHOLD;
 	}
 
 	public getPossibleCurrentPlayerMovement(position: Point): PossiblePositions[] {
@@ -101,7 +109,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		});
 
 		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
-			this.removePlayer(data.playerId);
+			this.playerRepo.removePlayer(data.playerId);
 		});
 	}
 
