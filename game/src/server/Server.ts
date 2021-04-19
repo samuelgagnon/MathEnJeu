@@ -211,26 +211,35 @@ export class Server {
 	}
 
 	private modifyHtml(html: string): string {
+		//Problem : In Pandoc, "\begin{wrapfigure}[lineheight]{position}{width} [...] \end{wrapfigure}" is replaced with "<div class="wrapfigure"><span>r</span>[0pt]<span>0pt</span> [...] </div>".
+		//Solution :
+		const WRAPFIG_MESSY_CONVERSION = "<span>r</span>[0pt]<span>0pt</span>";
+		html = html.replace(WRAPFIG_MESSY_CONVERSION, "");
+
 		const dom = new JSDOM(html);
 
 		//Add stylesheet reference
 		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css">`;
 
-		//Manage images link
+		//Problem : Some "img" tags are replaced with "embed" tags
+		//Solution :
 		dom.window.document.querySelectorAll("embed").forEach((element) => {
 			let image = dom.window.document.createElement("img");
 			image.src = element.src;
+			image.setAttribute("style", element.getAttribute("style"));
 			element.parentElement.replaceChild(image, element);
 		});
 
+		//Image source link has to be specified
 		dom.window.document.querySelectorAll("img").forEach((element) => {
-			element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+			if (!element.src.includes(`${process.env.SERVER_API_URL}/question-image/`)) {
+				element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+			}
 		});
 
 		//Problem : In Pandoc, blank spaces for answers ("___") are replaced with <u></u> (which shows nothing).
 		//Solution : Replace <u></u> with "___".
 		dom.window.document.querySelectorAll("u").forEach((element) => {
-			console.log(`inner html: ${element.innerHTML}`);
 			if (element.innerHTML === "") {
 				element.innerHTML = "___";
 			}
