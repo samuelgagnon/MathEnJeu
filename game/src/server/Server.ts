@@ -213,8 +213,10 @@ export class Server {
 	private modifyHtml(html: string): string {
 		const dom = new JSDOM(html);
 
+		//Add stylesheet reference
 		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css">`;
 
+		//Manage images link
 		dom.window.document.querySelectorAll("embed").forEach((element) => {
 			let image = dom.window.document.createElement("img");
 			image.src = element.src;
@@ -225,6 +227,8 @@ export class Server {
 			element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
 		});
 
+		//Problem : In Pandoc, blank spaces for answers ("___") are replaced with <u></u> (which shows nothing).
+		//Solution : Replace <u></u> with "___".
 		dom.window.document.querySelectorAll("u").forEach((element) => {
 			console.log(`inner html: ${element.innerHTML}`);
 			if (element.innerHTML === "") {
