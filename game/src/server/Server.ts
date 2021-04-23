@@ -6,6 +6,7 @@ import { JSDOM } from "jsdom";
 import path from "path";
 import "reflect-metadata";
 import ErrorReport from "../communication/ErrorReport";
+import { Question } from "../gameCore/race/question/Question";
 import QuestionRepository from "./data/QuestionRepository";
 import ReportedErrorRepository from "./data/ReportedErrorRepository";
 
@@ -67,6 +68,53 @@ export class Server {
 			const languageShortName = !!req.query.lg ? req.query.lg : "fr";
 
 			res.sendFile(path.join(__dirname, `assets/question_html/answers_html/answer_${answerId}_${languageShortName}.html`));
+		});
+
+		//DEBUG : The goal is to be able to check a whole question quickly
+		this.app.get("/question/:id", async (req, res) => {
+			try {
+				const questionId = req.params.id;
+				const languageShortName = !!req.query.lg ? req.query.lg : "fr";
+				const questionHtml = await fs.promises.readFile(
+					path.join(__dirname, `assets/question_html/questions_html/question_${questionId}_${languageShortName}.html`),
+					{
+						encoding: "utf-8",
+					}
+				);
+				const feedbackHtml = await fs.promises.readFile(
+					path.join(__dirname, `assets/question_html/feedback_html/feedback_${questionId}_${languageShortName}.html`),
+					{
+						encoding: "utf-8",
+					}
+				);
+
+				const question: Question = await this.questionRepo.getQuestionById(Number(questionId), languageShortName.toString());
+				let answersHtml: string[] = [];
+				let i = 0;
+				for (const answer of question.getAnswers()) {
+					const answerHtml = await fs.promises.readFile(
+						path.join(__dirname, `assets/question_html/answers_html/answer_${answer.getId()}_${languageShortName}.html`),
+						{
+							encoding: "utf-8",
+						}
+					);
+					answersHtml[i] = answerHtml;
+					i++;
+				}
+
+				let response: string = "";
+				response += `********** QUESTION (id=${questionId}, lg=${languageShortName}, type=${question.getAnswerType()})**********<br>${questionHtml}`;
+				i = 0;
+				for (const answer of question.getAnswers()) {
+					response += `<br><br>********** ANSWER #${i + 1} (id=${answer.getId()}, isRight=${answer.getIsRight()}) **********<br> ${answersHtml[i]}`;
+					i++;
+				}
+				response += `<br>********** FEEDBACK **********<br><br> ${feedbackHtml}`;
+				res.send(response);
+			} catch (error) {
+				console.log(error);
+				res.send(error);
+			}
 		});
 
 		this.app.post("/errorReport", jsonParser, (req, res) => {
@@ -213,8 +261,14 @@ export class Server {
 	private modifyHtml(html: string): string {
 		//Problem : In Pandoc, "\begin{wrapfigure}[lineheight]{position}{width} [...] \end{wrapfigure}" is replaced with "<div class="wrapfigure"><span>r</span>[0pt]<span>0pt</span> [...] </div>".
 		//Solution :
-		const WRAPFIG_MESSY_CONVERSION = "<span>r</span>[0pt]<span>0pt</span>";
-		html = html.replace(WRAPFIG_MESSY_CONVERSION, "");
+		const WRAPFIG_MESSY_CONVERSIONS = [
+			"<span>r</span>[0pt]<span>0pt</span>",
+			"<span>r</span>[0 pt]<span>0 pt</span>",
+			"<span>r</span>[0 pt]<span>0pt</span>",
+		];
+		WRAPFIG_MESSY_CONVERSIONS.forEach((WRAPFIG_MESSY_CONVERSION) => {
+			html = html.replace(WRAPFIG_MESSY_CONVERSION, "");
+		});
 
 		const dom = new JSDOM(html);
 
