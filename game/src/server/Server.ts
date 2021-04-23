@@ -251,6 +251,7 @@ export class Server {
 		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
 
 		for (const file of files) {
+			console.log(file);
 			const filePath = `${dirPath}/${directory}_html/${file}`;
 			const htmlToModify = await fs.promises.readFile(filePath, { encoding: "utf-8" });
 			const newHtml = this.modifyHtml(htmlToModify);
@@ -273,7 +274,7 @@ export class Server {
 		const dom = new JSDOM(html);
 
 		//Add stylesheet reference
-		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="${process.env.SERVER_API_URL}/question-style.css">`;
+		dom.window.document.head.innerHTML = `<link rel="stylesheet" href="../question-style.css">`;
 
 		//Problem : Some "img" tags are replaced with "embed" tags
 		//Solution :
@@ -286,8 +287,8 @@ export class Server {
 
 		//Image source link has to be specified
 		dom.window.document.querySelectorAll("img").forEach((element) => {
-			if (!element.src.includes(`${process.env.SERVER_API_URL}/question-image/`)) {
-				element.src = `${process.env.SERVER_API_URL}/question-image/${this.renameToSVGFile(element.src)}`;
+			if (!element.src.includes(`../question-image/`)) {
+				element.src = `../question-image/${this.renameToSVGFile(element.src)}`;
 			}
 		});
 
