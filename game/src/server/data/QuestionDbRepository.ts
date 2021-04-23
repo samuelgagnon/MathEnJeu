@@ -28,11 +28,22 @@ export default class QuestionDbRepository implements QuestionRepository {
 		return questionsId;
 	}
 
-	//TODO remove schoolGradeId (normally, we shouldn't have to use that parameter to get a question by ID)
-	async getQuestionById(questionId: number, languageShortName: string, schoolGradeId: number): Promise<GameQuestion> {
-		const queryString = `SELECT answer.answer_id as answerId, answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
-		question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName, 
-		question_level.value as difficulty
+	//To get the question's difficulty, you must specify the SchoolGradeId.
+	async getQuestionById(questionId: number, languageShortName: string, schoolGradeId?: number): Promise<GameQuestion> {
+		let querySelect: string;
+		let queryWhereFirstLine: string;
+		const isSchoolGradeDefined = !(schoolGradeId === undefined || schoolGradeId === null);
+		if (isSchoolGradeDefined) {
+			querySelect = `SELECT answer.answer_id as answerId, answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
+			question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName, 
+			question_level.value as difficulty`;
+			queryWhereFirstLine = `WHERE question_level.level_id = ${schoolGradeId} AND `;
+		} else {
+			querySelect = `SELECT DISTINCT answer.answer_id as answerId, answer.label as answerLabel, answer.is_right as answerIsRight, answer_type.tag as answerType, answer_info.answer_latex as answerString,
+			question_info.question_flash_file as questionFileName, question_info.feedback_flash_file as feedbackFileName`;
+			queryWhereFirstLine = `WHERE `;
+		}
+		const queryString = `${querySelect}
 			FROM question
             INNER JOIN answer
 			ON question.question_id=answer.question_id
@@ -43,8 +54,7 @@ export default class QuestionDbRepository implements QuestionRepository {
             INNER JOIN question_level
 			ON question.question_id=question_level.question_id,
 			answer_info
-			WHERE question_level.level_id = ${schoolGradeId}
-			AND question_info.language_id IN
+			${queryWhereFirstLine} question_info.language_id IN
 				(SELECT language_id
 				FROM \`language\`
 				WHERE \`language\`.short_name LIKE '${languageShortName}')
@@ -76,7 +86,7 @@ export default class QuestionDbRepository implements QuestionRepository {
 			gameAnswers,
 			rows[0].answerType,
 			schoolGradeId,
-			rows[0].difficulty,
+			isSchoolGradeDefined ? rows[0].difficulty : null,
 			rows[0].questionFileName,
 			rows[0].feedbackFileName
 		);
