@@ -251,6 +251,7 @@ export class Server {
 		const files = await fs.promises.readdir(`${dirPath}/${directory}_html`);
 
 		for (const file of files) {
+			console.log(file);
 			const filePath = `${dirPath}/${directory}_html/${file}`;
 			const htmlToModify = await fs.promises.readFile(filePath, { encoding: "utf-8" });
 			const newHtml = this.modifyHtml(htmlToModify);
