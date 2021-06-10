@@ -285,11 +285,20 @@ export class Server {
 			element.parentElement.replaceChild(image, element);
 		});
 
-		//Image source link has to be specified
 		dom.window.document.querySelectorAll("img").forEach((element) => {
+			//Image source link has to be specified
 			if (!element.src.includes(`../question-image/`)) {
 				element.src = `../question-image/${this.renameToSVGFile(element.src)}`;
 			}
+			//Problem : Pandoc convert \textwidth with % in CSS, but parent element isn't very clearly identified.
+			//Solution : We replace % with vw.
+			let imgStyle = element.getAttribute("style");
+			if (imgStyle !== null && imgStyle !== undefined && imgStyle.includes("width")) {
+				imgStyle = imgStyle.replace("%", "vw");
+			} else {
+				imgStyle = "width:90vw";
+			}
+			element.setAttribute("style", imgStyle);
 		});
 
 		//Problem : In Pandoc, blank spaces for answers ("___") are replaced with <u></u> (which shows nothing).
