@@ -226,10 +226,18 @@ export class Server {
 		const TABULAR_END_TAG = "\\end{tabular}";
 		const LATEX_FILE_HEADER = `\\documentclass{article}
 		\\usepackage[utf8]{inputenc}
-		\\usepackage{}
 		\\usepackage{wrapfig}
 		\\usepackage{multirow}
 		\\usepackage{tabularx}
+		\\usepackage{microtype}
+		\\usepackage{amsmath}
+		\\usepackage{amssymb}
+		\\usepackage{amsthm}
+		\\usepackage{graphicx}
+		\\usepackage{wasysym}
+		\\usepackage[french,english]{babel}
+		\\usepackage{cancel}
+		\\usepackage{xcolor}
 		
 		\\title{Table}
 		
