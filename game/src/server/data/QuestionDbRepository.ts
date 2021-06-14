@@ -113,4 +113,36 @@ export default class QuestionDbRepository implements QuestionRepository {
 
 		return rows;
 	}
+
+	//Getting questions,feedbacks and answers containing tabular environments is helpful when you want to get rid of them (by replacing them with SVG files for example).
+	async getAllTabulars(): Promise<any[]> {
+		const queryString = `(SELECT question_id as id, language_id as lg, 'question' as question_part, question_latex as latex
+		FROM question_info
+		WHERE question_latex LIKE "%\\\\begin{tabular}%"
+		AND question_latex LIKE "%\\\\end{tabular}%")
+		UNION
+		(SELECT question_id as id, language_id as lg, 'feedback' as question_part, feedback_latex as latex
+		FROM question_info
+		WHERE feedback_latex LIKE "%\\\\begin{tabular}%"
+		AND feedback_latex LIKE "%\\\\end{tabular}%")
+		UNION
+		(SELECT question_id as id, language_id as lg, 'answer' as question_part, answer_latex as latex
+		FROM answer_info
+		WHERE answer_latex LIKE "%\\\\begin{tabular}%"
+		AND answer_latex LIKE "%\\\\end{tabular}%")`;
+
+		const rows = await getConnection().query(queryString);
+
+		return rows;
+	}
+
+	async setLatex(questionPart: string, id: number, lg: number, latex: string): Promise<void> {
+		if (questionPart == "answer" || questionPart == "question" || questionPart == "feedback") {
+			const queryString = `UPDATE ${questionPart == "answer" ? "answer_info" : "question_info"} SET ${questionPart}_latex = "${latex}" WHERE ${
+				questionPart == "answer" ? "answer_id" : "question_id"
+			} = ${id} AND language_id = ${lg}`;
+
+			await getConnection().query(queryString);
+		}
+	}
 }

@@ -195,6 +195,93 @@ export class Server {
 				res.send(error);
 			}
 		});
+
+		this.app.get("/tabular-to-svg", async (req, res) => {
+			this.questionRepo
+				.getAllTabulars()
+				.then(async (rows: any[]) => {
+					for (const row of rows) {
+						await this.tabularsToSVGs(row);
+					}
+				})
+				.then((_) => {
+					console.log("done");
+					res.sendStatus(200);
+				})
+				.catch((err) => {
+					console.error(err);
+					res.sendStatus(err);
+				});
+		});
+	}
+
+	/** 
+	* For a given latex source, creates a latex file for every tabular environment in it. 
+	Also, replaces the latex source's tabular environments with latex images inserts.
+	Warning : You must convert the created latex files in SVG after executing this function.
+	For example, you could compile the files in PDF (e.g.:using pdflatex from MikTex) and then convert them SVG (e.g.:using inkscape CLI).
+	*/
+	private async tabularsToSVGs(row): Promise<void> {
+		const TABULAR_BEGIN_TAG = "\\begin{tabular}";
+		const TABULAR_END_TAG = "\\end{tabular}";
+		const LATEX_FILE_HEADER = `\\documentclass{article}
+		\\usepackage[utf8]{inputenc}
+		\\usepackage{wrapfig}
+		\\usepackage{multirow}
+		\\usepackage{tabularx}
+		\\usepackage{microtype}
+		\\usepackage{amsmath}
+		\\usepackage{amssymb}
+		\\usepackage{amsthm}
+		\\usepackage{graphicx}
+		\\usepackage{wasysym}
+		\\usepackage[french,english]{babel}
+		\\usepackage{cancel}
+		\\usepackage{xcolor}
+		
+		\\title{Table}
+		
+		\\author{MathEnJeu}
+		
+		\\begin{document}
+		\\thispagestyle{empty}
+		%--- Début du tabular ---
+		`;
+		const LATEX_FILE_FOOTER = `
+		%--- Fin du tabular ---
+		\\end{document}`;
+		let allTabularsConverted = false;
+		let latex: string = row.latex;
+		let tabularCounter = 0;
+
+		while (!allTabularsConverted) {
+			//Get tabular latex
+			const tabularBeginIndex = latex.indexOf(TABULAR_BEGIN_TAG, 0);
+			const tabularEndIndex = latex.indexOf(TABULAR_END_TAG, 0);
+			if (tabularBeginIndex >= 0 && tabularEndIndex >= 0) {
+				tabularCounter++;
+				const tabularLatex = latex.substring(tabularBeginIndex, tabularEndIndex + TABULAR_END_TAG.length);
+				const fileName = `${row.question_part}_${row.id}_${row.lg}_${tabularCounter}`;
+				const imgLatexInsert = `\\includegraphics*[width=0.35\\textwidth]{${fileName}}`;
+				console.log(fileName);
+
+				//Creates a complete latex file for the tabular
+				await fs.promises.writeFile(
+					path.join(__dirname, `assets/latex_files/tabular/${fileName}.tex`),
+					LATEX_FILE_HEADER + tabularLatex + LATEX_FILE_FOOTER
+				);
+
+				//Replaces the tabular environment in latex source
+				latex = latex.substring(0, tabularBeginIndex) + imgLatexInsert + latex.substring(tabularEndIndex + TABULAR_END_TAG.length);
+			}
+			//Looks for any remaining tabular environment
+			if (latex.indexOf(TABULAR_BEGIN_TAG, 0) < 0) {
+				allTabularsConverted = true;
+			}
+		}
+
+		//Updates the database with the new latex source
+		await this.questionRepo.setLatex(row.question_part, row.id, row.lg, latex.split("\\").join("\\\\"));
 	}
 
 	private renameToSVGFile(questionId: string) {
