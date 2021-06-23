@@ -55,14 +55,10 @@ export default class PreGame implements State {
 		 * but maybe have one single function startGame that implements that switch case and creates the game depending on gameOptions
 		 **/
 		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions) => {
-			if (this.context.areUsersReady()) {
-				let game: State;
-				//TODO: add verifications
-				game = this.startRaceGame(gameOptions);
-				this.context.transitionTo(game);
-			} else {
-				//TODO: notify host that not all users are ready to start
-			}
+			let game: State;
+			//TODO: add verifications
+			game = this.startRaceGame(gameOptions);
+			this.context.transitionTo(game);
 		});
 	}
 
