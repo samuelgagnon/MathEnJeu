@@ -1,11 +1,11 @@
 import PlayerState from "../../../communication/race/PlayerState";
-import { InfoForQuestion } from "../../../communication/race/QuestionDTO";
 import { Clock } from "../../clock/Clock";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
 import { Question } from "../question/Question";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
 import Inventory from "./Inventory";
+import { QuestionState } from "./playerStatus/QuestionState";
 import Status from "./playerStatus/Status";
 import { StatusType } from "./playerStatus/StatusType";
 
@@ -21,8 +21,8 @@ export default class Player {
 	private readonly MAX_MOVEMENT = 6;
 	private readonly MIN_MOVEMENT = 1;
 	protected readonly MOVE_PER_QUESTION = 1;
-	protected _isAnsweringQuestion: boolean = false; //value will be changed to true depending on its child class
-	private endOfPenaltyTimestamp: number = 0;
+	protected questionState: QuestionState = QuestionState.NoQuestionState; //value will be changed to true depending on its child class
+	protected endOfPenaltyTimestamp: number = 0;
 	private maxPossibleMoveDistance: number = 3;
 	private playerStatus: Status;
 	private name: string;
@@ -57,6 +57,7 @@ export default class Player {
 	public update(): void {
 		this.updatePosition();
 		this.playerStatus.update();
+		this.updateQuestionState();
 	}
 
 	public updateFromPlayerState(playerState: PlayerState, lag: number): void {
@@ -73,9 +74,18 @@ export default class Player {
 			startLocation: playerState.move.startLocation,
 			targetLocation: playerState.move.targetLocation,
 		});
+		this.questionState = playerState.questionState;
 	}
 
 	public getPlayerState(): PlayerState {
+		let answeringState: QuestionState;
+		if (this.isInPenaltyState()) {
+			answeringState = QuestionState.PenaltyState;
+		} else if (this.isWorkingOnQuestion()) {
+			answeringState = QuestionState.AnsweringState;
+		} else {
+			answeringState = QuestionState.NoQuestionState;
+		}
 		return {
 			id: this.id,
 			name: this.name,
@@ -83,6 +93,7 @@ export default class Player {
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
 			inventoryState: this.inventory.getInventoryState(),
+			questionState: answeringState,
 		};
 	}
 
@@ -182,19 +193,26 @@ export default class Player {
 		this.position = this.move.getCurrentPosition();
 	}
 
-	public isAnsweringQuestion(): boolean {
-		return this._isAnsweringQuestion;
+	public updateQuestionState(): void {
+		if (Clock.now() < this.endOfPenaltyTimestamp) {
+			this.questionState = QuestionState.PenaltyState;
+		}
+	}
+
+	//Working on a question includes answering it or looking at its feedback
+	public isWorkingOnQuestion(): boolean {
+		return this.questionState != QuestionState.NoQuestionState;
 	}
 
 	public promptQuestion(question?: Question) {
-		this._isAnsweringQuestion = true;
+		this.questionState = QuestionState.AnsweringState;
 	}
 
 	public useItemType(itemType: ItemType, target: Player): void {
 		const usedItem = this.inventory.getItem(itemType);
 
 		//if he's not anwsering a question and it's only usable during a question.
-		if (!this.isAnsweringQuestion() && usedItem.isForAnsweringQuestion) throw new Error(itemType); //TODO: create specific error type
+		if (!this.isWorkingOnQuestion() && usedItem.isForAnsweringQuestion) throw new Error(itemType); //TODO: create specific error type
 
 		usedItem.use(target, this);
 		this.inventory.removeItem(itemType);
@@ -203,11 +221,11 @@ export default class Player {
 	public answeredQuestion(isAnswerCorrect: boolean): void {
 		if (isAnswerCorrect) {
 			this.addToMoveDistance(this.MOVE_PER_QUESTION);
+			this.questionState = QuestionState.NoQuestionState;
 		} else {
 			this.givePenalty();
 			this.addToMoveDistance(-this.MOVE_PER_QUESTION);
 		}
-		this._isAnsweringQuestion = false;
 	}
 
 	private givePenalty(): void {
@@ -215,7 +233,7 @@ export default class Player {
 	}
 
 	public isInPenaltyState(): boolean {
-		return Clock.now() < this.endOfPenaltyTimestamp;
+		return this.questionState == QuestionState.PenaltyState;
 	}
 
 	public getEndOfPenaltyTimestamp(): number {

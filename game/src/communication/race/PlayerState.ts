@@ -1,3 +1,4 @@
+import { QuestionState } from "../../gameCore/race/player/playerStatus/QuestionState";
 import { StatusType } from "../../gameCore/race/player/playerStatus/StatusType";
 import MoveState from "./MoveState";
 
@@ -8,6 +9,7 @@ export default interface PlayerState {
 	move: MoveState;
 	statusState: StatusState;
 	inventoryState: InventoryState;
+	questionState: QuestionState;
 }
 
 export interface StatusState {

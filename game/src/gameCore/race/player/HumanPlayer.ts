@@ -4,6 +4,7 @@ import { Answer } from "../question/Answer";
 import { Question } from "../question/Question";
 import Inventory from "./Inventory";
 import Player from "./Player";
+import { QuestionState } from "./playerStatus/QuestionState";
 import Status from "./playerStatus/Status";
 
 export default class HumanPlayer extends Player {
@@ -35,7 +36,7 @@ export default class HumanPlayer extends Player {
 		};
 	}
 
-	public isAnsweringQuestion(): boolean {
+	public isWorkingOnQuestion(): boolean {
 		return this.activeQuestion !== undefined;
 	}
 
@@ -45,12 +46,22 @@ export default class HumanPlayer extends Player {
 		this.lastQuestionPromptTimestamp = Clock.now();
 	}
 
+	public updateQuestionState() {
+		if (Clock.now() < this.endOfPenaltyTimestamp) {
+			this.questionState = QuestionState.PenaltyState;
+		} else if (this.isWorkingOnQuestion()) {
+			super.questionState = QuestionState.AnsweringState;
+		} else {
+			super.questionState = QuestionState.NoQuestionState;
+		}
+	}
+
 	public getActiveQuestion(): Question {
 		return this.activeQuestion;
 	}
 
 	public getAnswerFromActiveQuestion(answerString: string): Answer {
-		if (this.isAnsweringQuestion()) {
+		if (this.isWorkingOnQuestion()) {
 			return this.activeQuestion.getAnswer(answerString);
 		}
 		return undefined;

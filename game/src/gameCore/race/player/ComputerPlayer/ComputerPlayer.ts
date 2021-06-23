@@ -5,6 +5,7 @@ import Move from "../../Move";
 import Inventory from "../Inventory";
 import Player from "../Player";
 import { TargetablePlayers } from "../playerRepository/PlayerRepository";
+import { QuestionState } from "../playerStatus/QuestionState";
 import Status from "../playerStatus/Status";
 import PathFinder from "./PathFinder";
 
@@ -64,14 +65,16 @@ export default class ComputerPlayer extends Player {
 				this.promptQuestion();
 				this.isReadyForNextAction = false;
 				this.setTimeForNextAction();
+				super.questionState = QuestionState.AnsweringState;
 				//ComputerPlayer always has the right answer. It just takes a random amount of time before it gives its answer.
-			} else if (this.isAnsweringQuestion()) {
+			} else if (this.isWorkingOnQuestion()) {
 				this.answeredQuestion(true);
 				this.moveTo(Clock.now(), this.getNextPosition());
+				super.questionState = QuestionState.NoQuestionState;
 			}
 		}
 
-		if (this.hasArrived() && !this.isAnsweringQuestion()) {
+		if (this.hasArrived() && !this.isWorkingOnQuestion()) {
 			this.isReadyForNextAction = true;
 		}
 	}
