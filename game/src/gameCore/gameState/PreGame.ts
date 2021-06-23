@@ -54,11 +54,13 @@ export default class PreGame implements State {
 		 * First idea was to just add un switch statement here depending on the mode and then add multiple "startTypeGame(gameOptions)",
 		 * but maybe have one single function startGame that implements that switch case and creates the game depending on gameOptions
 		 **/
-		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions) => {
-			let game: State;
-			//TODO: add verifications
-			game = this.startRaceGame(gameOptions);
-			this.context.transitionTo(game);
+		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions, playerId: string) => {
+			if (this.context.getHost().userId == playerId) {
+				let game: State;
+				//TODO: add verifications
+				game = this.startRaceGame(gameOptions);
+				this.context.transitionTo(game);
+			}
 		});
 	}
 

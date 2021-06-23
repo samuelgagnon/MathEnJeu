@@ -72,6 +72,10 @@ export default class Room {
 		return this.users.find((user) => user.userId == userId);
 	}
 
+	public getHost(): User {
+		return this.host;
+	}
+
 	public getRoomString(): string {
 		return this.roomString;
 	}

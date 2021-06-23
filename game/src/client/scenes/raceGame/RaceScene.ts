@@ -163,7 +163,7 @@ export default class RaceScene extends Phaser.Scene {
 							tileSprite.setTint(this.activeTileColor);
 
 							//TODO verify if has arrived logic should be moved to player
-							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().isAnsweringQuestion()) {
+							if (this.raceGame.getCurrentPlayer().getMove().getHasArrived() && !this.raceGame.getCurrentPlayer().isWorkingOnQuestion()) {
 								this.playerRequestMove(<Point>{ x: x, y: y });
 							}
 						}
@@ -207,7 +207,15 @@ export default class RaceScene extends Phaser.Scene {
 					characterSprite.sprite.setTint(0xff0000);
 					characterSprite.sprite.setInteractive();
 				} else {
-					characterSprite.sprite.clearTint();
+					if (player.isWorkingOnQuestion()) {
+						if (player.isInPenaltyState()) {
+							characterSprite.sprite.setTint(0xff00ff);
+						} else {
+							characterSprite.sprite.setTint(0x0000ff);
+						}
+					} else {
+						characterSprite.sprite.clearTint();
+					}
 					characterSprite.sprite.disableInteractive();
 				}
 				characterSprite.sprite.x = currentPosition.x;
@@ -293,7 +301,7 @@ export default class RaceScene extends Phaser.Scene {
 				//If a player gets affected by a banana or any other state change without moving
 				currentPlayer.getMaxMovementDistance() !== this.currentPlayerMovement &&
 				this.playerHasArrived(currentPosition) &&
-				!currentPlayer.isAnsweringQuestion()
+				!currentPlayer.isWorkingOnQuestion()
 			) {
 				this.currentPlayerMovement = currentPlayer.getMaxMovementDistance();
 				this.activateAccessiblePositions();

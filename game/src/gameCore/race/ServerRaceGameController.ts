@@ -267,7 +267,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					try {
 						const correctionStartTimestamp = Clock.now();
 						player = this.findHumanPlayer((<QuestionAnsweredEvent>inputData).playerId);
-						if (player.isAnsweringQuestion()) {
+						if (player.isWorkingOnQuestion()) {
 							const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
 							const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
 							const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
@@ -406,7 +406,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
 		const player = this.findHumanPlayer(moveRequestEvent.playerId);
-		if (!player.isAnsweringQuestion() && player.hasArrived()) {
+		if (!player.isWorkingOnQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
 			if (
 				possibleTargetLocations.some(
