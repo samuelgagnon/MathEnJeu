@@ -1,5 +1,6 @@
 import { InfoForQuestion } from "../../../communication/race/QuestionDTO";
 import { Clock } from "../../clock/Clock";
+import Character from "../character/Character";
 import { Answer } from "../question/Answer";
 import { Question } from "../question/Question";
 import Inventory from "./Inventory";
@@ -20,11 +21,12 @@ export default class HumanPlayer extends Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
+		character: Character,
 		schoolGrade: number,
 		language: string,
 		pointsCalculator: (moveDistance: number) => number
 	) {
-		super(id, startLocation, name, status, inventory, pointsCalculator);
+		super(id, startLocation, name, status, inventory, character, pointsCalculator);
 		this.schoolGrade = schoolGrade;
 		this.language = language;
 	}

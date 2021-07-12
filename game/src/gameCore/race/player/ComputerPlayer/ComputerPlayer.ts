@@ -1,5 +1,6 @@
 import randomNormal from "random-normal";
 import { Clock } from "../../../clock/Clock";
+import Character from "../../character/Character";
 import { ItemType } from "../../items/Item";
 import Move from "../../Move";
 import Inventory from "../Inventory";
@@ -32,13 +33,14 @@ export default class ComputerPlayer extends Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
+		character: Character,
 		gameStartTimestamp: number,
 		pathFinder: PathFinder,
 		checkpointPositions: Point[][],
 		targetablePlayers: TargetablePlayers,
 		pointsCalculator: (moveDistance: number) => number
 	) {
-		super(id, startLocation, name, status, inventory, pointsCalculator);
+		super(id, startLocation, name, status, inventory, character, pointsCalculator);
 		this.nextActionTimestamp = gameStartTimestamp;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;

@@ -1,5 +1,6 @@
 import PlayerState from "../../../communication/race/PlayerState";
 import { Clock } from "../../clock/Clock";
+import Character from "../character/Character";
 import Item, { ItemType } from "../items/Item";
 import Move from "../Move";
 import { Question } from "../question/Question";
@@ -31,6 +32,7 @@ export default class Player {
 	private move: Move;
 	private inventory: Inventory;
 	private lastValidCheckpoint: number = 0;
+	private character: Character;
 	public pointsCalculator: (moveDistance: number) => number;
 
 	constructor(
@@ -39,6 +41,7 @@ export default class Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
+		character: Character,
 		pointsCalculator: (moveDistance: number) => number
 	) {
 		this._id = id;
@@ -46,6 +49,7 @@ export default class Player {
 		this.move = new Move(Clock.now(), startLocation, startLocation);
 		this.name = name;
 		this.inventory = inventory;
+		this.character = character;
 		this.pointsCalculator = pointsCalculator;
 		this.transitionTo(status);
 	}
@@ -111,6 +115,10 @@ export default class Player {
 
 	public getInventory(): Inventory {
 		return this.inventory;
+	}
+
+	public getCharacter(): Character {
+		return this.character;
 	}
 
 	public getPoints(): number {
