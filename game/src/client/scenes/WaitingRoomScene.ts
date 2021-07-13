@@ -1,6 +1,6 @@
 import { GameCreatedEvent, GameEndEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
-import { PlayerEndState } from "../../communication/race/PlayerState";
+import { PlayerDTO } from "../../communication/race/PlayerDTO";
 import { GameOptions, HostChangeEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
@@ -124,9 +124,9 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 			let playerList = <HTMLInputElement>this.gameResultsHtml.getChildByID("playerList");
 
-			this.lastGameResults.playerEndStates.forEach((playerInfo: PlayerEndState) => {
+			this.lastGameResults.players.forEach((playerDTO: PlayerDTO) => {
 				var li = document.createElement("li");
-				li.appendChild(document.createTextNode(`Player: ${playerInfo.name} - ${playerInfo.points} pts`));
+				li.appendChild(document.createTextNode(`Player: ${playerDTO.name} - ${playerDTO.state.points} pts`));
 				playerList.appendChild(li);
 			});
 		}

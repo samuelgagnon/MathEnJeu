@@ -1,5 +1,5 @@
 import ItemState from "../../communication/race/ItemState";
-import PlayerState from "../../communication/race/PlayerState";
+import { PlayerDTO } from "../../communication/race/PlayerDTO";
 import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import User from "../../server/rooms/User";
 import ClientRaceGameController from "./ClientRaceGameController";
@@ -146,10 +146,10 @@ export default class RaceGameFactory {
 		);
 	}
 
-	public static createClientPlayers(playersState: PlayerState[]): PlayerRepository {
+	public static createClientPlayers(playersDTO: PlayerDTO[]): PlayerRepository {
 		let playerRepo: PlayerRepository = new PlayerInMemoryRepository();
-		playersState.forEach((playerState: PlayerState) => {
-			playerRepo.addPlayer(PlayerFactory.createFromPlayerState(playerState));
+		playersDTO.forEach((playerDTO: PlayerDTO) => {
+			playerRepo.addPlayer(PlayerFactory.createFromPlayerState(playerDTO));
 		});
 		return playerRepo;
 	}

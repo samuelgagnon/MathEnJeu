@@ -1,6 +1,5 @@
-import PlayerState from "../../../communication/race/PlayerState";
+import { PlayerDTO } from "../../../communication/race/PlayerDTO";
 import User from "../../../server/rooms/User";
-import Character from "../character/Character";
 import CharacterFactory from "../character/CharacterFactory";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
 import ComputerPlayer from "./ComputerPlayer/ComputerPlayer";
@@ -13,14 +12,14 @@ import Status from "./playerStatus/Status";
 import StatusFactory from "./playerStatus/StatusFactory";
 
 export default class PlayerFactory {
-	public static createHumanPlayer(user: User, startLocation: Point, status: Status, inventory: Inventory, character: Character): HumanPlayer {
+	public static createHumanPlayer(user: User, startLocation: Point, status: Status, inventory: Inventory): HumanPlayer {
 		return new HumanPlayer(
 			user.userId,
 			startLocation,
 			user.userInfo.name,
 			status,
 			inventory,
-			character,
+			user.character,
 			user.userInfo.schoolGrade,
 			user.userInfo.language,
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
@@ -53,13 +52,18 @@ export default class PlayerFactory {
 		);
 	}
 
-	public static createFromPlayerState(playerState: PlayerState): Player {
+	public static createFromPlayerState(playerDTO: PlayerDTO): Player {
 		return new Player(
-			playerState.id,
-			playerState.move.startLocation,
-			playerState.name,
-			StatusFactory.create(playerState.statusState.statusType, playerState.statusState.statusTimestamp),
-			new Inventory(playerState.inventoryState.bananaCount, playerState.inventoryState.bookCount, playerState.inventoryState.crystalBallCount),
+			playerDTO.state.playerId,
+			playerDTO.state.move.startLocation,
+			playerDTO.name,
+			StatusFactory.create(playerDTO.state.statusState.statusType, playerDTO.state.statusState.statusTimestamp),
+			new Inventory(
+				playerDTO.state.inventoryState.bananaCount,
+				playerDTO.state.inventoryState.bookCount,
+				playerDTO.state.inventoryState.crystalBallCount
+			),
+			playerDTO.character,
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
 		);
 	}

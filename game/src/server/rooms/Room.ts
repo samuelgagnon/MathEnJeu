@@ -4,6 +4,7 @@ import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
+import CharacterFactory from "../../gameCore/race/character/CharacterFactory";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
@@ -118,11 +119,13 @@ export default class Room {
 		}
 
 		if (this.getGameState() == GameState.PreGame) {
+			const newCharacter = CharacterFactory.createRandomCharacter();
 			const newUser: User = {
 				isReady: false,
 				userId: clientSocket.id,
 				userInfo: userInfo,
 				socket: clientSocket,
+				character: newCharacter,
 			};
 			if (!this.users.some((user) => user.userId == newUser.userId)) {
 				this.users.push(newUser);

@@ -1,3 +1,4 @@
+import { PlayerDTO } from "../../../communication/race/PlayerDTO";
 import PlayerState from "../../../communication/race/PlayerState";
 import { Clock } from "../../clock/Clock";
 import Character from "../character/Character";
@@ -81,6 +82,14 @@ export default class Player {
 		this.questionState = playerState.questionState;
 	}
 
+	public getPlayerDTO(): PlayerDTO {
+		return {
+			name: this.name,
+			character: this.character,
+			state: this.getPlayerState(),
+		};
+	}
+
 	public getPlayerState(): PlayerState {
 		let answeringState: QuestionState;
 		if (this.isInPenaltyState()) {
@@ -91,8 +100,7 @@ export default class Player {
 			answeringState = QuestionState.NoQuestionState;
 		}
 		return {
-			id: this.id,
-			name: this.name,
+			playerId: this.id,
 			points: this.points,
 			statusState: { statusType: this.playerStatus.getCurrentStatus(), statusTimestamp: this.playerStatus.getStartTimeStatus() },
 			move: this.move.getMoveState(),
