@@ -11,5 +11,5 @@ export default interface User {
 }
 
 export const UserToDTO = (user: User): UserDTO => {
-	return { userId: user.userId, userInfo: user.userInfo, isReady: user.isReady, character: user.character };
+	return { userId: user.userId, userInfo: user.userInfo, isReady: user.isReady, characterDTO: user.character.getCharacterDTO() };
 };

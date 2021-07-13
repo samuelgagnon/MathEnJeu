@@ -1,9 +1,10 @@
 import { GameCreatedEvent, GameEndEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import { PlayerDTO } from "../../communication/race/PlayerDTO";
-import { GameOptions, HostChangeEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
+import { GameOptions, HostChangeEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
+import CharacterDTO from "../../gameCore/race/character/CharacterDTO";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import RaceGameFactory from "../../gameCore/race/RaceGameFactory";
 import { CST } from "../CST";
@@ -34,6 +35,10 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private roomId: string = "Room id: ";
 	private kickButton: Phaser.GameObjects.Text;
 	private kickPlayerInput: Phaser.GameObjects.DOMElement;
+	private hexColorText: Phaser.GameObjects.Text;
+	private hexColorInput: Phaser.GameObjects.DOMElement;
+	private accessoryIdText: Phaser.GameObjects.Text;
+	private accessoryIdInput: Phaser.GameObjects.DOMElement;
 
 	constructor() {
 		super({ key: CST.SCENES.WAITING_ROOM });
@@ -84,6 +89,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 		this.usersListHtml = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.2).createFromCache(CST.HTML.USERS_LIST);
 		this.kickPlayerInput = this.add.dom(this.game.renderer.width * 0.23, this.game.renderer.height * 0.6).createFromCache(CST.HTML.PLAYER_KICK_INPUT);
+		this.hexColorInput = this.add.dom(this.game.renderer.width * 0.23, this.game.renderer.height * 0.56).createFromCache(CST.HTML.HEX_INPUT);
+		this.accessoryIdInput = this.add.dom(this.game.renderer.width * 0.23, this.game.renderer.height * 0.52).createFromCache(CST.HTML.ACCESSORY_ID);
 		this.gameOptions = this.add.dom(this.game.renderer.width * 0.3, this.game.renderer.height * 0.7).createFromCache(CST.HTML.GAME_OPTIONS);
 		this.roomSettings = this.add.dom(this.game.renderer.width * 0.67, this.game.renderer.height * 0.4).createFromCache(CST.HTML.ROOM_SETTINGS);
 
@@ -195,6 +202,22 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.KICK_PLAYER, (<HTMLInputElement>this.kickPlayerInput.getChildByID("playerField")).value);
 			});
 
+		this.hexColorText = this.add.text(this.game.renderer.width * 0.32, this.game.renderer.height * 0.54, "Hex", {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
+		this.accessoryIdText = this.add.text(this.game.renderer.width * 0.32, this.game.renderer.height * 0.5, "Acc", {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
 		this.startButton = this.add
 			.text(this.game.renderer.width * 0.55, this.game.renderer.height * 0.9, "Start Game", {
 				fontFamily: "Courier",
@@ -250,7 +273,12 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.on("pointerup", () => {
 				this.readyButton.clearTint();
-				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.READY);
+				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.READY, <ReadyEvent>{
+					characterDTO: <CharacterDTO>{
+						hexColor: (<HTMLInputElement>this.hexColorInput.getChildByID("hexinput")).value,
+						accessoryId: +(<HTMLInputElement>this.accessoryIdInput.getChildByID("accessoryidinput")).value,
+					},
+				});
 			});
 
 		this.quitButton = this.add
@@ -323,7 +351,9 @@ export default class WaitingRoomScene extends Phaser.Scene {
 		this.usersDTO.forEach((user) => {
 			var li = document.createElement("li");
 			const isReady = user.isReady ? "Ready" : "Not ready";
-			const displayedInfo = this.isHost ? `${user.userInfo.name} - ${user.userId} / ${isReady}` : `${user.userInfo.name} / ${isReady}`;
+			const displayedInfo = this.isHost
+				? `${user.userInfo.name} - HEX:${user.characterDTO.hexColor} - ACC:${user.characterDTO.accessoryId} / ${isReady}`
+				: `${user.userInfo.name} / ${isReady}`;
 			li.appendChild(document.createTextNode(displayedInfo));
 			usersList.appendChild(li);
 		});

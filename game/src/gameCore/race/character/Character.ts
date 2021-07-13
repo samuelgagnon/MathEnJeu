@@ -1,4 +1,5 @@
 import { isHexColor } from "../../../utils/Utils";
+import CharacterDTO from "./CharacterDTO";
 import { CHARACTER_CST } from "./CHARACTER_CST";
 
 export default class Character {
@@ -37,5 +38,14 @@ export default class Character {
 		if (this.isAccessoryIdValid(accessoryId)) {
 			this.accessoryId = accessoryId;
 		}
+	}
+
+	public getCharacterDTO(): CharacterDTO {
+		return { hexColor: this.hexColor, accessoryId: this.accessoryId };
+	}
+
+	public updateFromDTO(characterDTO: CharacterDTO) {
+		this.setAccessoryId(characterDTO.accessoryId);
+		this.setHexColor(characterDTO.hexColor);
 	}
 }

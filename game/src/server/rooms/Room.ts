@@ -1,5 +1,5 @@
 import { Namespace, Socket } from "socket.io";
-import { HostChangeEvent, JoinRoomAnswerEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
+import { HostChangeEvent, JoinRoomAnswerEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
@@ -210,8 +210,10 @@ export default class Room {
 			}
 		});
 
-		clientSocket.on(WAITING_ROOM_EVENT_NAMES.READY, () => {
-			this.toggleReadyState(userId);
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.READY, (readyEvent: ReadyEvent) => {
+			let user = this.users.find((user) => user.userId === userId);
+			user.isReady = !user.isReady;
+			user.character.updateFromDTO(readyEvent.characterDTO);
 			this.emitUsersInRoom();
 		});
 	}
@@ -236,10 +238,5 @@ export default class Room {
 		if (kickedUser === undefined) return;
 		this.removeUser(userId);
 		kickedUser.socket.emit(WAITING_ROOM_EVENT_NAMES.KICKED);
-	}
-
-	private toggleReadyState(userId: string): void {
-		let userToToggle = this.users.find((user) => user.userId === userId);
-		userToToggle.isReady = !userToToggle.isReady;
 	}
 }
