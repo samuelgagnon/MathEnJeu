@@ -1,6 +1,6 @@
 import { ItemType } from "../../gameCore/race/items/Item";
 import { AnswerDTO } from "./AnswerDTO";
-import PlayerState, { PlayerEndState } from "./PlayerState";
+import { PlayerDTO } from "./PlayerDTO";
 import { QuestionDTO } from "./QuestionDTO";
 import { StartingRaceGridInfo } from "./StartingGridInfo";
 
@@ -27,7 +27,7 @@ export interface GameCreatedEvent {
 	gameTime: number;
 	gameStartTimeStamp: number;
 	grid: StartingRaceGridInfo;
-	players: PlayerState[];
+	players: PlayerDTO[];
 	isSinglePlayer: boolean;
 }
 
@@ -36,7 +36,7 @@ export interface PlayerLeftEvent {
 }
 
 export interface GameEndEvent {
-	playerEndStates: PlayerEndState[];
+	players: PlayerDTO[];
 }
 
 //Maybe rework targetlocation to put it somewhere else ?

@@ -86,7 +86,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 		if (Math.abs(this.timeRemaining - gameState.remainingTime) > this.MAX_TIME_DIFFERENCE) this.timeRemaining = gameState.remainingTime + lag;
 		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			player.updateFromPlayerState(
-				gameState.players.find((playerState) => playerState.id === player.id),
+				gameState.players.find((playerState) => playerState.playerId === player.id),
 				lag
 			);
 		});

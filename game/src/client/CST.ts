@@ -36,11 +36,13 @@ export const CST = {
 		START_OPTIONS: "buttons/start_options_button.png",
 	},
 	HTML: {
+		ACCESSORY_ID: "accessoryIdInput.html",
 		ANSWERS_LIST: "answersList.html",
 		ANSWER_INPUT: "answerInput.html",
 		ERROR_REPORT: "errorReport.html",
 		GAME_RESULTS: "gameResults.html",
 		GAME_OPTIONS: "gameOptions.html",
+		HEX_INPUT: "hexInput.html",
 		ROOM_INPUT: "roomInput.html",
 		ROOMS_LIST: "roomsList.html",
 		USER_SETTINGS: "userSettings.html",

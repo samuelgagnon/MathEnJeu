@@ -13,7 +13,7 @@ import {
 	QuestionFoundFromBookEvent,
 } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
-import PlayerState, { PlayerEndState } from "../../communication/race/PlayerState";
+import { PlayerDTO } from "../../communication/race/PlayerDTO";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import UserInfo from "../../communication/user/UserInfo";
@@ -97,7 +97,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					finishLinePositions: this.grid.getFinishLinePositions(),
 					itemStates: this.grid.getItemsState(),
 				},
-				players: this.getPlayersState(),
+				players: this.getPlayersDTO(),
 				isSinglePlayer: this.isSinglePlayer,
 			});
 	}
@@ -125,13 +125,10 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	protected gameFinished(): void {
 		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.playerRepo.getAllPlayers().length, new Date());
-		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
-			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
-		});
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
-			.emit(CE.GAME_END, <GameEndEvent>{ playerEndStates: playerEndStates });
+			.emit(CE.GAME_END, <GameEndEvent>{ players: this.getPlayersDTO() });
 		this.removeAllUsersSocketEvents();
 		this.context.removeGameFromRepo(this);
 		this.context.transitionTo(PreGameFactory.createPreGame(this.context.getUsers()));
@@ -375,12 +372,12 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			.catch((error) => console.log(error));
 	}
 
-	private getPlayersState(): PlayerState[] {
-		let playersState: PlayerState[] = [];
+	private getPlayersDTO(): PlayerDTO[] {
+		let playersDTO: PlayerDTO[] = [];
 		this.playerRepo.getAllPlayers().forEach((player: Player) => {
-			playersState.push(player.getPlayerState());
+			playersDTO.push(player.getPlayerDTO());
 		});
-		return playersState;
+		return playersDTO;
 	}
 
 	protected handleItemCollisions(): void {

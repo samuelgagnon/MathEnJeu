@@ -1,3 +1,4 @@
+import CharacterDTO from "../../gameCore/race/character/CharacterDTO";
 import { UserDTO } from "../user/UserDTO";
 
 export interface RoomSettings {
@@ -22,6 +23,10 @@ export interface JoinRoomRequestEvent {
 
 export interface HostChangeEvent {
 	newHostName: string;
+}
+
+export interface ReadyEvent {
+	characterDTO: CharacterDTO;
 }
 
 //this includes the games options selected by the host
