@@ -1,10 +1,10 @@
+import CharacterDTO from "../../communication/race/CharacterDTO";
 import { GameCreatedEvent, GameEndEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import { PlayerDTO } from "../../communication/race/PlayerDTO";
 import { GameOptions, HostChangeEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
-import CharacterDTO from "../../gameCore/race/character/CharacterDTO";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import RaceGameFactory from "../../gameCore/race/RaceGameFactory";
 import { CST } from "../CST";

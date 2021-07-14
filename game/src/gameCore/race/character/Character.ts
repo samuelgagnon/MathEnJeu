@@ -1,5 +1,5 @@
+import CharacterDTO from "../../../communication/race/CharacterDTO";
 import { isHexColor } from "../../../utils/Utils";
-import CharacterDTO from "./CharacterDTO";
 import { CHARACTER_CST } from "./CHARACTER_CST";
 
 export default class Character {

@@ -52,7 +52,7 @@ export default class PlayerFactory {
 		);
 	}
 
-	public static createFromPlayerState(playerDTO: PlayerDTO): Player {
+	public static createFromPlayerDTO(playerDTO: PlayerDTO): Player {
 		return new Player(
 			playerDTO.state.playerId,
 			playerDTO.state.move.startLocation,

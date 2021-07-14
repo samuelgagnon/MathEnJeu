@@ -1,4 +1,4 @@
-import CharacterDTO from "../../gameCore/race/character/CharacterDTO";
+import CharacterDTO from "../race/CharacterDTO";
 import { UserDTO } from "../user/UserDTO";
 
 export interface RoomSettings {

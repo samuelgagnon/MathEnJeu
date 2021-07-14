@@ -149,7 +149,7 @@ export default class RaceGameFactory {
 	public static createClientPlayers(playersDTO: PlayerDTO[]): PlayerRepository {
 		let playerRepo: PlayerRepository = new PlayerInMemoryRepository();
 		playersDTO.forEach((playerDTO: PlayerDTO) => {
-			playerRepo.addPlayer(PlayerFactory.createFromPlayerState(playerDTO));
+			playerRepo.addPlayer(PlayerFactory.createFromPlayerDTO(playerDTO));
 		});
 		return playerRepo;
 	}
