@@ -1,4 +1,4 @@
-import { BookUsedEvent, ItemUsedEvent, MoveRequestEvent, PlayerLeftEvent, QuestionAnsweredEvent } from "../../communication/race/EventInterfaces";
+import { AnswerQuestionEvent, MoveRequestEvent, PlayerLeftEvent, UseItemEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { getObjectValues } from "../../utils/Utils";
@@ -59,7 +59,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 	public itemUsed(itemType: ItemType, targetPlayerId?: string) {
 		if (!targetPlayerId) targetPlayerId = this.currentPlayerId;
 		super.itemUsed(itemType, targetPlayerId, this.currentPlayerId);
-		this.playerSocket.emit(SE.ITEM_USED, <ItemUsedEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
+		this.playerSocket.emit(SE.USE_ITEM, <UseItemEvent>{ itemType, targetPlayerId, fromPlayerId: this.currentPlayerId });
 	}
 
 	public playerMoveRequest(targetLocation: Point): void {
@@ -71,7 +71,7 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 	public clientPlayerAnswersQuestion(answer: Answer, targetLocation: Point): void {
 		const answerTimestamp = Clock.now();
-		this.playerSocket.emit(SE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
+		this.playerSocket.emit(SE.ANSWER_QUESTION, <AnswerQuestionEvent>{
 			playerId: this.currentPlayerId,
 			clientTimestamp: Clock.now(),
 			answerTimestamp: answerTimestamp,
@@ -110,14 +110,6 @@ export default class ClientRaceGameController extends RaceGameController impleme
 
 		this.playerSocket.on(CE.PLAYER_LEFT, (data: PlayerLeftEvent) => {
 			this.playerRepo.removePlayer(data.playerId);
-		});
-	}
-
-	public bookUsed(questionDifficulty: number, targetLocation: Point): void {
-		this.playerSocket.emit(SE.BOOK_USED, <BookUsedEvent>{
-			playerId: this.currentPlayerId,
-			targetLocation: targetLocation,
-			questionDifficulty: questionDifficulty,
 		});
 	}
 

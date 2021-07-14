@@ -1,8 +1,9 @@
 import { Pinch } from "phaser3-rex-plugins/plugins/gestures.js";
 import {
-	AnswerCorrectedEvent,
 	GameEndEvent,
+	ItemUsedEvent,
 	PlayerLeftEvent,
+	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
 } from "../../../communication/race/EventInterfaces";
@@ -20,6 +21,7 @@ import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
 import { CST } from "../../CST";
 import { getUserInfo, updateUserHighScore } from "../../services/UserInformationService";
+import { LapCompletedEvent } from "./../../../communication/race/EventInterfaces";
 import { LocalizedString } from "./../../Localization";
 import { BackgroundSceneData } from "./BackgroundScene";
 import { QuestionSceneData } from "./QuestionScene";
@@ -121,7 +123,7 @@ export default class RaceScene extends Phaser.Scene {
 		subscribeToEvent(EventNames.quitGame, this.quitGame, this);
 		subscribeToEvent(EventNames.followPlayerToggle, this.handleFollowPlayerToggle, this);
 		subscribeToEvent(EventNames.throwingBananaToggle, this.handleThrowingBananaToogle, this);
-		subscribeToEvent(EventNames.useBook, this.useBook, this);
+		subscribeToEvent(EventNames.useBook, this.useItem, this);
 		subscribeToEvent(EventNames.useCrystalBall, this.useItem, this);
 		subscribeToEvent(EventNames.answerQuestion, this.answerQuestion, this);
 		subscribeToEvent(EventNames.zoomIn, this.zoomIn, this);
@@ -322,6 +324,11 @@ export default class RaceScene extends Phaser.Scene {
 	useItem(itemType: ItemType, targetPlayerId?: string): void {
 		try {
 			this.raceGame.itemUsed(itemType, targetPlayerId);
+			if (itemType == ItemType.Book) {
+				this.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
+					sceneEvents.emit(EventNames.newQuestionFound, data);
+				});
+			}
 		} catch (e) {
 			sceneEvents.emit(EventNames.error, e);
 			console.log(e);
@@ -371,9 +378,24 @@ export default class RaceScene extends Phaser.Scene {
 			this.createQuestionWindow(data.targetLocation, questionFound);
 		});
 
-		socket.on(CE.ANSWER_CORRECTED, (data: AnswerCorrectedEvent) => {
-			this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
-			sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
+		socket.on(CE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
+			if (data.playerId == this.raceGame.getCurrentPlayer().getId()) {
+				this.questionCorrected(data.answerIsRight, data.correctionTimestamp);
+				sceneEvents.emit(EventNames.questionCorrected, data.answerIsRight);
+			}
+			if (data.answerIsRight) {
+				console.log(this.raceGame.getCurrentPlayer().getId() + " correctly answered a question.");
+			} else {
+				console.log(this.raceGame.getCurrentPlayer().getId() + " failed a question.");
+			}
+		});
+
+		socket.on(CE.LAP_COMPLETED, (data: LapCompletedEvent) => {
+			console.log(data.playerId + " completed a lap.");
+		});
+
+		socket.on(CE.ITEM_USED, (data: ItemUsedEvent) => {
+			console.log(data.fromPlayerId + " used " + data.itemType + " on " + data.targetPlayerId);
 		});
 
 		socket.on("connect_error", (error) => {
@@ -506,14 +528,6 @@ export default class RaceScene extends Phaser.Scene {
 
 	private handleThrowingBananaToogle(isThrowingBanana: boolean) {
 		this.isThrowingBanana = isThrowingBanana;
-	}
-
-	private useBook(questionDifficulty: number, targetLocation: Point): void {
-		this.useItem(ItemType.Book);
-		this.raceGame.bookUsed(questionDifficulty, targetLocation);
-		this.raceGame.getCurrentPlayerSocket().once(CE.QUESTION_FOUND_WITH_BOOK, (data: QuestionFoundFromBookEvent) => {
-			sceneEvents.emit(EventNames.newQuestionFound, data);
-		});
 	}
 
 	private draggableCameraControls(): void {

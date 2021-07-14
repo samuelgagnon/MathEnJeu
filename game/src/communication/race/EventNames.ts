@@ -1,9 +1,9 @@
 //Events the server controller is subscribed to
 export const SERVER_EVENT_NAMES = {
 	MOVE_REQUEST: "move-request",
-	QUESTION_ANSWERED: "question-answered",
-	ITEM_USED: "item-used",
-	BOOK_USED: "book-used", //we may have to rethink how items are used for this specific case
+	ANSWER_QUESTION: "answer-question",
+	USE_ITEM: "use-item",
+	USE_BOOK: "use-book", //we may have to rethink how items are used for this specific case
 };
 
 //Events the client controller is subscribed to
@@ -15,5 +15,7 @@ export const CLIENT_EVENT_NAMES = {
 	PLAYER_LEFT: "player-left",
 	QUESTION_FOUND: "question-found",
 	QUESTION_FOUND_WITH_BOOK: "question-found-with-book",
-	ANSWER_CORRECTED: "answer-corrected",
+	QUESTION_ANSWERED: "question-answered",
+	LAP_COMPLETED: "lap-completed",
+	ITEM_USED: "item-used",
 };

@@ -184,11 +184,13 @@ export default class Player {
 		if (Math.abs(checkpointGroup - this.lastValidCheckpoint) == 1) this.lastValidCheckpoint = checkpointGroup;
 	}
 
-	public passingByFinishLine(): void {
-		if (this.lastValidCheckpoint == RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+	public passingByFinishLine(): boolean {
+		const isLapCompleted = this.lastValidCheckpoint == RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS;
+		if (isLapCompleted) {
 			this.addPoints(RACE_PARAMETERS.CIRCUIT.POINTS_FOR_LAP);
 		}
 		this.lastValidCheckpoint = 0;
+		return isLapCompleted;
 	}
 
 	//transitioningStatus parameter needs to be passed only when transitionning into another state.

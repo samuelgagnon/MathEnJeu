@@ -89,8 +89,12 @@ export default abstract class RaceGameController {
 			if (playerTile.checkpointGroup !== undefined) {
 				player.passingByCheckpoint(playerTile.checkpointGroup);
 			} else if (playerTile.isFinishLine) {
-				player.passingByFinishLine();
+				this.playerPassingByFinishLine(player);
 			}
 		});
+	}
+
+	protected playerPassingByFinishLine(player: Player): boolean {
+		return player.passingByFinishLine();
 	}
 }
