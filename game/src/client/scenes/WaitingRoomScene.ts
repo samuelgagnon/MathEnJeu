@@ -352,8 +352,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			var li = document.createElement("li");
 			const isReady = user.isReady ? "Ready" : "Not ready";
 			const displayedInfo = this.isHost
-				? `${user.userInfo.name} - HEX:${user.characterDTO.hexColor} - ACC:${user.characterDTO.accessoryId} / ${isReady}`
-				: `${user.userInfo.name} / ${isReady}`;
+				? `${user.userInfo.name} - HEX:${user.characterDTO.hexColor} - ACC:${user.characterDTO.accessoryId} - ID:${user.userId} / ${isReady}`
+				: `${user.userInfo.name} - HEX:${user.characterDTO.hexColor} - ACC:${user.characterDTO.accessoryId}/ ${isReady}`;
 			li.appendChild(document.createTextNode(displayedInfo));
 			usersList.appendChild(li);
 		});

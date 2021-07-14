@@ -213,7 +213,9 @@ export default class Room {
 		clientSocket.on(WAITING_ROOM_EVENT_NAMES.READY, (readyEvent: ReadyEvent) => {
 			let user = this.users.find((user) => user.userId === userId);
 			user.isReady = !user.isReady;
-			user.character.updateFromDTO(readyEvent.characterDTO);
+			if (user.isReady) {
+				user.character.updateFromDTO(readyEvent.characterDTO);
+			}
 			this.emitUsersInRoom();
 		});
 	}
