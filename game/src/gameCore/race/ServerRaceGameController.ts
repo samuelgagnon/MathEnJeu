@@ -27,7 +27,7 @@ import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
 import { ItemUsedEvent } from "./../../communication/race/EventInterfaces";
 import RaceGrid from "./grid/RaceGrid";
-import { ItemType } from "./items/Item";
+import Item, { ItemType } from "./items/Item";
 import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
 import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
@@ -370,9 +370,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	protected handleItemCollisions(): void {
 		this.playerRepo.getAllPlayers().forEach((player) => {
-			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
-			if (itemPickedUp) {
+			const pickedUpItem: Item = this.grid.handleItemCollision(player);
+			if (pickedUpItem != null) {
 				this.itemPickUpTimestamps.push(Clock.now());
+				if (pickedUpItem.type == ItemType.Brainiac) {
+					this.context
+						.getNamespace()
+						.to(this.context.getRoomString())
+						.emit(CE.ITEM_USED, <ItemUsedEvent>{
+							itemType: pickedUpItem.type,
+							targetPlayerId: player.getId(),
+							fromPlayerId: player.getId(),
+						});
+				}
 			}
 		});
 	}
