@@ -6,7 +6,8 @@ import { StartingRaceGridInfo } from "./StartingGridInfo";
 
 //This file contains interfaces to type events that happen between the client and the server for RaceGame.
 
-export interface ItemUsedEvent {
+//Event interfaces sent from client to server
+export interface UseItemEvent {
 	itemType: ItemType;
 	targetPlayerId: string;
 	fromPlayerId?: string;
@@ -17,12 +18,19 @@ export interface MoveRequestEvent {
 	targetLocation: Point;
 }
 
-export interface BookUsedEvent {
+export interface UseBookEvent {
 	playerId: string;
-	targetLocation: Point;
-	questionDifficulty: number;
 }
 
+export interface AnswerQuestionEvent {
+	playerId: string;
+	clientTimestamp: number;
+	answerTimestamp: number;
+	targetLocation: Point;
+	answer: AnswerDTO;
+}
+
+//Event interfaces sent from server to client(s)
 export interface GameCreatedEvent {
 	gameTime: number;
 	gameStartTimeStamp: number;
@@ -49,16 +57,19 @@ export interface QuestionFoundFromBookEvent {
 	questionDTO: QuestionDTO;
 }
 
-export interface AnswerCorrectedEvent {
+export interface QuestionAnsweredEvent {
+	playerId: string;
 	answerIsRight: boolean;
 	correctionTimestamp: number;
 	targetLocation: Point;
 }
 
-export interface QuestionAnsweredEvent {
+export interface LapCompletedEvent {
 	playerId: string;
-	clientTimestamp: number;
-	answerTimestamp: number;
-	targetLocation: Point;
-	answer: AnswerDTO;
+}
+
+export interface ItemUsedEvent {
+	itemType: ItemType;
+	targetPlayerId: string;
+	fromPlayerId?: string;
 }

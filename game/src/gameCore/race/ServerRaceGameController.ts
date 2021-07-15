@@ -1,16 +1,16 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
-	AnswerCorrectedEvent,
-	BookUsedEvent,
+	AnswerQuestionEvent,
 	GameCreatedEvent,
 	GameEndEvent,
-	ItemUsedEvent,
+	LapCompletedEvent,
 	MoveRequestEvent,
 	PlayerLeftEvent,
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
+	UseItemEvent,
 } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
 import { PlayerDTO } from "../../communication/race/PlayerDTO";
@@ -25,7 +25,9 @@ import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
+import { ItemUsedEvent } from "./../../communication/race/EventInterfaces";
 import RaceGrid from "./grid/RaceGrid";
+import Item, { ItemType } from "./items/Item";
 import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
 import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
@@ -152,8 +154,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		socket.on(SE.ITEM_USED, (data: ItemUsedEvent) => {
-			const newInput: BufferedInput = { eventType: SE.ITEM_USED, data: data };
+		socket.on(SE.USE_ITEM, (data: UseItemEvent) => {
+			const newInput: BufferedInput = { eventType: SE.USE_ITEM, data: data };
 			this.inputBuffer.push(newInput);
 		});
 
@@ -165,21 +167,16 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			}
 		});
 
-		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
+		socket.on(SE.ANSWER_QUESTION, (data: AnswerQuestionEvent) => {
 			const lag = data.clientTimestamp - Clock.now();
-			const newData: QuestionAnsweredEvent = {
+			const newData: AnswerQuestionEvent = {
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
 				answerTimestamp: data.answerTimestamp + lag,
 				targetLocation: data.targetLocation,
 				answer: data.answer,
 			};
-			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: newData };
-			this.inputBuffer.push(newInput);
-		});
-
-		socket.on(SE.BOOK_USED, (data: BookUsedEvent) => {
-			const newInput: BufferedInput = { eventType: SE.BOOK_USED, data: data };
+			const newInput: BufferedInput = { eventType: SE.ANSWER_QUESTION, data: newData };
 			this.inputBuffer.push(newInput);
 		});
 	}
@@ -215,9 +212,20 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			let inputData: any = input.data;
 			let player: HumanPlayer;
 			switch (input.eventType) {
-				case SE.ITEM_USED:
+				case SE.USE_ITEM:
 					try {
-						this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+						this.itemUsed((<UseItemEvent>inputData).itemType, (<UseItemEvent>inputData).targetPlayerId, (<UseItemEvent>inputData).fromPlayerId);
+						if ((<UseItemEvent>inputData).itemType == ItemType.Book) {
+							this.useBook((<UseItemEvent>inputData).targetPlayerId);
+						}
+						this.context
+							.getNamespace()
+							.to(this.context.getRoomString())
+							.emit(CE.ITEM_USED, <ItemUsedEvent>{
+								itemType: (<UseItemEvent>inputData).itemType,
+								targetPlayerId: (<UseItemEvent>inputData).targetPlayerId,
+								fromPlayerId: (<UseItemEvent>inputData).fromPlayerId,
+							});
 					} catch (error) {
 						console.log(error);
 					}
@@ -239,36 +247,15 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					}
 					break;
 
-				case SE.BOOK_USED:
-					try {
-						player = this.findHumanPlayer((<BookUsedEvent>inputData).playerId);
-						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
-						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
-						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
-							(question) => {
-								player.promptQuestion(question);
-								this.context
-									.getNamespace()
-									.to(player.id)
-									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
-										questionDTO: question.getDTO(),
-									});
-							}
-						);
-					} catch (err) {
-						console.log(err);
-					}
-					break;
-
-				case SE.QUESTION_ANSWERED:
+				case SE.ANSWER_QUESTION:
 					try {
 						const correctionStartTimestamp = Clock.now();
-						player = this.findHumanPlayer((<QuestionAnsweredEvent>inputData).playerId);
+						player = this.findHumanPlayer((<AnswerQuestionEvent>inputData).playerId);
 						if (player.isWorkingOnQuestion()) {
-							const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
-							const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
-							const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
-							const clientAnswerId = (<QuestionAnsweredEvent>inputData).answer.id;
+							const answerTimestamp = (<AnswerQuestionEvent>inputData).answerTimestamp;
+							const userInfo: UserInfo = this.context.getUserById((<AnswerQuestionEvent>inputData).playerId).userInfo;
+							const clientAnswerLabel = (<AnswerQuestionEvent>inputData).answer.label;
+							const clientAnswerId = (<AnswerQuestionEvent>inputData).answer.id;
 							const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswerLabel);
 							let answerIsRight = false;
 							if (correspondingAnswer !== undefined) {
@@ -281,17 +268,18 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 							super.playerAnsweredQuestion(
 								answerIsRight,
-								(<QuestionAnsweredEvent>inputData).targetLocation,
-								(<QuestionAnsweredEvent>inputData).playerId,
+								(<AnswerQuestionEvent>inputData).targetLocation,
+								(<AnswerQuestionEvent>inputData).playerId,
 								moveTimestamp
 							);
-							//Send answer correction to client
+							//Send answer correction to clients
 							this.context
 								.getNamespace()
-								.to(player.id)
-								.emit(CE.ANSWER_CORRECTED, <AnswerCorrectedEvent>{
+								.to(this.context.getRoomString())
+								.emit(CE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
+									playerId: player.id,
 									answerIsRight: answerIsRight,
-									targetLocation: (<QuestionAnsweredEvent>inputData).targetLocation,
+									targetLocation: (<AnswerQuestionEvent>inputData).targetLocation,
 									correctionTimestamp: moveTimestamp,
 								});
 
@@ -382,9 +370,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	protected handleItemCollisions(): void {
 		this.playerRepo.getAllPlayers().forEach((player) => {
-			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
-			if (itemPickedUp) {
+			const pickedUpItem: Item = this.grid.handleItemCollision(player);
+			if (pickedUpItem != null) {
 				this.itemPickUpTimestamps.push(Clock.now());
+				if (pickedUpItem.type == ItemType.Brainiac) {
+					this.context
+						.getNamespace()
+						.to(this.context.getRoomString())
+						.emit(CE.ITEM_USED, <ItemUsedEvent>{
+							itemType: pickedUpItem.type,
+							targetPlayerId: player.getId(),
+							fromPlayerId: player.getId(),
+						});
+				}
 			}
 		});
 	}
@@ -416,5 +414,37 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			}
 		}
 		return false;
+	}
+
+	protected playerPassingByFinishLine(player: Player): boolean {
+		const isLapCompleted = super.playerPassingByFinishLine(player);
+		if (isLapCompleted) {
+			this.context
+				.getNamespace()
+				.to(this.context.getRoomString())
+				.emit(CE.LAP_COMPLETED, <LapCompletedEvent>{ playerId: player.getId() });
+		}
+		return isLapCompleted;
+	}
+
+	private useBook(playerId: string): void {
+		try {
+			let player = this.findHumanPlayer(playerId);
+			let newDifficulty = player.getActiveQuestion().getDifficulty() - 1;
+			if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
+			this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
+				(question) => {
+					player.promptQuestion(question);
+					this.context
+						.getNamespace()
+						.to(player.id)
+						.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+							questionDTO: question.getDTO(),
+						});
+				}
+			);
+		} catch (err) {
+			console.log(err);
+		}
 	}
 }

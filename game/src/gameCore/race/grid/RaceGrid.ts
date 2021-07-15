@@ -1,6 +1,7 @@
 import ItemState from "../../../communication/race/ItemState";
 import ItemFactory from "../items/ItemFactory";
 import Player from "../player/Player";
+import Item from "./../items/Item";
 import Tile from "./Tile";
 
 export default class RaceGrid {
@@ -163,17 +164,17 @@ export default class RaceGrid {
 		});
 	}
 
-	public handleItemCollision(player: Player): boolean {
-		let itemPickedUp: boolean = false;
+	public handleItemCollision(player: Player): Item {
+		let pickedUpItem: Item = null;
 		if (player.hasArrived()) {
 			const position = player.getPosition();
-			itemPickedUp = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
+			pickedUpItem = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
 
-			if (itemPickedUp) {
+			if (pickedUpItem != null) {
 				this.updateItemsStateList(position);
 			}
 		}
-		return itemPickedUp;
+		return pickedUpItem;
 	}
 
 	public generateNewItem(playerPositions: Point[], isSinglePlayer: boolean) {

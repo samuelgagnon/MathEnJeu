@@ -161,7 +161,7 @@ export default class QuestionScene extends Phaser.Scene {
 			})
 			.on("pointerup", () => {
 				this.bookIcon.clearTint();
-				sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
+				sceneEvents.emit(EventNames.useBook, ItemType.Book);
 			});
 
 		this.crystalBallIcon = this.add

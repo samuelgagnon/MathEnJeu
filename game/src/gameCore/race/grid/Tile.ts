@@ -34,13 +34,14 @@ export default class Tile {
 		this.item = undefined;
 	}
 
-	public playerPickUpItem(player: Player): boolean {
+	public playerPickUpItem(player: Player): Item {
 		if (this.item) {
+			const pickedUpItem = this.item;
 			this.item.onPickUp(player);
 			this.item = undefined;
-			return true;
+			return pickedUpItem;
 		} else {
-			return false;
+			return null;
 		}
 	}
 
