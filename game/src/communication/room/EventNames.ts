@@ -8,9 +8,19 @@ export const ROOM_EVENT_NAMES = {
 };
 
 export const WAITING_ROOM_EVENT_NAMES = {
-	ROOM_INFO: "room-info",
-	SCENE_LOADED: "scene-loaded",
-	KICK_PLAYER: "kick-player",
-	KICKED: "kicked",
-	READY: "ready",
+	//Events the client controller is subscribed to
+	CLIENT_EVENT: {
+		ROOM_INFO: "room-info",
+		GAME_INITIALIZED: "game-initialized",
+		GAME_INITIALIZATION_CANCELED: "game-initialization-canceled",
+		KICKED: "kicked",
+	},
+	//Events the server controller is subscribed to
+	SERVER_EVENT: {
+		INITIALIZE_GAME: "initialize-game",
+		CANCEL_GAME_INITIALIZATION: "cancel-game-initialization",
+		SCENE_LOADED: "scene-loaded",
+		KICK_PLAYER: "kick-player",
+		READY: "ready",
+	},
 };

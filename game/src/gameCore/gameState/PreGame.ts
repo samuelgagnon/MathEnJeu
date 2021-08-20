@@ -1,14 +1,19 @@
 import { Socket } from "socket.io";
+import { InitializeGameEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import { GameOptions } from "../../communication/room/EventInterfaces";
+import { WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import Room from "../../server/rooms/Room";
 import User from "../../server/rooms/User";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";
+import { CancelGameInitializationEvent } from "./../../communication/race/EventInterfaces";
 import State, { GameState } from "./State";
 
 export default class PreGame implements State {
+	readonly GAME_INITIALIZATION_DURATION = 10 * 1000; //in milliseconds
 	private context: Room;
 	private state: GameState = GameState.PreGame;
+	private gameInitializationTimeout: NodeJS.Timeout;
 
 	constructor(users: User[] = []) {
 		this.handleAllUsersSocketEvents(users);
@@ -54,12 +59,22 @@ export default class PreGame implements State {
 		 * First idea was to just add un switch statement here depending on the mode and then add multiple "startTypeGame(gameOptions)",
 		 * but maybe have one single function startGame that implements that switch case and creates the game depending on gameOptions
 		 **/
-		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions, playerId: string) => {
-			if (this.context.getHost().userId == playerId) {
-				let game: State;
-				//TODO: add verifications
-				game = this.startRaceGame(gameOptions);
-				this.context.transitionTo(game);
+		socket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.INITIALIZE_GAME, (data: InitializeGameEvent) => {
+			if (this.context.getHost().userId == data.playerId) {
+				this.gameInitializationTimeout = setTimeout(() => {
+					let game: State;
+					//TODO: add verifications
+					game = this.startRaceGame(data.gameOptions);
+					this.context.transitionTo(game);
+				}, this.GAME_INITIALIZATION_DURATION);
+			}
+		});
+
+		socket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.CANCEL_GAME_INITIALIZATION, (data: CancelGameInitializationEvent) => {
+			if (this.context.getHost().userId == data.playerId) {
+				if (this.gameInitializationTimeout != undefined) {
+					clearTimeout(this.gameInitializationTimeout);
+				}
 			}
 		});
 	}

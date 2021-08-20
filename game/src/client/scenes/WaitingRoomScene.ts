@@ -1,8 +1,8 @@
 import CharacterDTO from "../../communication/race/CharacterDTO";
-import { GameCreatedEvent, GameEndEvent } from "../../communication/race/EventInterfaces";
+import { GameCreatedEvent, GameEndEvent, InitializeGameEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import { PlayerDTO } from "../../communication/race/PlayerDTO";
-import { GameOptions, HostChangeEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
+import { HostChangeEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
@@ -61,7 +61,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 
 			this.scene.start(CST.SCENES.RACE_GAME, { gameController: raceGame, roomId: this.roomId });
 		});
-		this.gameSocket.once(WAITING_ROOM_EVENT_NAMES.KICKED, () => this.quitScene());
+		this.gameSocket.once(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.KICKED, () => this.quitScene());
 		this.gameSocket.on(ROOM_EVENT_NAMES.HOST_CHANGE, (data: HostChangeEvent) => {
 			this.isHost = false;
 			this.hostName = `Current host: ${data.newHostName}`;
@@ -199,7 +199,10 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.on("pointerup", () => {
 				this.kickButton.clearTint();
-				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.KICK_PLAYER, (<HTMLInputElement>this.kickPlayerInput.getChildByID("playerField")).value);
+				this.gameSocket.emit(
+					WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.KICK_PLAYER,
+					(<HTMLInputElement>this.kickPlayerInput.getChildByID("playerField")).value
+				);
 			});
 
 		this.hexColorText = this.add.text(this.game.renderer.width * 0.32, this.game.renderer.height * 0.54, "Hex", {
@@ -240,15 +243,14 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.on("pointerup", () => {
 				this.startButton.clearTint();
-				this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
-				this.gameSocket.emit(
-					CLIENT_EVENT_NAMES.GAME_INITIALIZED,
-					<GameOptions>{
+				this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO);
+				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.INITIALIZE_GAME, <InitializeGameEvent>{
+					gameOptions: {
 						gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
 						computerPlayerCount: Number((<HTMLInputElement>this.gameOptions.getChildByID("computerPlayerCount")).value),
 					},
-					this.gameSocket.id
-				);
+					playerId: this.gameSocket.id,
+				});
 			});
 
 		this.readyButton = this.add
@@ -273,7 +275,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.on("pointerup", () => {
 				this.readyButton.clearTint();
-				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.READY, <ReadyEvent>{
+				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.READY, <ReadyEvent>{
 					characterDTO: <CharacterDTO>{
 						hexColor: (<HTMLInputElement>this.hexColorInput.getChildByID("hexinput")).value,
 						accessoryId: +(<HTMLInputElement>this.accessoryIdInput.getChildByID("accessoryidinput")).value,
@@ -306,7 +308,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 				this.quitScene();
 			});
 
-		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, (data: RoomInfoEvent) => {
+		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO, (data: RoomInfoEvent) => {
 			this.hostName = `Current host: ${data.hostName}`;
 			this.roomId = `Room id: ${data.roomId}`;
 			this.usersDTO = data.userDTOs;
@@ -314,7 +316,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.updateUsersList();
 		});
 
-		this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
+		this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.SCENE_LOADED);
 	}
 
 	update() {
@@ -329,8 +331,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	}
 
 	private quitScene() {
-		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.KICKED);
-		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.ROOM_INFO);
+		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.KICKED);
+		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO);
 		this.gameSocket.close();
 		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
