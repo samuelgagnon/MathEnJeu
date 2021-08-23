@@ -1,5 +1,12 @@
 import { Namespace, Socket } from "socket.io";
-import { HostChangeEvent, JoinRoomAnswerEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
+import {
+	GameInitializedEvent,
+	HostChangeEvent,
+	JoinRoomAnswerEvent,
+	ReadyEvent,
+	RoomInfoEvent,
+	RoomSettings,
+} from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
@@ -169,7 +176,7 @@ export default class Room {
 	}
 
 	public emitUsersInRoom(): void {
-		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.ROOM_INFO, <RoomInfoEvent>{
+		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO, <RoomInfoEvent>{
 			roomId: this.id,
 			userDTOs: this.users.map((user) => UserToDTO(user)),
 			hostName: this.host.userInfo.name,
@@ -185,11 +192,11 @@ export default class Room {
 	}
 
 	private removeListeners(clientSocket: Socket): void {
-		clientSocket.removeAllListeners(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED);
+		clientSocket.removeAllListeners(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.SCENE_LOADED);
 	}
 
 	private handleSocketEvents(clientSocket: Socket, userId: string): void {
-		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SCENE_LOADED, () => {
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.SCENE_LOADED, () => {
 			this.emitUsersInRoom();
 
 			//Notify the user that created the room that he is the host
@@ -202,7 +209,7 @@ export default class Room {
 			this.changeRoomSettings(roomSettings);
 		});
 
-		clientSocket.on(WAITING_ROOM_EVENT_NAMES.KICK_PLAYER, (userId: string) => {
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.KICK_PLAYER, (userId: string) => {
 			//Only the host can kick players, deny the request if it isn't the host
 			//The host cannot kick himself
 			if (clientSocket.id === this.host.socket.id && userId != this.host.userId) {
@@ -210,7 +217,7 @@ export default class Room {
 			}
 		});
 
-		clientSocket.on(WAITING_ROOM_EVENT_NAMES.READY, (readyEvent: ReadyEvent) => {
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.READY, (readyEvent: ReadyEvent) => {
 			let user = this.users.find((user) => user.userId === userId);
 			user.isReady = !user.isReady;
 			if (user.isReady) {
@@ -239,6 +246,23 @@ export default class Room {
 		//leave method if user doesn't exist
 		if (kickedUser === undefined) return;
 		this.removeUser(userId);
-		kickedUser.socket.emit(WAITING_ROOM_EVENT_NAMES.KICKED);
+		kickedUser.socket.emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.KICKED);
+	}
+
+	/**
+	 * Notice clients (players) that the game is initialized (game start countdown is started).
+	 * @param preGameToInGameTimestamp The timestamp where the pregame to ingame transition will take place.
+	 */
+	public gameInitialized(preGameToInGameTimestamp: number): void {
+		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZED, <GameInitializedEvent>{
+			preGameToInGameTimestamp: preGameToInGameTimestamp,
+		});
+	}
+
+	/**
+	 * Notice clients (players) that the game initialization is canceled (game start countdown is canceled).
+	 */
+	public gameInitializationCanceled(): void {
+		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZATION_CANCELED);
 	}
 }
