@@ -1,10 +1,19 @@
 import CharacterDTO from "../../communication/race/CharacterDTO";
-import { GameCreatedEvent, GameEndEvent, InitializeGameEvent } from "../../communication/race/EventInterfaces";
+import { GameCreatedEvent, GameEndEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import { PlayerDTO } from "../../communication/race/PlayerDTO";
-import { HostChangeEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
+import {
+	CancelGameInitializationEvent,
+	GameInitializedEvent,
+	HostChangeEvent,
+	InitializeGameEvent,
+	ReadyEvent,
+	RoomInfoEvent,
+	RoomSettings,
+} from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import { UserDTO } from "../../communication/user/UserDTO";
+import { Clock } from "../../gameCore/clock/Clock";
 import ClientRaceGameController from "../../gameCore/race/ClientRaceGameController";
 import RaceGameFactory from "../../gameCore/race/RaceGameFactory";
 import { CST } from "../CST";
@@ -12,7 +21,9 @@ import { getUserHighScore } from "../services/UserInformationService";
 
 export default class WaitingRoomScene extends Phaser.Scene {
 	private startButton: Phaser.GameObjects.Text;
+	private cancelButton: Phaser.GameObjects.Text;
 	private readyButton: Phaser.GameObjects.Text;
+	private startCountdownText: Phaser.GameObjects.Text;
 	private quitButton: Phaser.GameObjects.Text;
 	private highScoreText: Phaser.GameObjects.Text;
 	private currentHost: Phaser.GameObjects.Text;
@@ -28,6 +39,8 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	private applySettingsText: Phaser.GameObjects.Text;
 	private nbPlayers: number = 0;
 	private isPrivate: boolean = false;
+	private isGameInitializing: boolean = false;
+	private preGameToInGameTimestamp: number = 0;
 	private lastGameResults: GameEndEvent;
 	private isHost: boolean = false;
 	private hostName: string = "Current host: ";
@@ -45,6 +58,7 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	}
 
 	init(data: any) {
+		this.isGameInitializing = false;
 		this.lastGameResults = data.lastGameData;
 		this.highScore = getUserHighScore();
 
@@ -75,6 +89,13 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			this.isPrivate = roomSettings.isPrivate;
 			(<HTMLInputElement>this.roomSettings.getChildByID("isPrivate")).checked = roomSettings.isPrivate;
 			(<HTMLInputElement>this.roomSettings.getChildByID("nbPlayers")).value = String(roomSettings.maxPlayerCount);
+		});
+		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZED, (data: GameInitializedEvent) => {
+			this.preGameToInGameTimestamp = data.preGameToInGameTimestamp;
+			this.isGameInitializing = true;
+		});
+		this.gameSocket.on(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZATION_CANCELED, () => {
+			this.isGameInitializing = false;
 		});
 
 		this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -221,6 +242,14 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			fontStyle: "bold",
 		});
 
+		this.startCountdownText = this.add.text(this.game.renderer.width * 0.2, this.game.renderer.height * 0.9, "", {
+			fontFamily: "Courier",
+			fontSize: "32px",
+			align: "center",
+			color: "#FDFFB5",
+			fontStyle: "bold",
+		});
+
 		this.startButton = this.add
 			.text(this.game.renderer.width * 0.55, this.game.renderer.height * 0.9, "Start Game", {
 				fontFamily: "Courier",
@@ -243,12 +272,39 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			})
 			.on("pointerup", () => {
 				this.startButton.clearTint();
-				this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO);
+				//this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO);
 				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.INITIALIZE_GAME, <InitializeGameEvent>{
 					gameOptions: {
 						gameTime: Number((<HTMLInputElement>this.gameOptions.getChildByID("gameTime")).value),
 						computerPlayerCount: Number((<HTMLInputElement>this.gameOptions.getChildByID("computerPlayerCount")).value),
 					},
+					playerId: this.gameSocket.id,
+				});
+			});
+
+		this.cancelButton = this.add
+			.text(this.game.renderer.width * 0.55, this.game.renderer.height * 0.9, "Cancel", {
+				fontFamily: "Courier",
+				fontSize: "40px",
+				align: "center",
+				color: "#FDFFB5",
+				fontStyle: "bold",
+			})
+			.setInteractive({ useHandCursor: true });
+
+		this.cancelButton
+			.on("pointerover", () => {
+				this.cancelButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				this.cancelButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				this.cancelButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				this.cancelButton.clearTint();
+				this.gameSocket.emit(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.CANCEL_GAME_INITIALIZATION, <CancelGameInitializationEvent>{
 					playerId: this.gameSocket.id,
 				});
 			});
@@ -320,19 +376,24 @@ export default class WaitingRoomScene extends Phaser.Scene {
 	}
 
 	update() {
-		this.startButton.setVisible(this.isHost).setActive(this.isHost);
-		this.gameOptions.setVisible(this.isHost).setActive(this.isHost);
-		this.roomSettings.setVisible(this.isHost).setActive(this.isHost);
-		this.applySettingsText.setVisible(this.isHost).setActive(this.isHost);
+		this.startButton.setVisible(this.isHost && !this.isGameInitializing).setActive(this.isHost && !this.isGameInitializing);
+		this.cancelButton.setVisible(this.isHost && this.isGameInitializing).setActive(this.isHost && this.isGameInitializing);
+		this.gameOptions.setVisible(this.isHost).setActive(this.isHost && !this.isGameInitializing);
+		this.roomSettings.setVisible(this.isHost).setActive(this.isHost && !this.isGameInitializing);
+		this.applySettingsText.setVisible(this.isHost).setActive(this.isHost && !this.isGameInitializing);
+		this.readyButton.setVisible(!this.isGameInitializing).setActive(!this.isGameInitializing);
 		this.currentHost.text = this.hostName;
 		this.roomIdText.text = this.roomId;
 		this.nbPlayersText.setText(`Number of players: ${this.nbPlayers}`);
 		this.isPrivateText.setText(`Private: ${this.isPrivate}`);
+		this.updateStartCountdownText();
 	}
 
 	private quitScene() {
 		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.KICKED);
 		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.ROOM_INFO);
+		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZED);
+		this.gameSocket.removeEventListener(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZATION_CANCELED);
 		this.gameSocket.close();
 		this.scene.start(CST.SCENES.GAME_SELECTION);
 	}
@@ -359,5 +420,23 @@ export default class WaitingRoomScene extends Phaser.Scene {
 			li.appendChild(document.createTextNode(displayedInfo));
 			usersList.appendChild(li);
 		});
+	}
+
+	private updateStartCountdownText(): void {
+		if (this.isGameInitializing) {
+			const remainingTime = this.preGameToInGameTimestamp - Clock.now();
+			this.setStartCountdownText(remainingTime);
+		} else {
+			this.startCountdownText.setText("");
+		}
+	}
+
+	private setStartCountdownText(remainingTime: number): void {
+		const approxRemainingTime = Math.ceil(remainingTime / 1000);
+		if (approxRemainingTime > 0) {
+			this.startCountdownText.setText(approxRemainingTime.toString());
+		} else {
+			this.startCountdownText.setText("1");
+		}
 	}
 }

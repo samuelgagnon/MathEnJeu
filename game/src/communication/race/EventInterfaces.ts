@@ -1,5 +1,4 @@
 import { ItemType } from "../../gameCore/race/items/Item";
-import { GameOptions } from "./../room/EventInterfaces";
 import { AnswerDTO } from "./AnswerDTO";
 import { PlayerDTO } from "./PlayerDTO";
 import { QuestionDTO } from "./QuestionDTO";
@@ -73,17 +72,4 @@ export interface ItemUsedEvent {
 	itemType: ItemType;
 	targetPlayerId: string;
 	fromPlayerId?: string;
-}
-
-export interface InitializeGameEvent {
-	gameOptions: GameOptions;
-	playerId: string;
-}
-
-export interface GameInitializedEvent {
-	preGameToInGameTransitionTimestamp: number;
-}
-
-export interface CancelGameInitializationEvent {
-	playerId: string;
 }

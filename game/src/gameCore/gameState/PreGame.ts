@@ -1,12 +1,11 @@
 import { Socket } from "socket.io";
-import { InitializeGameEvent } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
-import { GameOptions } from "../../communication/room/EventInterfaces";
+import { CancelGameInitializationEvent, GameOptions, InitializeGameEvent } from "../../communication/room/EventInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import Room from "../../server/rooms/Room";
 import User from "../../server/rooms/User";
+import { Clock } from "../clock/Clock";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";
-import { CancelGameInitializationEvent } from "./../../communication/race/EventInterfaces";
 import State, { GameState } from "./State";
 
 export default class PreGame implements State {
@@ -67,6 +66,7 @@ export default class PreGame implements State {
 					game = this.startRaceGame(data.gameOptions);
 					this.context.transitionTo(game);
 				}, this.GAME_INITIALIZATION_DURATION);
+				this.context.gameInitialized(Clock.now() + this.GAME_INITIALIZATION_DURATION);
 			}
 		});
 
@@ -74,6 +74,7 @@ export default class PreGame implements State {
 			if (this.context.getHost().userId == data.playerId) {
 				if (this.gameInitializationTimeout != undefined) {
 					clearTimeout(this.gameInitializationTimeout);
+					this.context.gameInitializationCanceled();
 				}
 			}
 		});

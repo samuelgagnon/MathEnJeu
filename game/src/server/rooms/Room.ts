@@ -1,5 +1,12 @@
 import { Namespace, Socket } from "socket.io";
-import { HostChangeEvent, JoinRoomAnswerEvent, ReadyEvent, RoomInfoEvent, RoomSettings } from "../../communication/room/EventInterfaces";
+import {
+	GameInitializedEvent,
+	HostChangeEvent,
+	JoinRoomAnswerEvent,
+	ReadyEvent,
+	RoomInfoEvent,
+	RoomSettings,
+} from "../../communication/room/EventInterfaces";
 import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
@@ -242,5 +249,20 @@ export default class Room {
 		kickedUser.socket.emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.KICKED);
 	}
 
-	public gameInitialized(gameStartTimeStamp: number): void {}
+	/**
+	 * Notice clients (players) that the game is initialized (game start countdown is started).
+	 * @param preGameToInGameTimestamp The timestamp where the pregame to ingame transition will take place.
+	 */
+	public gameInitialized(preGameToInGameTimestamp: number): void {
+		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZED, <GameInitializedEvent>{
+			preGameToInGameTimestamp: preGameToInGameTimestamp,
+		});
+	}
+
+	/**
+	 * Notice clients (players) that the game initialization is canceled (game start countdown is canceled).
+	 */
+	public gameInitializationCanceled(): void {
+		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZATION_CANCELED);
+	}
 }

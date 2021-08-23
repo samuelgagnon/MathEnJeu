@@ -34,3 +34,16 @@ export interface GameOptions {
 	gameTime: number;
 	computerPlayerCount: number;
 }
+
+export interface InitializeGameEvent {
+	gameOptions: GameOptions;
+	playerId: string;
+}
+
+export interface GameInitializedEvent {
+	preGameToInGameTimestamp: number;
+}
+
+export interface CancelGameInitializationEvent {
+	playerId: string;
+}
