@@ -1,51 +1,113 @@
 <div class="user-settings-form">
-	<div class="div-container"><input type="text" id="nameInput" placeholder="Enter your name" style="font-size: 32px"></div>
-	<div class="div-container">
-		<select id="language">
-			<option value="fr">Français / French</option>
-			<option value="en">Anglais / English</option>
-		</select>
+	<div class="row">
+		<div class="div-container">
+			<input type="text" id="nameInput" placeholder="Entrer votre nom">
+		</div>
+		<div class="div-container">
+			<select id="schoolGrades" class="filter-dropdown">
+				<option value="1">Général</option>
+				<option value="2">1e année</option>
+				<option value="3">2e année</option>
+				<option value="4">3e année</option>
+				<option value="5">4e année</option>
+				<option value="6">5e année</option>
+				<option value="7">6e année</option>
+				<option value="8">Secondaire I</option>
+				<option value="9">Secondaire II</option>
+				<option value="10">Secondaire III</option>
+				<option value="11">Secondaire IV - CST</option>
+				<option value="12">Secondaire IV - TS</option>
+				<option value="13">Secondaire IV - SN</option>
+				<option value="14">Secondaire IV - CST</option>
+				<option value="15">Secondaire IV - TS</option>
+				<option value="16">Secondaire IV - SN</option>
+				<option value="17">Cégep I</option>
+				<option value="18">Cégep II</option>
+			</select>
+		</div>
 	</div>
-	<div class="div-container">
-		<select id="playerRole">
-			<option value="1">student</option>
-			<option value="2">teacher</option>
-		</select>
-	</div>
-	<div class="div-container">
-		<select id="schoolGrades">
-			<option value="1">General / Général</option>
-			<option value="2">Grade 1 / 1e année</option>
-			<option value="3">Grade 2 / 2e année</option>
-			<option value="4">Grade 3 / 3e année</option>
-			<option value="5">Grade 4 / 4e année</option>
-			<option value="6">Grade 5 / 5e année</option>
-			<option value="7">Grade 6 / 6e année</option>
-			<option value="8">Grade 7 / Secondaire I</option>
-			<option value="9">Grade 8 / Secondaire II</option>
-			<option value="10">Grade 9 / Secondaire III</option>
-			<option value="11">Grade 10 / Secondaire IV - CST</option>
-			<option value="12">Grade 10 / Secondaire IV - TS</option>
-			<option value="13">Grade 10 / Secondaire IV - SN</option>
-			<option value="14">Grade 10 / Secondaire IV - CST</option>
-			<option value="15">Grade 10 / Secondaire IV - TS</option>
-			<option value="16">Grade 10 / Secondaire IV - SN</option>
-			<option value="17">Grade 12 / Cégep I</option>
-			<option value="18">Undergraduate / Cégep II</option>
-		</select>
-	</div>
+	​
 </div>
 
 <style>
 	.user-settings-form {
 		flex-direction: column;
 		display: flex;
-    	align-items: center;
-    	justify-content: center;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+
+	.row {
+		width: 82%;
+		margin: 15px 80px;
+	}
+
+	::placeholder {
+		/* Chrome, Firefox, Opera, Safari 10.1+ */
+		color: #ffffff;
+		opacity: 1;
+	}
+
+	:-ms-input-placeholder {
+		/* Internet Explorer 10-11 */
+		color: #ffffff
+	}
+
+	::-ms-input-placeholder {
+		/* Microsoft Edge */
+		color: #ffffff
+	}
+
+	select {
+		width: 90%;
+		padding: 14px 15px;
+		border-radius: 30px;
+		border: none;
+		background-color: rgba(255, 255, 255, 0.25);
+		color: #ffffff;
+		text-align: center;
+		font-size: 17px;
+	}
+
+	input {
+		width: 80%;
+		padding: 10px 15px;
+		border-radius: 30px;
+		border: 5px solid rgba(255, 255, 255, 0.28);
+		background-color: rgba(255, 255, 255, 0.25);
+		color: #ffffff;
+		text-align: center;
+		font-size: 17px;
+	}
+
+	select option {
+		background: #5499A2;
+		color: #fff;
+	}
+
+	select option:hover {
+		background: #195e66;
+		color: #fff;
 	}
 
 	.div-container {
-		margin: 10px;
+		width: 50%;
+		float: left;
 		text-align: center;
+	}
+
+	.div-container input {
+		color: #ffffff;
+	}
+
+	.filter-dropdown {
+		-webkit-appearance: none;
+		background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='25' viewBox='0 0 24 24' width='25' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+		background-repeat: no-repeat;
+		background-position-x: 90%;
+		background-position-y: 50%;
+		text-align-last: center;
+		padding-right: 29px;
 	}
 </style>

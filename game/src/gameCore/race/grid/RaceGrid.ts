@@ -1,7 +1,6 @@
 import ItemState from "../../../communication/race/ItemState";
 import ItemFactory from "../items/ItemFactory";
 import Player from "../player/Player";
-import Item from "./../items/Item";
 import Tile from "./Tile";
 
 export default class RaceGrid {
@@ -41,7 +40,17 @@ export default class RaceGrid {
 		let leftDone = false;
 		let rightDone = false;
 
+		let upWallStep = 0;
+		let downWallStep = 0;
+		let leftWallStep = 0;
+		let rightWallStep = 0;
+
 		let possiblePositions: PossiblePositions[] = [];
+
+		const currentTile = this.getTile(position);
+		if (currentTile && currentTile.isStartPosition) {
+			upDone = true;
+		}
 
 		for (let i = 1; i <= moveDistance; i++) {
 			if (position.x - i < 0) leftDone = true;
@@ -49,36 +58,75 @@ export default class RaceGrid {
 			if (position.y - i < 0) upDone = true;
 			if (position.y + i >= this.height) downDone = true;
 
-			const currentRightPosition = { x: position.x + i, y: position.y };
-			const currentLeftPosition = { x: position.x - i, y: position.y };
-			const currentUpPosition = { x: position.x, y: position.y - i };
-			const currentDownPosition = { x: position.x, y: position.y + i };
+			const currentRightPosition = { x: position.x + i + rightWallStep, y: position.y + rightWallStep };
+			const currentLeftPosition = { x: position.x - i - leftWallStep, y: position.y - leftWallStep };
+			const currentUpPosition = { x: position.x - upWallStep, y: position.y - i - upWallStep };
+			const currentDownPosition = { x: position.x + downWallStep, y: position.y + i + downWallStep };
 
 			const currentRightTile = this.getTile(currentRightPosition);
 			const currentLeftTile = this.getTile(currentLeftPosition);
 			const currentUpTile = this.getTile(currentUpPosition);
 			const currentDownTile = this.getTile(currentDownPosition);
 
-			if (!rightDone && currentRightTile.isWalkable) {
+			if (!rightDone && currentRightTile?.isWalkable) {
 				possiblePositions.push({ position: currentRightPosition, distance: i });
+			} else if (!rightDone && currentRightTile?.isWallTile) {
+				rightWallStep += 1;
+				const nextPosition = { x: position.x + i + rightWallStep, y: position.y + rightWallStep };
+				const nextRightWallTile = this.getTile(nextPosition);
+				if (nextRightWallTile?.isWalkable) {
+					possiblePositions.push({ position: nextPosition, distance: i });
+				} else {
+					rightDone = true;
+				}
 			} else {
 				rightDone = true;
 			}
 
-			if (!leftDone && currentLeftTile.isWalkable) {
+			if (!leftDone && currentLeftTile?.isWalkable) {
 				possiblePositions.push({ position: currentLeftPosition, distance: i });
+			} else if (!leftDone && currentLeftTile?.isWallTile) {
+				leftWallStep += 1;
+				const nextPosition = { x: position.x - i - leftWallStep, y: position.y - leftWallStep };
+				const nextLeftWallTile = this.getTile(nextPosition);
+				if (nextLeftWallTile?.isWalkable) {
+					possiblePositions.push({ position: nextPosition, distance: i });
+				} else {
+					leftDone = true;
+				}
 			} else {
 				leftDone = true;
 			}
 
-			if (!upDone && currentUpTile.isWalkable) {
+			if (!upDone && currentUpTile?.isWalkable) {
 				possiblePositions.push({ position: currentUpPosition, distance: i });
+				if (currentUpTile?.isStartPosition) {
+					upDone = true;
+				}
+			} else if (!upDone && currentUpTile?.isWallTile) {
+				upWallStep += 1;
+				const nextPosition = { x: position.x - upWallStep, y: position.y - i - upWallStep };
+				const nextUpWallTile = this.getTile(nextPosition);
+				if (nextUpWallTile?.isWalkable) {
+					possiblePositions.push({ position: nextPosition, distance: i });
+				} else {
+					upDone = true;
+				}
 			} else {
 				upDone = true;
 			}
 
-			if (!downDone && currentDownTile.isWalkable) {
+			if (!downDone && currentDownTile?.isWalkable) {
 				possiblePositions.push({ position: currentDownPosition, distance: i });
+			} else if (!downDone && currentDownTile?.isWallTile) {
+				downWallStep += 1;
+				const nextPosition = { x: position.x + downWallStep, y: position.y + i + downWallStep };
+				const nextDownWallTile = this.getTile(nextPosition);
+				if (nextDownWallTile?.isWalkable) {
+					possiblePositions.push({ position: nextPosition, distance: i });
+				} else {
+					downDone = true;
+				}
 			} else {
 				downDone = true;
 			}
@@ -164,17 +212,17 @@ export default class RaceGrid {
 		});
 	}
 
-	public handleItemCollision(player: Player): Item {
-		let pickedUpItem: Item = null;
+	public handleItemCollision(player: Player): boolean {
+		let itemPickedUp: boolean = false;
 		if (player.hasArrived()) {
 			const position = player.getPosition();
-			pickedUpItem = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
+			itemPickedUp = this.getTile({ x: Math.round(position.x), y: Math.round(position.y) }).playerPickUpItem(player);
 
-			if (pickedUpItem != null) {
+			if (itemPickedUp) {
 				this.updateItemsStateList(position);
 			}
 		}
-		return pickedUpItem;
+		return itemPickedUp;
 	}
 
 	public generateNewItem(playerPositions: Point[], isSinglePlayer: boolean) {

@@ -31,7 +31,7 @@ export class Answer {
 		//TODO: update comparison to make it more flexible
 		//(ex.: " BaNana" and "banana" should be equivalent)
 		answerString = answerString.trim().toLowerCase();
-		return answerString == this.label;
+		return answerString == this.label.toLowerCase();
 	}
 
 	public getDTO(): AnswerDTO {

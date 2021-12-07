@@ -9,8 +9,12 @@ export default interface Item {
 }
 
 export enum ItemType {
-	Banana = "Banana",
-	Brainiac = "Brainiac",
-	Book = "Book",
-	CrystalBall = "CrystalBall",
+	Banana = "Cloud",
+	Brainiac = "Battery",
+	Book = "USB Drive",
+	CrystalBall = "Light bulb",
+	// Banana = "Banana",
+	// Brainiac = "Brainiac",
+	// Book = "Book",
+	// CrystalBall = "CrystalBall",
 }

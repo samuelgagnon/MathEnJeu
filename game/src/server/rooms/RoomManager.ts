@@ -46,8 +46,8 @@ export default class RoomManager {
 			socket.on(ROOM_EVENT_NAMES.CREATE_ROOM, (roomSettings: RoomSettings) => {
 				try {
 					const usedRoomIds = this.roomRepo.getAllRooms().map((room: Room) => room.getId());
-					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate, roomSettings.maxPlayerCount, usedRoomIds);
-					const userId = newRoom.joinRoom(socket, userInfo);
+					const newRoom = RoomFactory.create(this.nsp, roomSettings.isPrivate, roomSettings.maxPlayerCount, roomSettings.createTime, usedRoomIds);
+					const userId = newRoom.joinRoom(socket, userInfo, roomSettings.type);
 					this.roomRepo.addRoom(newRoom);
 
 					const roomId = newRoom.getId();
@@ -68,7 +68,7 @@ export default class RoomManager {
 					if (currentRoom == undefined) {
 						throw new JoiningNonExistentRoomError();
 					}
-					const userId = currentRoom.joinRoom(socket, userInfo);
+					const userId = currentRoom.joinRoom(socket, userInfo, "joinroom");
 					this.handleDisconnection(socket, roomId, userId);
 				} catch (error) {
 					console.log(error);

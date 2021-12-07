@@ -1,115 +1,31 @@
 import { CST } from "../CST";
-import { joinRoom } from "../services/RoomService";
+import { createRoom } from "../services/RoomService";
 import BaseScene from "./BaseScene";
+import { getUserInfo } from "../services/UserInformationService";
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from "../GameConfig";
 
 export default class GameSelection extends BaseScene {
-	private createRoomButton: Phaser.GameObjects.Text;
-	private publicRoomsButton: Phaser.GameObjects.Text;
-	private joinPrivateRoomButton: Phaser.GameObjects.Text;
-	private backButton: Phaser.GameObjects.Text;
-
+	private backButton: Phaser.GameObjects.Image;
 	private gameSocket: SocketIOClient.Socket;
 
-	private privateRoomCodeInput: Phaser.GameObjects.DOMElement;
-
-	constructor() {
-		const sceneConfig = { key: CST.SCENES.GAME_SELECTION };
-		super(sceneConfig);
-	}
+	// constructor() {
+	// 	const sceneConfig = { key: CST.SCENES.GAME_SELECTION };
+	// 	super(sceneConfig);
+	// }
 
 	init(data: any) {
 		this.gameSocket = this.initializeSocket();
 	}
 
 	create() {
-		this.privateRoomCodeInput = this.add.dom(this.game.renderer.width * 0.4, this.game.renderer.height * 0.7).createFromCache(CST.HTML.ROOM_INPUT);
+		this.scale.setGameSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+		document.body.style.backgroundImage = 'url("static/client/assets/images/starfield.png")'; 
+		// this.add.image(Number(this.game.config.width) / 2 + 6, Number(this.game.config.height) / 2 + 18, CST.IMAGES.BACKGROUD).setScale(0.71, 0.713);
 
-		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
-
-		this.createRoomButton = this.add
-			.text(this.game.renderer.width * 0.38, this.game.renderer.height * 0.2, "Create Room", {
-				fontFamily: "Courier",
-				fontSize: "64px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setInteractive({ useHandCursor: true });
-
-		this.createRoomButton
-			.on("pointerover", () => {
-				this.createRoomButton.setTint(0xffff66);
-			})
-			.on("pointerout", () => {
-				this.createRoomButton.clearTint();
-			})
-			.on("pointerdown", () => {
-				this.createRoomButton.setTint(0x86bfda);
-			})
-			.on("pointerup", () => {
-				this.createRoomButton.clearTint();
-				this.scene.start(CST.SCENES.ROOM_CREATION);
-			});
-
-		this.publicRoomsButton = this.add
-			.text(this.game.renderer.width * 0.38, this.game.renderer.height * 0.4, "Public Rooms", {
-				fontFamily: "Courier",
-				fontSize: "64px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setInteractive({ useHandCursor: true });
-
-		this.publicRoomsButton
-			.on("pointerover", () => {
-				this.publicRoomsButton.setTint(0xffff66);
-			})
-			.on("pointerout", () => {
-				this.publicRoomsButton.clearTint();
-			})
-			.on("pointerdown", () => {
-				this.publicRoomsButton.setTint(0x86bfda);
-			})
-			.on("pointerup", () => {
-				this.publicRoomsButton.clearTint();
-				this.scene.start(CST.SCENES.ROOM_SELECTION);
-			});
-
-		this.joinPrivateRoomButton = this.add
-			.text(this.game.renderer.width * 0.6, this.game.renderer.height * 0.66, "Join Room", {
-				fontFamily: "Courier",
-				fontSize: "64px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
-			.setInteractive({ useHandCursor: true });
-
-		this.joinPrivateRoomButton
-			.on("pointerover", () => {
-				this.joinPrivateRoomButton.setTint(0xffff66);
-			})
-			.on("pointerout", () => {
-				this.joinPrivateRoomButton.clearTint();
-			})
-			.on("pointerdown", () => {
-				this.joinPrivateRoomButton.setTint(0x86bfda);
-			})
-			.on("pointerup", () => {
-				this.joinPrivateRoomButton.clearTint();
-				const roomId = (<HTMLInputElement>this.privateRoomCodeInput.getChildByName("roomField")).value;
-				joinRoom(this.gameSocket, roomId);
-			});
-
+		var image = this.add.image(window.innerWidth / 2, window.innerHeight / 2, CST.IMAGES.OPTIONS_BACK).setScale(0.85);
 		this.backButton = this.add
-			.text(10, 10, "<- back", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#FDFFB5",
-				fontStyle: "bold",
-			})
+			.image(image.x - 570, image.y - 150, CST.IMAGES.BACK)
+			.setScale(0.55)
 			.setInteractive({ useHandCursor: true });
 
 		this.backButton
@@ -125,6 +41,86 @@ export default class GameSelection extends BaseScene {
 			.on("pointerup", () => {
 				this.backButton.clearTint();
 				this.scene.start(CST.SCENES.USERS_SETTING);
+			});
+		this.add
+			.text(image.x - 10 - (getUserInfo().name.length - 1) * 12.5, image.y - 280, getUserInfo().name, {
+				fontFamily: "Arial",
+				fontSize: "55px",
+				color: "#FFF",
+			})
+			.setScale(0.85)
+			.setDepth(1);
+		this.add
+			.text(image.x - 190, image.y - 215, "Choisis ton mode pour partir a l'aventure!", {
+				fontFamily: "Arial",
+				fontSize: "25px",
+				color: "#FFF",
+			})
+			.setScale(0.85)
+			.setDepth(1);
+		this.add
+			.text(image.x - 310, image.y + 30, "Mode solo", {
+				fontFamily: "Arial",
+				fontSize: "40px",
+				align: "center",
+				color: "#FFF",
+			})
+			.setScale(0.85)
+			.setDepth(1);
+		this.add
+			.text(image.x - -140, image.y + 30, "Mode multijoueur", {
+				fontFamily: "Arial",
+				fontSize: "40px",
+				align: "center",
+				color: "#FFF",
+			})
+			.setScale(0.85)
+			.setDepth(1);
+		let playButton = this.add
+			.text(image.x - 278, image.y + 115, "JOUER", {
+				fontFamily: "Arial",
+				fontSize: "25px",
+				align: "center",
+				color: "#FFF",
+			})
+			.setInteractive({ useHandCursor: true });
+		let playButton1 = this.add
+			.text(image.x + 227, image.y + 115, "JOUER", {
+				fontFamily: "Arial",
+				fontSize: "25px",
+				align: "center",
+				color: "#FFF",
+			})
+			.setInteractive({ useHandCursor: true });
+		playButton
+			.on("pointerover", () => {
+				playButton.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				playButton.clearTint();
+			})
+			.on("pointerdown", () => {
+				playButton.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				playButton.clearTint();
+				const numberOfPlayers = Number(1);
+				const isPrivate = true;
+				createRoom(this.gameSocket, { isPrivate, maxPlayerCount: numberOfPlayers, createTime: 10, type: "createRoom" });
+			});
+		playButton1
+			.on("pointerover", () => {
+				playButton1.setTint(0xffff66);
+			})
+			.on("pointerout", () => {
+				playButton1.clearTint();
+			})
+			.on("pointerdown", () => {
+				playButton1.setTint(0x86bfda);
+			})
+			.on("pointerup", () => {
+				playButton1.clearTint();
+				this.scene.start(CST.SCENES.ROOM_CREATION);
 			});
 	}
 

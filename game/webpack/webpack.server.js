@@ -48,6 +48,7 @@ module.exports = (env) => {
 					PORT: JSON.stringify(process.env.PORT),
 					DB_USER: JSON.stringify(process.env.DB_USER),
 					DB_PWD: JSON.stringify(process.env.DB_PWD),
+					DB_PORT: JSON.stringify(process.env.DB_PORT),
 				},
 			}),
 		],

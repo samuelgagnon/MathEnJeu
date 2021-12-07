@@ -13,6 +13,7 @@ export default class PathFinder {
 	}
 
 	public findPath(startPoint: Point, endPoint: Point): Point[] {
+		console.log("FINDpATH: ", startPoint, endPoint);
 		let path = this.aStarInstance.findPath({ x: startPoint.x, y: startPoint.y }, { x: endPoint.x, y: endPoint.y });
 		return path.map((point) => <Point>{ x: point[0], y: point[1] });
 	}

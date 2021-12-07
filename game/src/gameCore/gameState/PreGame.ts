@@ -2,9 +2,9 @@ import { Socket } from "socket.io";
 import { CLIENT_EVENT_NAMES } from "../../communication/race/EventNames";
 import { CancelGameInitializationEvent, GameOptions, InitializeGameEvent } from "../../communication/room/EventInterfaces";
 import { WAITING_ROOM_EVENT_NAMES } from "../../communication/room/EventNames";
+import { Clock } from "../clock/Clock";
 import Room from "../../server/rooms/Room";
 import User from "../../server/rooms/User";
-import { Clock } from "../clock/Clock";
 import ServerRaceGameFactory from "../race/ServerRaceGameFactory";
 import State, { GameState } from "./State";
 
@@ -31,7 +31,16 @@ export default class PreGame implements State {
 		this.handleSocketEvents(user.socket);
 	}
 
+	public setFullFilled(): void {
+		this.state = GameState.FillFulled;
+	}
+
+	public setPreGame(): void {
+		this.state = GameState.PreGame;
+	}
+
 	public userLeft(user: User): void {
+		this.state = GameState.PreGame;
 		this.removeSocketEvents(user.socket);
 	}
 
@@ -58,25 +67,25 @@ export default class PreGame implements State {
 		 * First idea was to just add un switch statement here depending on the mode and then add multiple "startTypeGame(gameOptions)",
 		 * but maybe have one single function startGame that implements that switch case and creates the game depending on gameOptions
 		 **/
-		socket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.INITIALIZE_GAME, (data: InitializeGameEvent) => {
-			if (this.context.getHost().userId == data.playerId) {
-				this.gameInitializationTimeout = setTimeout(() => {
-					let game: State;
-					//TODO: add verifications
-					game = this.startRaceGame(data.gameOptions);
-					this.context.transitionTo(game);
-				}, this.GAME_INITIALIZATION_DURATION);
-				this.context.gameInitialized(Clock.now() + this.GAME_INITIALIZATION_DURATION);
+		socket.on(CLIENT_EVENT_NAMES.GAME_INITIALIZED, (gameOptions: GameOptions) => {
+			// if (this.context.areUsersReady()) {
+			if (this.gameInitializationTimeout) {
+				clearTimeout(this.gameInitializationTimeout);
+				this.context.cancelGameInitialized();
 			}
+
+			this.gameInitializationTimeout = setTimeout(() => {
+				let game: State;
+				//TODO: add verifications
+				game = this.startRaceGame(gameOptions);
+				this.context.transitionTo(game);
+			}, this.GAME_INITIALIZATION_DURATION);
+			this.context.gameInitialized(Clock.now() + this.GAME_INITIALIZATION_DURATION);
 		});
 
-		socket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.CANCEL_GAME_INITIALIZATION, (data: CancelGameInitializationEvent) => {
-			if (this.context.getHost().userId == data.playerId) {
-				if (this.gameInitializationTimeout != undefined) {
-					clearTimeout(this.gameInitializationTimeout);
-					this.context.gameInitializationCanceled();
-				}
-			}
+		socket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.CANCEL_GAME_INITIALIZATION, () => {
+			clearTimeout(this.gameInitializationTimeout);
+			this.context.cancelGameInitialized();
 		});
 	}
 

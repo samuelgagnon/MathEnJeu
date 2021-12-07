@@ -6,14 +6,24 @@ export default class Tile {
 	public readonly isWalkable: boolean;
 	public readonly isStartPosition: boolean;
 	public readonly isFinishLine: boolean;
+	public readonly isWallTile: boolean;
 	readonly checkpointGroup?: number;
 	readonly position: Point;
 
-	constructor(position: Point, isWalkable: boolean, startPosition: boolean, isFinishLine: boolean, item?: Item, checkpointGroup?: number) {
+	constructor(
+		position: Point,
+		isWalkable: boolean,
+		startPosition: boolean,
+		isFinishLine: boolean,
+		isWallTile: boolean,
+		item?: Item,
+		checkpointGroup?: number
+	) {
 		this.position = position;
 		this.isWalkable = isWalkable;
 		this.isStartPosition = startPosition;
 		this.isFinishLine = isFinishLine;
+		this.isWallTile = isWallTile;
 		this.item = item;
 		this.checkpointGroup = checkpointGroup;
 	}
@@ -34,14 +44,13 @@ export default class Tile {
 		this.item = undefined;
 	}
 
-	public playerPickUpItem(player: Player): Item {
+	public playerPickUpItem(player: Player): boolean {
 		if (this.item) {
-			const pickedUpItem = this.item;
 			this.item.onPickUp(player);
 			this.item = undefined;
-			return pickedUpItem;
+			return true;
 		} else {
-			return null;
+			return false;
 		}
 	}
 

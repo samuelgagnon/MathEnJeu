@@ -1,0 +1,100 @@
+{
+    "userSettings": {
+        "name": "NAME",
+        "schoolLevel": "SCHOOL LEVEL",
+        "play": "PLAY",
+        "choose": "CHOOSE",
+        "changer": "CHANGE",
+        "comment": "HOW TO PLAY",
+        "howToPlay": "How to play?",
+        "goal": "Goal of the game",
+        "description": "Answer the questions and complete the circuit to collect\ncrystals. When the time is up, the player with the most\ncrystals wins the game!",
+        "increaseMoment": "Increase\nyour movements",
+        "showDown": "Slows down\nan opponent",
+        "exchangeQue": "Exchange\nthe question",
+        "eliminates": "Eliminates a\nchoice of answer",
+        "returnToMenu": "RETURN TO THE MENU",
+        "enterName": "Enter your name",
+        "items": "Items"
+    },
+    "schoolLevel": {
+        "general": "General",
+        "oneYear": "1st year",
+        "secondYear": "2nd year",
+        "thirdYear": "3rd year",
+        "grade4": "Grade 4",
+        "grade5": "Grade 5",
+        "grade6": "Grade 6",
+        "secondary1": "Secondary I",
+        "secondary2": "Secondary II",
+        "secondary3": "Secondary III",
+        "secondary4cst": "Secondary IV - CST",
+        "secondary4ts": "Secondary IV - TS",
+        "secondary4sn": "Secondary IV - SN",
+        "secondary5csn": "Secondary V - CSN",
+        "secondary5ts": "Secondary V - TS",
+        "secondary5sn": "Secondary V - SN",
+        "cegep1": "Cegep I",
+        "cegep2": "Cegep II"
+    },
+    "roomCreation": {
+        "listOfParties": "GAME LIST",
+        "accessPrivate": "Access a private room",
+        "accessPublic": "Access a public room",
+        "join": "JOIN",
+        "createRoom": "Create a room",
+        "available": "Available",
+        "notAvailable": "Unavailable",
+        "enterRoom": "Enter the name of the room to access it",
+        "playSolo": "PLAY IN\nSOLO MODE"
+    },
+    "waitingRoom": {
+        "chooseDuration": "Choose your game length",
+        "addOpponents": "Add opponents",
+        "youLeave": "Oh! Leaving already?",
+        "leaveConfirm": "Do you really want to leave?\nWe're going to miss you!",
+        "quit": "Exit",
+        "stay": "Stay",
+        "public": "Public",
+        "private": "Private",
+        "gameDuration": "Game duration",
+        "noOfPlayers": "Number of players",
+        "joinGame": "Join a game",
+        "roomId": "Room code",
+        "host": "Game host",
+        "participants": "Players",
+        "startGame": "Launch game",
+        "soloGame": "Solo game",
+        "gameSettings": "Game settings",
+        "partOf": "Game of",
+        "settings": "Settings",
+        "apply": "Apply",
+        "playMulti": "PLAY WITH\nOTHER\nPLAYERS",
+        "startGameIn": "START OF THE GAME IN",
+        "cancelLaunch": "Cancel launch",
+        "selectCharacter": "Don't forget to choose a character!"
+    },
+    "raceGame": {
+        "ranking": "Ranking"
+    },
+    "questions": {
+        "enter": "Enter",
+        "continue": "Continue",
+        "rightAns": "Good answer",
+        "reportProblem": "Report an issue",
+        "yourAns": "Your answer"
+    },
+    "endGame": {
+        "returnToRoom": "YOU CAN RETURN TO THE ROOM IN",
+        "backToRoom": "Back to the room",
+        "roomRecord": "NEW ROOM RECORD"
+    },
+    "inGameMenu": {
+        "reportProblem": "Report a problem",
+        "returnToGame": "QUIT GAME"
+    },
+    "reportError": {
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+    }
+}

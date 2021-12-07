@@ -19,7 +19,7 @@ export default class BrainiacStatus extends Status {
 	public updateFromState(statusState: StatusState): void {
 		switch (statusState.statusType) {
 			case StatusType.BananaStatus:
-				this.transitionTo(StatusFactory.create(StatusType.BananaStatus, statusState.statusTimestamp));
+				this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 				break;
 			case StatusType.BrainiacStatus:
 				this.startTimeStatus = statusState.statusTimestamp;
@@ -54,7 +54,9 @@ export default class BrainiacStatus extends Status {
 
 	protected transitionTo(status: Status): void {
 		//removing the brainiac bonus movement
-		this.context.addToMoveDistance(-this.BRAINIAC_MOVE_EFFECT);
+		if (status.getCurrentStatus() === StatusType.NormalStatus) {
+			this.context.setMaxMovementDistance(this.NORMAL);
+		}
 		super.transitionTo(status);
 	}
 }

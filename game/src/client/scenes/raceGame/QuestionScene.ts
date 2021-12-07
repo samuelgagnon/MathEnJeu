@@ -4,9 +4,17 @@ import { ItemType } from "../../../gameCore/race/items/Item";
 import { Answer } from "../../../gameCore/race/question/Answer";
 import { Question } from "../../../gameCore/race/question/Question";
 import QuestionMapper from "../../../gameCore/race/question/QuestionMapper";
+import { getTranslate } from "../../assets/locales/translate";
 import { CST } from "../../CST";
 import { getUserInfo } from "../../services/UserInformationService";
-import { createHtmlAnswer, createHtmlFeedback, createHtmlQuestion, createInvisibleDiv } from "../CustomHtml";
+import {
+	createHtmlAnswer,
+	createHtmlFeedback,
+	createHtmlMultiChoiceFeedback,
+	createHtmlMultiChoiceQuestion,
+	createHtmlQuestion,
+	createInvisibleDiv,
+} from "../CustomHtml";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
 import RaceScene from "./RaceScene";
 
@@ -39,7 +47,7 @@ export default class QuestionScene extends Phaser.Scene {
 	feedbackRemainingTimeTxt: Phaser.GameObjects.Text;
 	showFeedbackTime: boolean;
 	background: Phaser.GameObjects.Rectangle;
-
+	questionWindow: Phaser.GameObjects.Image;
 	language: string;
 
 	constructor() {
@@ -66,17 +74,21 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	create() {
-		this.background = this.add.rectangle(this.position.x, this.position.y, this.width, this.height, 0xffffff);
+		this.questionWindow = this.add
+			.image(Number(this.game.config.width) / 2, Number(this.game.config.height) / 2, CST.IMAGES.QUESTION_WINDOW)
+			.setScale(0.8, 0.7);
 
-		this.inputHtml = this.add.dom(this.width * 0.4, this.height * 0.85).createFromCache(CST.HTML.ANSWER_INPUT);
+		var CleUSB_Sortie_09 = this.sound.add(CST.SOUND.CleUSB_Sortie_09);
+		var Flash_10 = this.sound.add(CST.SOUND.Flash_10);
 
+		this.inputHtml = this.add.dom(this.questionWindow.x - 300, this.questionWindow.y + 100).createFromCache(CST.HTML.ANSWER_INPUT);
+		(<HTMLInputElement>this.inputHtml.getChildByName("answerField")).placeholder = getTranslate("questions.yourAns");
 		this.enterButton = this.add
-			.text(this.width * 0.65, this.height * 0.9, "enter", {
-				fontFamily: "Courier",
-				fontSize: "32px",
+			.text(this.questionWindow.x + 380, this.questionWindow.y + 180, getTranslate("questions.enter"), {
+				fontFamily: "ArcherBoldPro",
+				fontSize: "25px",
 				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
+				color: "#ffffff",
 			})
 			.setScrollFactor(0)
 			.setInteractive({
@@ -88,12 +100,11 @@ export default class QuestionScene extends Phaser.Scene {
 		});
 
 		this.continueButton = this.add
-			.text(this.width * 0.8, this.height * 0.9, "Continue", {
-				fontFamily: "Courier",
-				fontSize: "32px",
+			.text(this.questionWindow.x + 380, this.questionWindow.y + 180, getTranslate("questions.continue"), {
+				fontFamily: "ArcherBoldPro",
+				fontSize: "25px",
 				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
+				color: "#ffffff",
 			})
 			.setScrollFactor(0)
 			.setInteractive({
@@ -106,34 +117,32 @@ export default class QuestionScene extends Phaser.Scene {
 			this.destroyScene();
 		});
 
-		this.correctAnswer = this.add
-			.text(this.width * 0.8, this.height * 0.9, "correct answer", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0)
-			.setInteractive({
-				useHandCursor: true,
-			});
+		// this.correctAnswer = this.add
+		// 	.text(this.questionWindow.x + 380, this.questionWindow.y + 180, getTranslate("questions.rightAns"), {
+		// 		fontFamily: "ArcherBoldPro",
+		// 		fontSize: "25px",
+		// 		align: "center",
+		// 		color: "#ffffff",
+		// 	})
+		// 	.setScrollFactor(0)
+		// 	.setInteractive({
+		// 		useHandCursor: true,
+		// 	});
 
-		//DEBUG
-		this.correctAnswer.on("pointerup", () => {
-			(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(
-				new Answer(undefined, "42, The Answer to the Ultimate Question of Life, the Universe, and Everything"),
-				this.targetLocation
-			);
-		});
+		// //DEBUG
+		// this.correctAnswer.on("pointerup", () => {
+		// 	(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).answerQuestion(
+		// 		new Answer(undefined, "42, The Answer to the Ultimate Question of Life, the Universe, and Everything", true),
+		// 		this.targetLocation
+		// 	);
+		// });
 
 		this.reportProblemButton = this.add
-			.text(this.width * 0.8, this.height * 0.1, "Report problem", {
-				fontFamily: "Courier",
-				fontSize: "32px",
+			.text(this.questionWindow.x + 270, this.questionWindow.y - 240, getTranslate("questions.reportProblem"), {
+				fontFamily: "ArcherBoldPro",
+				fontSize: "25px",
 				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
+				color: "#ffffff",
 			})
 			.setScrollFactor(0)
 			.setInteractive({
@@ -145,12 +154,13 @@ export default class QuestionScene extends Phaser.Scene {
 			this.scene.launch(CST.SCENES.REPORT_ERROR, {
 				questionId: this.question.getId(),
 			});
+			(<HTMLInputElement>this.inputHtml.getChildByName("answerField")).style.opacity = "0";
 		});
 
 		this.bookIcon = this.add
-			.sprite(Number(this.game.config.width) * 0.1, Number(this.game.config.height) * 0.9, CST.IMAGES.BOOK)
+			.sprite(this.questionWindow.x - 490, this.questionWindow.y + 200, "Items", 4)
 			.setInteractive({ useHandCursor: true })
-			.setScale(0.1);
+			.setScale(1.3);
 
 		this.bookIcon
 			.on("pointerdown", () => {
@@ -160,46 +170,63 @@ export default class QuestionScene extends Phaser.Scene {
 				this.bookIcon.clearTint();
 			})
 			.on("pointerup", () => {
-				this.bookIcon.clearTint();
-				sceneEvents.emit(EventNames.useBook, ItemType.Book);
+				const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
+				const itemStatus = raceGame.getCurrentPlayer().getInventory().getInventoryState();
+
+				if (itemStatus.bookCount > 0) {
+					CleUSB_Sortie_09.play();
+					this.bookIcon.clearTint();
+					sceneEvents.emit(EventNames.useBook, this.question.getDifficulty());
+				}
 			});
 
-		this.crystalBallIcon = this.add
-			.sprite(Number(this.game.config.width) * 0.2, Number(this.game.config.height) * 0.9, CST.IMAGES.CRYSTAL_BALL)
-			.setInteractive({ useHandCursor: true })
-			.setScale(0.1);
+		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
+			this.crystalBallIcon = this.add
+				.sprite(this.questionWindow.x - 390, this.questionWindow.y + 200, "Items", 0)
+				.setInteractive({ useHandCursor: true })
+				.setScale(1.3);
 
-		this.crystalBallIcon
-			.on("pointerdown", () => {
-				this.crystalBallIcon.setTint(0xffea00);
-			})
-			.on("pointerover", () => {
-				this.crystalBallIcon.clearTint();
-			})
-			.on("pointerup", () => {
-				this.crystalBallIcon.clearTint();
-				this.useCrystalBall();
-			});
+			this.crystalBallIcon
+				.on("pointerdown", () => {
+					this.crystalBallIcon.setTint(0xffea00);
+				})
+				.on("pointerover", () => {
+					this.crystalBallIcon.clearTint();
+				})
+				.on("pointerup", () => {
+					const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
+					const itemStatus = raceGame.getCurrentPlayer().getInventory().getInventoryState();
+
+					if (
+						itemStatus.crystalBallCount > 0 &&
+						(this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5")
+					) {
+						Flash_10.play();
+						this.crystalBallIcon.clearTint();
+						this.useCrystalBall();
+					}
+				});
+
+			this.crystalBallCount = this.add
+				.text(this.crystalBallIcon.getTopRight().x, this.crystalBallIcon.getTopRight().y - 13, "0", {
+					fontFamily: "ArcherBoldPro",
+					fontSize: "20px",
+					align: "center",
+					color: "#ffffff",
+				})
+				.setScrollFactor(0);
+		}
 
 		this.bookCount = this.add
-			.text(this.bookIcon.getTopRight().x - 7, this.bookIcon.getTopRight().y, "0", {
-				fontFamily: "Arial",
+			.text(this.bookIcon.getTopRight().x, this.bookIcon.getTopRight().y - 15, "0", {
+				fontFamily: "ArcherBoldPro",
 				fontSize: "20px",
 				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
+				color: "#ffffff",
 			})
 			.setScrollFactor(0);
 
-		this.crystalBallCount = this.add
-			.text(this.crystalBallIcon.getTopRight().x + 5, this.crystalBallIcon.getTopRight().y, "0", {
-				fontFamily: "Arial",
-				fontSize: "20px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0);
+		this.input.keyboard.clearCaptures();
 
 		this.getHtmlForQuestion();
 
@@ -228,6 +255,22 @@ export default class QuestionScene extends Phaser.Scene {
 		const inventoryState = raceGame.getCurrentPlayer().getInventory().getInventoryState();
 		this.bookCount.setText(inventoryState.bookCount.toString());
 		this.crystalBallCount.setText(inventoryState.crystalBallCount.toString());
+
+		if (inventoryState.bookCount > 0) {
+			this.bookIcon.setAlpha(1);
+		} else {
+			this.bookIcon.setAlpha(0.5);
+		}
+
+		if (this.question.getAnswerType() == "MULTIPLE_CHOICE" || this.question.getAnswerType() == "MULTIPLE_CHOICE_5") {
+			if (inventoryState.crystalBallCount > 0) {
+				this.crystalBallIcon.setAlpha(1);
+			} else {
+				this.crystalBallIcon.setAlpha(0.5);
+			}
+		} else {
+			this.crystalBallIcon.setAlpha(0);
+		}
 	}
 
 	private endPenalty(): void {
@@ -243,24 +286,26 @@ export default class QuestionScene extends Phaser.Scene {
 	}
 
 	private startFeedback() {
+		this.crystalBallIcon.disableInteractive();
+		this.bookIcon.disableInteractive();
 		const raceGame = (<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).raceGame;
 		this.answersHtml.forEach((answer) => answer.setAlpha(0).setActive(false).setVisible(false));
 		this.answersButton.forEach((answer) => answer.setAlpha(0).setActive(false).setVisible(false));
 		this.inputHtml.setAlpha(0).setActive(false).setVisible(false);
 		this.enterButton.setAlpha(0).setActive(false).setVisible(false);
-		this.correctAnswer.setAlpha(0).setActive(false).setVisible(false);
+		// this.correctAnswer.setAlpha(0).setActive(false).setVisible(false);
 		this.questionHtml.setAlpha(0).setActive(false).setVisible(false);
 		this.feedbackStartTimeStamp = Clock.now();
 		//Approximation of feedbackMaxTime by checking remaining time.
-		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp() - Clock.now();
+		this.feedbackMaxTime = raceGame.getCurrentPlayer().getEndOfPenaltyTimestamp(); // - Clock.now();
 
 		this.feedbackRemainingTimeTxt = this.add
-			.text(Number(this.game.config.width) * 0.8, Number(this.game.config.height) * 0.15, this.feedbackMaxTime.toString(), {
-				fontFamily: "Courier",
+			.text(this.questionWindow.x + 400, this.questionWindow.y - 218, "", {
+				//this.feedbackMaxTime.toString()
+				fontFamily: "ArcherBoldPro",
 				fontSize: "26px",
 				align: "center",
-				color: "#cc0000",
-				fontStyle: "bold",
+				color: "#CC0000",
 			})
 			.setScrollFactor(0);
 		this.feedbackHtml.setAlpha(1).setVisible(true);
@@ -278,30 +323,42 @@ export default class QuestionScene extends Phaser.Scene {
 		}
 
 		this.clearAnswers();
-
-		this.questionHtml = createHtmlQuestion(
-			this,
-			Number(this.game.config.width) * 0.45,
-			Number(this.game.config.height) * 0.25,
-			800,
-			300,
-			this.question.getId(),
-			this.language
-		);
-		this.feedbackHtml = createHtmlFeedback(
-			this,
-			Number(this.game.config.width) * 0.45,
-			Number(this.game.config.height) * 0.25,
-			800,
-			300,
-			this.question.getId(),
-			this.language
-		).setAlpha(0);
+		console.log("question: ", this.question);
 
 		if (this.question.getAnswerType() === "MULTIPLE_CHOICE") {
+			this.questionHtml = createHtmlMultiChoiceQuestion(
+				this,
+				this.questionWindow.x - 200,
+				this.questionWindow.y - 30,
+				500,
+				300,
+				this.question.getId(),
+				this.language
+			);
+			this.feedbackHtml = createHtmlMultiChoiceFeedback(
+				this,
+				this.questionWindow.x - 200,
+				this.questionWindow.y - 30,
+				500,
+				300,
+				this.question.getId(),
+				this.language
+			).setAlpha(0);
 			this.generateHtmlAnswers();
 		} else {
+			this.questionHtml = createHtmlQuestion(this, this.questionWindow.x, this.questionWindow.y - 80, 800, 300, this.question.getId(), this.language);
+			this.feedbackHtml = createHtmlFeedback(
+				this,
+				this.questionWindow.x,
+				this.questionWindow.y - 30,
+				800,
+				300,
+				this.question.getId(),
+				this.language
+			).setAlpha(0);
+
 			this.inputHtml.setAlpha(1);
+			this.enterButton.setAlpha(1);
 		}
 	}
 
@@ -321,8 +378,8 @@ export default class QuestionScene extends Phaser.Scene {
 		this.question.getAnswers().forEach((answer: Answer, index: number) => {
 			const answerHtml = createHtmlAnswer(
 				this,
-				Number(this.game.config.width) * 0.2 + 200 * index + 20,
-				Number(this.game.config.height) * 0.65,
+				this.questionWindow.x - 200 * (index % 2) + 410,
+				this.questionWindow.y - 95 + 200 * Math.floor(index / 2),
 				150,
 				150,
 				answer.getId(),
@@ -335,15 +392,14 @@ export default class QuestionScene extends Phaser.Scene {
 
 			const invisibleDiv = createInvisibleDiv(
 				this,
-				Number(this.game.config.width) * 0.2 + 200 * index + 20,
-				Number(this.game.config.height) * 0.65,
-				150,
-				150
-			).setDepth(3);
+				this.questionWindow.x - 200 * (index % 2) + 410,
+				this.questionWindow.y - 95 + 200 * Math.floor(index / 2),
+				250,
+				80
+			).setDepth(2);
 
 			invisibleDiv.addListener("click");
 			invisibleDiv.on("click", () => {
-				console.log(this.question.getAnswers()[index]);
 				this.answerQuestion(this.question.getAnswers()[index]);
 			});
 
@@ -358,7 +414,11 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private answerQuestion(answer?: Answer): void {
 		if (!answer) {
-			answer = this.question.getAnswer((<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value);
+			let inputValue = (<HTMLInputElement>this.inputHtml.getChildByName("answerField")).value;
+			if (this.question.getAnswerType() === "TRUE_OR_FALSE" && (inputValue.toLowerCase() === "vrai" || inputValue.toLowerCase() === "faux")) {
+				inputValue = inputValue.toLowerCase() === "vrai" ? "a" : "b";
+			}
+			answer = this.question.getAnswer(inputValue);
 		}
 		sceneEvents.emit(EventNames.answerQuestion, answer, this.targetLocation);
 	}
@@ -366,6 +426,7 @@ export default class QuestionScene extends Phaser.Scene {
 	private destroyScene(): void {
 		this.scene.stop(CST.SCENES.REPORT_ERROR);
 		this.scene.stop(CST.SCENES.QUESTION_WINDOW);
+		(<RaceScene>this.scene.get(CST.SCENES.RACE_GAME)).closeWindow();
 	}
 
 	private useCrystalBall(): void {
@@ -381,8 +442,6 @@ export default class QuestionScene extends Phaser.Scene {
 					console.log(error);
 				}
 			}
-		} else {
-			alert("must be a multiple choice question");
 		}
 	}
 
@@ -412,7 +471,9 @@ export default class QuestionScene extends Phaser.Scene {
 
 	private errorWindowClosed(isFromQuestionScene: boolean) {
 		this.inputHtml.setActive(isFromQuestionScene).setVisible(isFromQuestionScene);
+		(<HTMLInputElement>this.inputHtml.getChildByName("answerField")).style.opacity = "1";
 		this.input.enabled = isFromQuestionScene;
+		this.resumeGame();
 	}
 
 	private handleNewQuestionFound(data: QuestionFoundFromBookEvent) {

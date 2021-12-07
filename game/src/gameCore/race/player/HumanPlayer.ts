@@ -1,11 +1,9 @@
 import { InfoForQuestion } from "../../../communication/race/QuestionDTO";
 import { Clock } from "../../clock/Clock";
-import Character from "../character/Character";
 import { Answer } from "../question/Answer";
 import { Question } from "../question/Question";
 import Inventory from "./Inventory";
 import Player from "./Player";
-import { QuestionState } from "./playerStatus/QuestionState";
 import Status from "./playerStatus/Status";
 
 export default class HumanPlayer extends Player {
@@ -19,14 +17,14 @@ export default class HumanPlayer extends Player {
 		id: string,
 		startLocation: Point,
 		name: string,
+		helmetIndex: number,
 		status: Status,
 		inventory: Inventory,
-		character: Character,
 		schoolGrade: number,
 		language: string,
 		pointsCalculator: (moveDistance: number) => number
 	) {
-		super(id, startLocation, name, status, inventory, character, pointsCalculator);
+		super(id, startLocation, name, helmetIndex, status, inventory, pointsCalculator);
 		this.schoolGrade = schoolGrade;
 		this.language = language;
 	}
@@ -38,7 +36,7 @@ export default class HumanPlayer extends Player {
 		};
 	}
 
-	public isWorkingOnQuestion(): boolean {
+	public isAnsweringQuestion(): boolean {
 		return this.activeQuestion !== undefined;
 	}
 
@@ -48,22 +46,12 @@ export default class HumanPlayer extends Player {
 		this.lastQuestionPromptTimestamp = Clock.now();
 	}
 
-	public updateQuestionState() {
-		if (Clock.now() < this.endOfPenaltyTimestamp) {
-			this.questionState = QuestionState.PenaltyState;
-		} else if (this.isWorkingOnQuestion()) {
-			super.questionState = QuestionState.AnsweringState;
-		} else {
-			super.questionState = QuestionState.NoQuestionState;
-		}
-	}
-
 	public getActiveQuestion(): Question {
 		return this.activeQuestion;
 	}
 
 	public getAnswerFromActiveQuestion(answerString: string): Answer {
-		if (this.isWorkingOnQuestion()) {
+		if (this.isAnsweringQuestion()) {
 			return this.activeQuestion.getAnswer(answerString);
 		}
 		return undefined;

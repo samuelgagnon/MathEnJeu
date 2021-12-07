@@ -4,6 +4,7 @@ import { ROOM_SELECTION_EVENT_NAMES } from "../../communication/roomSelection/Ev
 import { CST } from "../CST";
 import { connectToRoomSelectionNamespace } from "../services/RoomService";
 import BaseScene from "./BaseScene";
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from "../GameConfig";
 
 export default class RoomSelection extends BaseScene {
 	private joinRoomButton: Phaser.GameObjects.Text;
@@ -31,18 +32,18 @@ export default class RoomSelection extends BaseScene {
 	}
 
 	create() {
+		this.scale.setGameSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 		this.inputHtml = this.add.dom(600, this.game.renderer.height * 0.5).createFromCache(CST.HTML.ROOM_INPUT);
 		this.roomsListHtml = this.add.dom(1000, this.game.renderer.height * 0.3).createFromCache(CST.HTML.ROOMS_LIST);
 
 		this.roomSelectionSocket.on(ROOM_SELECTION_EVENT_NAMES.ROOM_UPDATE, (rooms: string[]) => {
 			this.playerListUpdate(rooms);
 		});
-
-		this.add.tileSprite(0, 0, Number(this.game.config.width), Number(this.game.config.height), CST.IMAGES.BACKGROUD).setOrigin(0).setDepth(0);
-
+		document.body.style.backgroundImage = 'url("static/client/assets/images/starfield.png")';
+		// this.add.image(Number(this.game.config.width) / 2 + 6, Number(this.game.config.height) / 2 + 18, CST.IMAGES.BACKGROUD).setScale(0.71, 0.713);
 		this.joinRoomButton = this.add
-			.text(385, this.game.renderer.height * 0.6, "Join Room", {
-				fontFamily: "Courier",
+			.text(385, this.game.renderer.height * 0.6, "Rejoindre une partie", {
+				fontFamily: "ArcherBoldPro",
 				fontSize: "64px",
 				align: "center",
 				color: "#FDFFB5",
@@ -68,7 +69,7 @@ export default class RoomSelection extends BaseScene {
 
 		this.backButton = this.add
 			.text(10, 10, "<- back", {
-				fontFamily: "Courier",
+				fontFamily: "ArcherBoldPro",
 				fontSize: "32px",
 				align: "center",
 				color: "#FDFFB5",
@@ -88,12 +89,12 @@ export default class RoomSelection extends BaseScene {
 			})
 			.on("pointerup", () => {
 				this.backButton.clearTint();
-				this.scene.start(CST.SCENES.GAME_SELECTION);
+				this.scene.start(CST.SCENES.ROOM_CREATION);
 			});
 
 		this.refreshButton = this.add
 			.text(Number(this.game.config.width) * 0.9, 10, "Refresh", {
-				fontFamily: "Courier",
+				fontFamily: "ArcherBoldPro",
 				fontSize: "32px",
 				align: "center",
 				color: "#FDFFB5",

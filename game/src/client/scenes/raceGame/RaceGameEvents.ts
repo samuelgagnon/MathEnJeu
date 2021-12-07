@@ -7,6 +7,7 @@ export const EventNames = {
 	questionCorrected: "question-corrected",
 	useBook: "use-book",
 	useCrystalBall: "use-crystal-ball",
+	useBanana: "use-banana",
 	newQuestionFound: "new-question-found",
 
 	gamePaused: "game-pause",
@@ -19,6 +20,7 @@ export const EventNames = {
 
 	zoomIn: "zoom-in",
 	zoomOut: "zoom-out",
+	setWalkableTile: 'setWalkableTile',
 
 	errorWindowOpened: "error-window-opened",
 	errorWindowClosed: "error-window-closed",

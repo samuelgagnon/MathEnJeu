@@ -1,5 +1,6 @@
 import ErrorReport from "../../../communication/ErrorReport";
 import { Clock } from "../../../gameCore/clock/Clock";
+import { getTranslate } from "../../assets/locales/translate";
 import { CST } from "../../CST";
 import { postErrorReport } from "../../services/ReportErrorService";
 import { getUserInfo } from "../../services/UserInformationService";
@@ -27,22 +28,23 @@ export default class ReportErrorScene extends Phaser.Scene {
 
 	init(data: any) {
 		this.questionId = data.questionId;
-		this.width = Number(this.game.config.width) * 0.7;
-		this.height = Number(this.game.config.height) * 0.8;
+		this.width = Number(this.game.config.width) * 0.8;
+		this.height = Number(this.game.config.height) * 0.69;
 
-		var x = Number(this.game.config.width) * 0.1;
-		var y = Number(this.game.config.height) * 0.05;
+		var x = Number(this.game.config.width) * 0.5;
+		var y = Number(this.game.config.height) * 0.5;
 		this.position = { x: x, y: y };
 	}
 
 	create() {
-		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
+		this.cameras.main.setViewport(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
 		this.cameras.main.setBackgroundColor(0x828282);
 		this.inputHtml = this.add.dom(this.width * 0.5, this.height * 0.4).createFromCache(CST.HTML.ERROR_REPORT);
 
+		this.input.keyboard.clearCaptures();
 		this.reportButton = this.add
-			.text(this.width / 4, this.height * 0.8, "Confirm", {
-				fontFamily: "Courier",
+			.text(this.width / 4, this.height * 0.8, getTranslate("reportError.confirm"), {
+				fontFamily: "ArcherBoldPro",
 				fontSize: "32px",
 				align: "center",
 				color: "#000000",
@@ -54,8 +56,8 @@ export default class ReportErrorScene extends Phaser.Scene {
 			});
 
 		this.cancelButton = this.add
-			.text((this.width * 3) / 4, this.height * 0.8, "Cancel", {
-				fontFamily: "Courier",
+			.text((this.width * 3) / 4, this.height * 0.8, getTranslate("reportError.cancel"), {
+				fontFamily: "ArcherBoldPro",
 				fontSize: "32px",
 				align: "center",
 				color: "#000000",

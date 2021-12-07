@@ -1,5 +1,5 @@
 import ItemState from "../../communication/race/ItemState";
-import { PlayerDTO } from "../../communication/race/PlayerDTO";
+import PlayerState from "../../communication/race/PlayerState";
 import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import User from "../../server/rooms/User";
 import ClientRaceGameController from "./ClientRaceGameController";
@@ -32,7 +32,7 @@ export default class RaceGameFactory {
 	}
 
 	//grid is a string with exactly (gridWidth x gridHeight) number of characters.
-	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string, isSinglePlayer: boolean): RaceGrid {
+	public static generateRaceGrid(gridWidth: number, gridHeight: number, grid: string, isSinglePlayer: boolean, itemCount: number): RaceGrid {
 		let tiles: Tile[] = [];
 		for (let y = 0; y < gridHeight; y++) {
 			for (let x = 0; x < gridWidth; x++) {
@@ -40,24 +40,28 @@ export default class RaceGameFactory {
 
 				//Tile is Non walkable
 				if (tileSymbol === "x") {
-					tiles.push(new Tile(<Point>{ x, y }, false, false, false));
+					tiles.push(new Tile(<Point>{ x, y }, false, false, false, false));
 
 					//Tile is Startposition & Finishline
 				} else if (tileSymbol === "|") {
-					tiles.push(new Tile(<Point>{ x, y }, true, true, true));
+					tiles.push(new Tile(<Point>{ x, y }, true, true, true, false));
 				} else {
 					//Tile is Walkable
 					if (tileSymbol == ".") {
-						tiles.push(new Tile(<Point>{ x, y }, true, false, false));
+						tiles.push(new Tile(<Point>{ x, y }, true, false, false, false));
 
 						//Tile is Checkpoint
+					} else if (tileSymbol === "w") {
+						tiles.push(new Tile(<Point>{ x, y }, false, false, false, true));
 					} else {
 						let checkpointGroup = Number(tileSymbol);
 						if (checkpointGroup == NaN) {
 							throw Error("Error in race grid generation: Tile symbol '" + tileSymbol + "' is not recognized");
 						} else {
-							if (checkpointGroup >= 1 && checkpointGroup <= RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
-								tiles.push(new Tile(<Point>{ x, y }, true, false, false, undefined, Number(tileSymbol)));
+							if (checkpointGroup >= 1 && checkpointGroup < RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+								tiles.push(new Tile(<Point>{ x, y }, true, false, false, false, undefined, Number(tileSymbol)));
+							} else if (checkpointGroup == RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS) {
+								tiles.push(new Tile(<Point>{ x, y }, true, false, true, false, undefined, Number(tileSymbol)));
 							} else {
 								throw Error("Error in race grid generation: Checkpoint group '" + tileSymbol + "' is not in the range.");
 							}
@@ -67,7 +71,7 @@ export default class RaceGameFactory {
 			}
 		}
 		let raceGrid = new RaceGrid(tiles, gridWidth, gridHeight, [], RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS);
-		for (let i = 0; i < RACE_PARAMETERS.CIRCUIT.NUMBER_OF_ITEMS; i++) {
+		for (let i = 0; i < itemCount; i++) {
 			raceGrid.generateNewItem([], isSinglePlayer);
 		}
 		return raceGrid;
@@ -129,7 +133,7 @@ export default class RaceGameFactory {
 					startingRaceGridInfo.startingPositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
 				const isFinishLine: boolean =
 					startingRaceGridInfo.finishLinePositions.find((position: Point) => position.x == x && position.y == y) !== undefined;
-				tiles.push(new Tile(<Point>{ x, y }, isWalkable, isStartPosition, isFinishLine));
+				tiles.push(new Tile(<Point>{ x, y }, isWalkable, isStartPosition, isFinishLine, false));
 			}
 		}
 
@@ -146,10 +150,10 @@ export default class RaceGameFactory {
 		);
 	}
 
-	public static createClientPlayers(playersDTO: PlayerDTO[]): PlayerRepository {
+	public static createClientPlayers(playersState: PlayerState[]): PlayerRepository {
 		let playerRepo: PlayerRepository = new PlayerInMemoryRepository();
-		playersDTO.forEach((playerDTO: PlayerDTO) => {
-			playerRepo.addPlayer(PlayerFactory.createFromPlayerDTO(playerDTO));
+		playersState.forEach((playerState: PlayerState) => {
+			playerRepo.addPlayer(PlayerFactory.createFromPlayerState(playerState));
 		});
 		return playerRepo;
 	}

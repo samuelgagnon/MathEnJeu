@@ -1,14 +1,17 @@
+import { getTranslate } from "../../assets/locales/translate";
 import { CST } from "../../CST";
 import { EventNames, sceneEvents, subscribeToEvent } from "./RaceGameEvents";
-
+import RaceGameUI from "./RaceGameUI";
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from "../../GameConfig";
 export default class InGameMenuScene extends Phaser.Scene {
 	position: Point;
 	width: number;
 	height: number;
 
-	resumeText: Phaser.GameObjects.Text;
-	reportProblemText: Phaser.GameObjects.Text;
-	quitText: Phaser.GameObjects.Text;
+	resumeText: Phaser.GameObjects.Rectangle;
+	reportProblemText: Phaser.GameObjects.Rectangle;
+	quitText: Phaser.GameObjects.Rectangle;
+	inGameBack: Phaser.GameObjects.Image;
 
 	constructor() {
 		const sceneConfig = {
@@ -21,64 +24,37 @@ export default class InGameMenuScene extends Phaser.Scene {
 		this.width = Number(this.game.config.width) * 0.4;
 		this.height = Number(this.game.config.height) * 0.8;
 
-		var x = Number(this.game.config.width) * 0.35;
-		var y = Number(this.game.config.height) * 0.05;
+		var x = Number(this.game.config.width) * 0.35; // width * 0.35; //
+		var y = Number(this.game.config.height) * 0.05; //height * 0.05; //
 		this.position = { x: x, y: y };
 	}
 
 	create() {
-		this.cameras.main.setViewport(this.position.x, this.position.y, this.width, this.height);
-		this.cameras.main.setBackgroundColor(0x808080);
+		// this.scale.setGameSize(window.innerWidth, window.innerHeight);
+		this.inGameBack = this.add.image(Number(this.game.config.width) / 2, Number(this.game.config.height) / 2, CST.IMAGES.IN_GAME_BACK).setScale(0.9);
+		this.resumeText = this.add.rectangle(this.inGameBack.x + 320, this.inGameBack.y - 148, 35, 35).setInteractive({ useHandCursor: true });
+		this.resumeText.on("pointerup", () => {
+			this.resumeGame();
+		});
 
-		this.resumeText = this.add
-			.text(this.width / 2 - 75, this.height * 0.3, "Resume", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0)
-			.setInteractive({
-				useHandCursor: true,
-			});
-
-		this.resumeText
-			.on("pointerover", () => {
-				this.quitText.setTint(0xffff66);
-			})
-			.on("pointerout", () => {
-				this.quitText.clearTint();
-			})
-			.on("pointerdown", () => {
-				this.quitText.setTint(0x86bfda);
-			})
-			.on("pointerup", () => {
-				this.resumeGame();
-			});
-
-		this.reportProblemText = this.add
-			.text(this.width / 2 - 75, this.height * 0.5, "Report problem", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0)
-			.setInteractive({
-				useHandCursor: true,
-			});
-
+		var reportProblem = this.add.text(this.inGameBack.x, this.inGameBack.y - 43, getTranslate("inGameMenu.reportProblem"), {
+			fontFamily: "ArcherBoldPro",
+			fontSize: "18px",
+			align: "center",
+			color: "#fff",
+			fontStyle: "bold",
+		});
+		reportProblem.setX(reportProblem.x - reportProblem.width / 2);
+		this.reportProblemText = this.add.rectangle(this.inGameBack.x + 0, this.inGameBack.y - 30, 310, 48).setInteractive({ useHandCursor: true });
 		this.reportProblemText
 			.on("pointerover", () => {
-				this.reportProblemText.setTint(0xffff66);
+				reportProblem.setTint(0xffff66);
 			})
 			.on("pointerout", () => {
-				this.reportProblemText.clearTint();
+				reportProblem.clearTint();
 			})
 			.on("pointerdown", () => {
-				this.reportProblemText.setTint(0x86bfda);
+				reportProblem.setTint(0x86bfda);
 			})
 			.on("pointerup", () => {
 				sceneEvents.emit(EventNames.errorWindowOpened);
@@ -87,33 +63,31 @@ export default class InGameMenuScene extends Phaser.Scene {
 				});
 			});
 
-		this.quitText = this.add
-			.text(this.width / 2 - 75, this.height * 0.7, "Quit", {
-				fontFamily: "Courier",
-				fontSize: "32px",
-				align: "center",
-				color: "#000000",
-				fontStyle: "bold",
-			})
-			.setScrollFactor(0)
-			.setInteractive({
-				useHandCursor: true,
-			});
+		var exitGame = this.add.text(this.inGameBack.x, this.inGameBack.y + 32, getTranslate("inGameMenu.returnToGame"), {
+			fontFamily: "ArcherBoldPro",
+			fontSize: "22px",
+			align: "center",
+			color: "#fff",
+			fontStyle: "bold",
+		});
+		exitGame.setX(exitGame.x - exitGame.width / 2);
 
+		this.quitText = this.add.rectangle(this.inGameBack.x + 3, this.inGameBack.y + 45, 310, 43).setInteractive({ useHandCursor: true });
 		this.quitText
 			.on("pointerover", () => {
-				this.quitText.setTint(0xffff66);
+				exitGame.setTint(0xffff66);
 			})
 			.on("pointerout", () => {
-				this.quitText.clearTint();
+				exitGame.clearTint();
 			})
 			.on("pointerdown", () => {
-				this.quitText.setTint(0x86bfda);
+				exitGame.setTint(0x86bfda);
 			})
 			.on("pointerup", () => {
+				exitGame.clearTint();
 				sceneEvents.emit(EventNames.quitGame);
+				(<RaceGameUI>this.scene.get(CST.SCENES.RACE_GAME_UI)).closeGame();
 			});
-
 		subscribeToEvent(EventNames.errorWindowOpened, this.errorWindowOpened, this);
 		subscribeToEvent(EventNames.errorWindowClosed, this.errorWindowClosed, this);
 		subscribeToEvent(EventNames.gameEnds, () => this.scene.stop(), this);

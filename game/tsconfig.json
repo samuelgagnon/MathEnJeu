@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2017",
+    "lib": ["ES2015","ES2016","dom"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -12,8 +13,13 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/phaser-ce/typescript/"
+    ],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "jsx": "react",     
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
