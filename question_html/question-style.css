@@ -1,14 +1,59 @@
 p {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: black;
+    margin: 0px;
+}
+
+p img {
+    width: 160px;
+    /* filter: invert(100%); */
 }
 
 .wrapfigure {
     float: right;
     padding: 5px;
+    color: black;
+}
+
+.wrapfigure p img {
+    width: 30vw;
+    height: auto;
 }
 
 .scriptsize {
     font-size:small;
+    color: black;
 }
 
+strong{
+    color: black;
+}
 
+::-webkit-scrollbar {
+    width: 15px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: -webkit-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: -o-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: -ms-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: -moz-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: linear-gradient(to right, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: -webkit-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: -o-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: -ms-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: -moz-linear-gradient(left, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+    background: linear-gradient(to right, rgb(53, 27, 22) 0%, rgb(112, 71, 31) 62%, rgb(72, 48, 24) 100%);
+}

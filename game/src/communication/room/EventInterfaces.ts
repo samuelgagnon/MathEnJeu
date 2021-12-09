@@ -4,6 +4,8 @@ import { UserDTO } from "../user/UserDTO";
 export interface RoomSettings {
 	maxPlayerCount: number;
 	isPrivate: boolean;
+	createTime: number;
+	type: string;
 }
 
 export interface RoomInfoEvent {
@@ -14,6 +16,7 @@ export interface RoomInfoEvent {
 
 export interface JoinRoomAnswerEvent {
 	roomId: string;
+	isCreateRoom: string;
 	error: Error;
 }
 
@@ -23,10 +26,6 @@ export interface JoinRoomRequestEvent {
 
 export interface HostChangeEvent {
 	newHostName: string;
-}
-
-export interface ReadyEvent {
-	characterDTO: CharacterDTO;
 }
 
 //this includes the games options selected by the host
@@ -46,4 +45,8 @@ export interface GameInitializedEvent {
 
 export interface CancelGameInitializationEvent {
 	playerId: string;
+}
+
+export interface ReadyEvent {
+	characterDTO: CharacterDTO;
 }

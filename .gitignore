@@ -5,3 +5,4 @@
 /question_html/answers_html
 *.zip
 *.env
+.DS_Store

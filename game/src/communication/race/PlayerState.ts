@@ -1,14 +1,14 @@
-import { QuestionState } from "../../gameCore/race/player/playerStatus/QuestionState";
 import { StatusType } from "../../gameCore/race/player/playerStatus/StatusType";
 import MoveState from "./MoveState";
 
 export default interface PlayerState {
-	playerId: string;
+	id: string;
+	name: string;
 	points: number;
+	helmetIndex: number;
 	move: MoveState;
 	statusState: StatusState;
 	inventoryState: InventoryState;
-	questionState: QuestionState;
 }
 
 export interface StatusState {
@@ -20,4 +20,12 @@ export interface InventoryState {
 	bananaCount: number;
 	crystalBallCount: number;
 	bookCount: number;
+}
+
+export interface PlayerEndState {
+	playerId: string;
+	points: number;
+	name: string;
+	//TODO: Maybe put the user information here
+	//to know what character model is used and possibly the grade the player is
 }

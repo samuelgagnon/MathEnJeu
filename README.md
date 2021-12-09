@@ -14,9 +14,6 @@ Required files for questions :
  - "/question_html/append.html" : File used in the html files generation process.
  - "./latex_files/" : Folder used in the html files generation process.
 
-Required file for environment variables :
- - "./env"
-
 Once HTML files are generated from LaTex sources, you can copy the required files in your project.
 
 ### Database

@@ -41,6 +41,8 @@ export default class AffineTransform {
 	// |u2 v2|   |y|
 	public applyLinearTransform(point: Point): Point {
 		return { x: this.u1 * point.x + this.v1 * point.y, y: this.u2 * point.x + this.v2 * point.y };
+		// return { x: this.u1 * point.x + this.v1 * point.y, y: this.u2 * point.x + this.v2 * point.y };
+		// return { x: 0.91, y: 0.91 };
 	}
 
 	// Returns the result of this calculation :

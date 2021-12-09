@@ -3,7 +3,7 @@
 	"name": "default",
 	"type": "mysql",
 	"host": "db",
-	"port": 3306,
+	"port": 3307,
 	"username": "user",
 	"password": "123",
 	"database": "mathamaze2",

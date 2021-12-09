@@ -20,7 +20,7 @@
   },
   {
     "host": "db",
-    "port": 3306,
+    "port": 3307,
     "databaseName": "mathamaze2",
     "user": "user",
     "password": "123",

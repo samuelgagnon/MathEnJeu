@@ -1,12 +1,10 @@
 import randomNormal from "random-normal";
 import { Clock } from "../../../clock/Clock";
-import Character from "../../character/Character";
 import { ItemType } from "../../items/Item";
 import Move from "../../Move";
 import Inventory from "../Inventory";
 import Player from "../Player";
 import { TargetablePlayers } from "../playerRepository/PlayerRepository";
-import { QuestionState } from "../playerStatus/QuestionState";
 import Status from "../playerStatus/Status";
 import PathFinder from "./PathFinder";
 
@@ -33,14 +31,13 @@ export default class ComputerPlayer extends Player {
 		name: string,
 		status: Status,
 		inventory: Inventory,
-		character: Character,
 		gameStartTimestamp: number,
 		pathFinder: PathFinder,
 		checkpointPositions: Point[][],
 		targetablePlayers: TargetablePlayers,
 		pointsCalculator: (moveDistance: number) => number
 	) {
-		super(id, startLocation, name, status, inventory, character, pointsCalculator);
+		super(id, startLocation, name, Math.floor(Math.random() * 38), status, inventory, pointsCalculator);
 		this.nextActionTimestamp = gameStartTimestamp;
 		this.pathFinder = pathFinder;
 		this.checkpointPositions = checkpointPositions;
@@ -67,16 +64,17 @@ export default class ComputerPlayer extends Player {
 				this.promptQuestion();
 				this.isReadyForNextAction = false;
 				this.setTimeForNextAction();
-				super.questionState = QuestionState.AnsweringState;
 				//ComputerPlayer always has the right answer. It just takes a random amount of time before it gives its answer.
-			} else if (this.isWorkingOnQuestion()) {
+			} else if (this.isAnsweringQuestion()) {
 				this.answeredQuestion(true);
-				this.moveTo(Clock.now(), this.getNextPosition());
-				super.questionState = QuestionState.NoQuestionState;
+				const nextPosition = this.getNextPosition();
+				if (nextPosition) {
+					this.moveTo(Clock.now(), nextPosition);
+				}
 			}
 		}
 
-		if (this.hasArrived() && !this.isWorkingOnQuestion()) {
+		if (this.hasArrived() && !this.isAnsweringQuestion()) {
 			this.isReadyForNextAction = true;
 		}
 	}
@@ -102,19 +100,36 @@ export default class ComputerPlayer extends Player {
 	 */
 	private selectRandomPositionFromPath(): Point {
 		let possibleIndexes: number[] = [];
-		this.pathToFollow.forEach((point: Point, i: number) => {
-			const isDiagonal = Move.isDiagonal(this.getPosition(), point);
-			const distanceFromCurrentPosition = Move.getTaxiCabDistance(this.getPosition(), point);
-			if (!isDiagonal && distanceFromCurrentPosition <= this.getMaxMovementDistance()) {
-				possibleIndexes.push(i);
-			}
-		});
+		if (this.pathToFollow.length > 0) {
+			this.pathToFollow.forEach((point: Point, i: number) => {
+				// const isDiagonal = Move.isDiagonal(this.getPosition(), point);
+				const currentPos = this.getPosition();
+				let isDiagonal = false;
+				if (
+					(Math.abs(currentPos.x - point.x) > 0 && currentPos.y === point.y) ||
+					(Math.abs(currentPos.y - point.y) > 0 && currentPos.x === point.x)
+				) {
+					isDiagonal = true;
+				}
+				const distanceFromCurrentPosition = Move.getTaxiCabDistance(this.getPosition(), point);
+				if (isDiagonal && distanceFromCurrentPosition <= this.getMaxMovementDistance()) {
+					possibleIndexes.push(i);
+				}
+			});
 
-		const randomIndex = possibleIndexes[Math.floor(Math.random() * possibleIndexes.length)];
-		const selectedPosition = this.pathToFollow[randomIndex];
-		this.pathToFollow.splice(0, randomIndex + 1);
+			const randomIndex = possibleIndexes[Math.floor(Math.random() * possibleIndexes.length)];
+			const selectedPosition = this.pathToFollow[randomIndex];
+			this.pathToFollow.splice(0, randomIndex + 1);
 
-		return selectedPosition;
+			return selectedPosition;
+		} else {
+			const nextCheckPoints = this.checkpointPositions[this.checkpointPositions.length - 1];
+			const currentCheckPoints = this.checkpointPositions[this.checkpointPositions.length - 2];
+			const currentPositionIndex = currentCheckPoints.findIndex((point) => point.x === this.getPosition().x && point.y === this.getPosition().y);
+			const nextPosition = nextCheckPoints[currentPositionIndex];
+
+			return nextPosition || this.getPosition();
+		}
 	}
 
 	private setTimeForNextAction(): void {

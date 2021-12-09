@@ -5,7 +5,7 @@ import StatusFactory from "./StatusFactory";
 import { StatusType } from "./StatusType";
 
 export default class BananaStatus extends Status {
-	private readonly DEFAULT_MAX_TIME_STATUS: number = 90000; //milliseconds
+	private readonly DEFAULT_MAX_TIME_STATUS: number = 60000; //milliseconds
 
 	constructor(startTimestamp: number) {
 		super();
@@ -22,7 +22,7 @@ export default class BananaStatus extends Status {
 				this.startTimeStatus = statusState.statusTimestamp;
 				break;
 			case StatusType.BrainiacStatus:
-				this.transitionTo(StatusFactory.create(StatusType.BrainiacStatus, statusState.statusTimestamp));
+				this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
 				break;
 			case StatusType.NormalStatus:
 				this.transitionTo(StatusFactory.create(StatusType.NormalStatus));
@@ -54,7 +54,11 @@ export default class BananaStatus extends Status {
 
 	protected transitionTo(status: Status): void {
 		//removing the banana movement decrease
-		this.context.addToMoveDistance(-this.BANANA_MOVE_EFFECT);
+		if (status.getCurrentStatus() === StatusType.BananaStatus) {
+			this.context.setMaxMovementDistance(1);
+		} else if (status.getCurrentStatus() === StatusType.NormalStatus) {
+			this.context.setMaxMovementDistance(this.NORMAL);
+		}
 		super.transitionTo(status);
 	}
 }

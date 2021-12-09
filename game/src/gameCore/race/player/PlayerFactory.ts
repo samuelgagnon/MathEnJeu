@@ -1,6 +1,5 @@
-import { PlayerDTO } from "../../../communication/race/PlayerDTO";
+import PlayerState from "../../../communication/race/PlayerState";
 import User from "../../../server/rooms/User";
-import CharacterFactory from "../character/CharacterFactory";
 import { RACE_PARAMETERS } from "../RACE_PARAMETERS";
 import ComputerPlayer from "./ComputerPlayer/ComputerPlayer";
 import PathFinder from "./ComputerPlayer/PathFinder";
@@ -17,9 +16,9 @@ export default class PlayerFactory {
 			user.userId,
 			startLocation,
 			user.userInfo.name,
+			user.helmetIndex,
 			status,
 			inventory,
-			user.character,
 			user.userInfo.schoolGrade,
 			user.userInfo.language,
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
@@ -43,7 +42,6 @@ export default class PlayerFactory {
 			name,
 			status,
 			inventory,
-			CharacterFactory.createRandomCharacter(),
 			gameStartTimeStamp,
 			pathFinder,
 			checkpointPositions,
@@ -52,18 +50,14 @@ export default class PlayerFactory {
 		);
 	}
 
-	public static createFromPlayerDTO(playerDTO: PlayerDTO): Player {
+	public static createFromPlayerState(playerState: PlayerState): Player {
 		return new Player(
-			playerDTO.state.playerId,
-			playerDTO.state.move.startLocation,
-			playerDTO.name,
-			StatusFactory.create(playerDTO.state.statusState.statusType, playerDTO.state.statusState.statusTimestamp),
-			new Inventory(
-				playerDTO.state.inventoryState.bananaCount,
-				playerDTO.state.inventoryState.bookCount,
-				playerDTO.state.inventoryState.crystalBallCount
-			),
-			playerDTO.character,
+			playerState.id,
+			playerState.move.startLocation,
+			playerState.name,
+			playerState.helmetIndex,
+			StatusFactory.create(playerState.statusState.statusType, playerState.statusState.statusTimestamp),
+			new Inventory(playerState.inventoryState.bananaCount, playerState.inventoryState.bookCount, playerState.inventoryState.crystalBallCount),
 			RACE_PARAMETERS.CIRCUIT.POINTS_CALCULATOR
 		);
 	}

@@ -11,7 +11,6 @@ import { ROOM_EVENT_NAMES, WAITING_ROOM_EVENT_NAMES } from "../../communication/
 import UserInfo from "../../communication/user/UserInfo";
 import { ServerGame } from "../../gameCore/Game";
 import State, { GameState } from "../../gameCore/gameState/State";
-import CharacterFactory from "../../gameCore/race/character/CharacterFactory";
 import GameRepository from "../data/GameRepository";
 import StatisticsRepository from "../data/StatisticsRepository";
 import { JoiningFullRoomError, JoiningGameInProgressRoomError } from "./JoinRoomErrors";
@@ -24,6 +23,7 @@ import User, { UserToDTO } from "./User";
  */
 export default class Room {
 	private maxPlayerCount: number;
+	private createTime: number;
 	private readonly id: string;
 	private isPrivate: boolean;
 	private state: State;
@@ -39,6 +39,7 @@ export default class Room {
 		id: string,
 		isPrivate: boolean,
 		maxPlayerCount: number,
+		createTime: number,
 		state: State,
 		gameRepo: GameRepository,
 		statsRepo: StatisticsRepository,
@@ -48,6 +49,7 @@ export default class Room {
 		this.id = id;
 		this.isPrivate = isPrivate;
 		this.maxPlayerCount = maxPlayerCount;
+		this.createTime = createTime;
 		this.roomString = roomString;
 		this.nsp = nsp;
 		this.gameRepo = gameRepo;
@@ -78,10 +80,6 @@ export default class Room {
 
 	public getUserById(userId: string): User {
 		return this.users.find((user) => user.userId == userId);
-	}
-
-	public getHost(): User {
-		return this.host;
 	}
 
 	public getRoomString(): string {
@@ -120,27 +118,30 @@ export default class Room {
 	/**
 	 * Returns the userId from the user who joined the room
 	 */
-	public joinRoom(clientSocket: Socket, userInfo: UserInfo): string {
+	public joinRoom(clientSocket: Socket, userInfo: UserInfo, type): string {
 		if (this.users.length >= this.maxPlayerCount) {
 			throw new JoiningFullRoomError();
 		}
 
 		if (this.getGameState() == GameState.PreGame) {
-			const newCharacter = CharacterFactory.createRandomCharacter();
 			const newUser: User = {
 				isReady: false,
+				helmetIndex: 0,
 				userId: clientSocket.id,
 				userInfo: userInfo,
 				socket: clientSocket,
-				character: newCharacter,
 			};
 			if (!this.users.some((user) => user.userId == newUser.userId)) {
 				this.users.push(newUser);
 				clientSocket.join(this.roomString);
 				this.handleSocketEvents(clientSocket, newUser.userId);
 				this.state.userJoined(newUser);
+
+				if (this.users.length === this.maxPlayerCount) {
+					this.state.setFullFilled();
+				}
 			}
-			clientSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: this.id });
+			clientSocket.emit(ROOM_EVENT_NAMES.JOIN_ROOM_ANSWER, <JoinRoomAnswerEvent>{ roomId: this.id, isCreateRoom: type });
 
 			//make user host when they're the first joining the room
 			if (this.users.length == 1) {
@@ -184,6 +185,7 @@ export default class Room {
 		this.nsp.to(this.roomString).emit(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, <RoomSettings>{
 			isPrivate: this.isPrivate,
 			maxPlayerCount: this.maxPlayerCount,
+			createTime: this.createTime,
 		});
 	}
 
@@ -200,9 +202,9 @@ export default class Room {
 			this.emitUsersInRoom();
 
 			//Notify the user that created the room that he is the host
-			if (clientSocket.id == this.host.socket.id) {
-				clientSocket.emit(ROOM_EVENT_NAMES.IS_HOST);
-			}
+			// if (clientSocket.id == this.host.socket.id) {
+			// 	clientSocket.emit(ROOM_EVENT_NAMES.IS_HOST);
+			// }
 		});
 
 		clientSocket.on(ROOM_EVENT_NAMES.CHANGE_ROOM_SETTINGS, (roomSettings: RoomSettings) => {
@@ -217,19 +219,24 @@ export default class Room {
 			}
 		});
 
-		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.READY, (readyEvent: ReadyEvent) => {
-			let user = this.users.find((user) => user.userId === userId);
-			user.isReady = !user.isReady;
-			if (user.isReady) {
-				user.character.updateFromDTO(readyEvent.characterDTO);
-			}
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.READY, (data) => {
+			this.toggleReadyState(userId, data);
 			this.emitUsersInRoom();
+		});
+
+		clientSocket.on(WAITING_ROOM_EVENT_NAMES.SERVER_EVENT.CHANGE_HELMET, (data) => {
+			let selectedUser = this.users.find((user) => user.userId === userId);
+			selectedUser.helmetIndex = data.helmetIndex;
 		});
 	}
 
 	private changeRoomSettings(roomSettings: RoomSettings) {
 		this.isPrivate = roomSettings.isPrivate;
+		if (this.maxPlayerCount < roomSettings.maxPlayerCount) {
+			this.state.setPreGame();
+		}
 		this.maxPlayerCount = roomSettings.maxPlayerCount;
+		this.createTime = roomSettings.createTime;
 		this.emitUsersInRoom();
 	}
 
@@ -249,6 +256,12 @@ export default class Room {
 		kickedUser.socket.emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.KICKED);
 	}
 
+	private toggleReadyState(userId: string, data: any): void {
+		let userToToggle = this.users.find((user) => user.userId === userId);
+		userToToggle.isReady = !userToToggle.isReady;
+		userToToggle.helmetIndex = data.helmetIndex;
+	}
+
 	/**
 	 * Notice clients (players) that the game is initialized (game start countdown is started).
 	 * @param preGameToInGameTimestamp The timestamp where the pregame to ingame transition will take place.
@@ -259,10 +272,7 @@ export default class Room {
 		});
 	}
 
-	/**
-	 * Notice clients (players) that the game initialization is canceled (game start countdown is canceled).
-	 */
-	public gameInitializationCanceled(): void {
+	public cancelGameInitialized() {
 		this.nsp.to(this.roomString).emit(WAITING_ROOM_EVENT_NAMES.CLIENT_EVENT.GAME_INITIALIZATION_CANCELED);
 	}
 }

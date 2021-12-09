@@ -34,9 +34,11 @@ export default class Move {
 		this.positionRendering = positionRendering;
 		this.renderedMove = new Move(
 			this.startTimestamp,
-			positionRendering.apply(this.startLocation),
-			positionRendering.apply(this.targetLocation),
-			positionRendering.applyLinearTransform({ x: RACE_PARAMETERS.MOVE.SPEED, y: RACE_PARAMETERS.MOVE.SPEED })
+			{ x: positionRendering.b1, y: positionRendering.b2 },
+			// positionRendering.apply(this.startLocation),
+			{ x: positionRendering.u2, y: positionRendering.v1 },
+			// positionRendering.apply(this.targetLocation),
+			{ x: positionRendering.u1, y: positionRendering.v2 }
 		);
 	}
 
@@ -51,8 +53,10 @@ export default class Move {
 		if (this.isMoveRendered()) {
 			this.renderedMove.updateFromMoveState({
 				startTimestamp: moveState.startTimestamp,
+				// startLocation: { x: 528, y: 2684 },
 				startLocation: this.positionRendering.apply(moveState.startLocation),
 				targetLocation: this.positionRendering.apply(moveState.targetLocation),
+				// targetLocation: { x: 528, y: 2684 },
 			});
 		}
 	}
@@ -67,7 +71,7 @@ export default class Move {
 
 	private getTotalTime(): number {
 		return (
-			Math.abs(this.targetLocation.x - this.startLocation.x) / this.SPEED.x + Math.abs(this.targetLocation.y - this.startLocation.y) / this.SPEED.y
+			Math.sqrt(Math.pow(this.targetLocation.x - this.startLocation.x, 2) + Math.pow(this.targetLocation.y - this.startLocation.y, 2)) / this.SPEED.x
 		);
 	}
 
@@ -77,11 +81,13 @@ export default class Move {
 	}
 
 	public static getTaxiCabDistance(startLocation: Point, targetLocation: Point): number {
-		return Math.abs(targetLocation.x - startLocation.x) + Math.abs(targetLocation.y - startLocation.y);
+		const xDistance = Math.abs(targetLocation.x - startLocation.x);
+		const yDistance = Math.abs(targetLocation.y - startLocation.y);
+		return xDistance > yDistance ? xDistance : yDistance;
 	}
 
 	public static isDiagonal(position: Point, targetLocation: Point): boolean {
-		return Math.abs(targetLocation.x - position.x) > 0 && Math.abs(targetLocation.y - position.y) > 0;
+		return Math.abs(targetLocation.x - position.x) > 0 || Math.abs(targetLocation.y - position.y) > 0;
 	}
 
 	public getCurrentPosition(nowTimestamp: number = Clock.now()): Point {
@@ -105,14 +111,23 @@ export default class Move {
 		return c;
 	}
 
+	public getStartLocation() {
+		return this.startLocation;
+	}
+
+	public getTargetLocation() {
+		return this.targetLocation;
+	}
+
 	public getCurrentRenderedPosition(positionRendering?: AffineTransform): Point {
-		if (this.isMoveRendered) {
-			if (positionRendering !== undefined && positionRendering !== null && positionRendering !== this.positionRendering) {
-				this.setRenderedMove(positionRendering);
-			}
-			return this.renderedMove.getCurrentPosition();
-		} else {
-			return this.getCurrentPosition();
+		if (positionRendering && positionRendering !== this.positionRendering) {
+			this.setRenderedMove(positionRendering);
 		}
+
+		if (this.isMoveRendered()) {
+			return this.renderedMove.getCurrentPosition();
+		}
+
+		return this.getCurrentPosition();
 	}
 }

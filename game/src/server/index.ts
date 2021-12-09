@@ -19,7 +19,7 @@ const io = socketIO(httpServer);
 createConnection({
 	type: "mysql",
 	host: "db",
-	port: 3306,
+	port: Number(process.env.DB_PORT),
 	username: process.env.DB_USER,
 	password: process.env.DB_PWD,
 	database: "mathamaze2",

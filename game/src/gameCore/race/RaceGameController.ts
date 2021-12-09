@@ -4,6 +4,7 @@ import Tile from "./grid/Tile";
 import Item, { ItemType } from "./items/Item";
 import Player from "./player/Player";
 import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
+import { RACE_PARAMETERS } from "./RACE_PARAMETERS";
 
 export default abstract class RaceGameController {
 	protected isGameStarted: boolean = false;
@@ -13,6 +14,7 @@ export default abstract class RaceGameController {
 	protected grid: RaceGrid;
 	protected playerRepo: PlayerRepository;
 	protected items: Item[];
+	public isPassLoop: boolean = false;
 
 	constructor(gameDuration: number, gameStartTimeStamp: number, grid: RaceGrid, playerRepo: PlayerRepository) {
 		this.gameDuration = gameDuration;
@@ -31,6 +33,12 @@ export default abstract class RaceGameController {
 
 	protected gameLogicUpdate(): void {
 		this.timeRemaining = this.gameDuration - (Clock.now() - this.gameStartTimeStamp);
+		if (
+			this.playerRepo.getAllPlayers().length === 1 &&
+			this.playerRepo.getAllPlayers()[0].getLastPassedCheckPoint() == RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS
+		) {
+			this.timeRemaining = 0;
+		}
 		//This boolean expression is divided in two distinct expressions to avoid computing timestamp difference every loop while the game is already started.
 		if (!this.isGameStarted) {
 			if (Clock.now() >= this.gameStartTimeStamp) this.isGameStarted = true;
@@ -86,15 +94,13 @@ export default abstract class RaceGameController {
 	private handleTileCollisions(): void {
 		this.playerRepo.getAllPlayers().forEach((player) => {
 			const playerTile: Tile = this.grid.getTile(player.getPosition());
-			if (playerTile.checkpointGroup !== undefined) {
+			if (playerTile && playerTile.checkpointGroup !== undefined) {
 				player.passingByCheckpoint(playerTile.checkpointGroup);
-			} else if (playerTile.isFinishLine) {
-				this.playerPassingByFinishLine(player);
+			} else if (playerTile && player.getLastPassedCheckPoint() === RACE_PARAMETERS.CIRCUIT.NUMBER_OF_CHECKPOINTS && playerTile.isFinishLine) {
+				player.passingByFinishLine();
+				this.isPassLoop = true;
+				console.log("isPassing loop: ", this.isPassLoop);
 			}
 		});
-	}
-
-	protected playerPassingByFinishLine(player: Player): boolean {
-		return player.passingByFinishLine();
 	}
 }

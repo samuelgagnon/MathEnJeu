@@ -5,14 +5,4 @@ export default interface QuestionRepository {
 	getQuestionById(questionId: number, language: string, schoolGradeId?: number): Promise<Question>;
 	getAllQuestions(): Promise<any[]>;
 	getAllAnswers(): Promise<any[]>;
-	getAllTabulars(): Promise<any[]>;
-	/**
-	 * Set latex for a specific question part
-	 * @param questionPart Should be "answer", "feedback" or "question".
-	 * @param id Database id
-	 * @param lg 1 for FR and 2 for EN
-	 * @param latex latex to set
-	 * @returns Promise
-	 */
-	setLatex(questionPart: string, id: number, lg: number, latex: string): Promise<void>;
 }

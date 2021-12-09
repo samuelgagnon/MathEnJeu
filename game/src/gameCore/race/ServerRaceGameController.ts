@@ -1,19 +1,19 @@
 import { Socket } from "socket.io";
 import BufferedInput from "../../communication/race/BufferedInput";
 import {
-	AnswerQuestionEvent,
+	AnswerCorrectedEvent,
+	BookUsedEvent,
 	GameCreatedEvent,
 	GameEndEvent,
-	LapCompletedEvent,
+	ItemUsedEvent,
 	MoveRequestEvent,
 	PlayerLeftEvent,
 	QuestionAnsweredEvent,
 	QuestionFoundEvent,
 	QuestionFoundFromBookEvent,
-	UseItemEvent,
 } from "../../communication/race/EventInterfaces";
 import { CLIENT_EVENT_NAMES as CE, SERVER_EVENT_NAMES as SE } from "../../communication/race/EventNames";
-import { PlayerDTO } from "../../communication/race/PlayerDTO";
+import PlayerState, { PlayerEndState } from "../../communication/race/PlayerState";
 import RaceGameState from "../../communication/race/RaceGameState";
 import { StartingRaceGridInfo } from "../../communication/race/StartingGridInfo";
 import UserInfo from "../../communication/user/UserInfo";
@@ -25,9 +25,7 @@ import { Clock } from "../clock/Clock";
 import { ServerGame } from "../Game";
 import State, { GameState } from "../gameState/State";
 import PreGameFactory from "../gameState/StateFactory";
-import { ItemUsedEvent } from "./../../communication/race/EventInterfaces";
 import RaceGrid from "./grid/RaceGrid";
-import Item, { ItemType } from "./items/Item";
 import HumanPlayer from "./player/HumanPlayer";
 import Player from "./player/Player";
 import { PlayerRepository } from "./player/playerRepository/PlayerRepository";
@@ -99,20 +97,23 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					finishLinePositions: this.grid.getFinishLinePositions(),
 					itemStates: this.grid.getItemsState(),
 				},
-				players: this.getPlayersDTO(),
+				players: this.getPlayersState(),
 				isSinglePlayer: this.isSinglePlayer,
 			});
 	}
 
-	private getGameState(): RaceGameState {
+	private getGameState() {
 		let gameState: RaceGameState = { timeStamp: 0, itemsState: [], players: [], remainingTime: this.timeRemaining };
+		let walkableTiles = [];
 		gameState.itemsState = this.grid.getItemsState();
 		this.playerRepo.getAllPlayers().forEach((player: Player) => {
 			gameState.players.push(player.getPlayerState());
+			let possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
+			walkableTiles.push({ playerId: player.getId(), tiles: possibleTargetLocations });
 		});
 
 		gameState.timeStamp = Clock.now();
-		return gameState;
+		return { gameState, walkableTiles };
 	}
 
 	public update(): void {
@@ -123,14 +124,21 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		super.update();
 		this.handleItemsRespawn();
 		this.context.getNamespace().to(this.context.getRoomString()).emit(CE.GAME_UPDATE, this.getGameState());
+		if (this.isPassLoop) {
+			this.context.getNamespace().to(this.context.getRoomString()).emit(CE.LOOP_COMPLETED);
+			this.isPassLoop = false;
+		}
 	}
 
 	protected gameFinished(): void {
 		this.context.getStatsRepo().updateEndGameStats(this.gameDbId, this.playerRepo.getAllPlayers().length, new Date());
+		const playerEndStates: PlayerEndState[] = this.getPlayersState().map((playerState) => {
+			return { playerId: playerState.id, points: playerState.points, name: playerState.name };
+		});
 		this.context
 			.getNamespace()
 			.to(this.context.getRoomString())
-			.emit(CE.GAME_END, <GameEndEvent>{ players: this.getPlayersDTO() });
+			.emit(CE.GAME_END, <GameEndEvent>{ playerEndStates: playerEndStates });
 		this.removeAllUsersSocketEvents();
 		this.context.removeGameFromRepo(this);
 		this.context.transitionTo(PreGameFactory.createPreGame(this.context.getUsers()));
@@ -140,7 +148,16 @@ export default class ServerRaceGameController extends RaceGameController impleme
 		this.handleSocketEvents(user.socket);
 	}
 
+	public setFullFilled(): void {
+		this.state = GameState.FillFulled;
+	}
+
+	public setPreGame(): void {
+		this.state = GameState.PreGame;
+	}
+
 	public userLeft(user: User): void {
+		this.state = GameState.PreGame;
 		this.playerRepo.removePlayer(user.userId);
 		this.context
 			.getNamespace()
@@ -154,8 +171,8 @@ export default class ServerRaceGameController extends RaceGameController impleme
 	}
 
 	private handleSocketEvents(socket: Socket): void {
-		socket.on(SE.USE_ITEM, (data: UseItemEvent) => {
-			const newInput: BufferedInput = { eventType: SE.USE_ITEM, data: data };
+		socket.on(SE.ITEM_USED, (data: ItemUsedEvent) => {
+			const newInput: BufferedInput = { eventType: SE.ITEM_USED, data: data };
 			this.inputBuffer.push(newInput);
 		});
 
@@ -167,16 +184,25 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			}
 		});
 
-		socket.on(SE.ANSWER_QUESTION, (data: AnswerQuestionEvent) => {
+		socket.on(SE.BROADCAST_MOVE_RESULT, (data: any) => {
+			this.context.getNamespace().to(this.context.getRoomString()).emit(CE.MOVE_RESULT, data);
+		});
+
+		socket.on(SE.QUESTION_ANSWERED, (data: QuestionAnsweredEvent) => {
 			const lag = data.clientTimestamp - Clock.now();
-			const newData: AnswerQuestionEvent = {
+			const newData: QuestionAnsweredEvent = {
 				playerId: data.playerId,
 				clientTimestamp: data.clientTimestamp,
 				answerTimestamp: data.answerTimestamp + lag,
 				targetLocation: data.targetLocation,
 				answer: data.answer,
 			};
-			const newInput: BufferedInput = { eventType: SE.ANSWER_QUESTION, data: newData };
+			const newInput: BufferedInput = { eventType: SE.QUESTION_ANSWERED, data: newData };
+			this.inputBuffer.push(newInput);
+		});
+
+		socket.on(SE.BOOK_USED, (data: BookUsedEvent) => {
+			const newInput: BufferedInput = { eventType: SE.BOOK_USED, data: data };
 			this.inputBuffer.push(newInput);
 		});
 	}
@@ -212,20 +238,12 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			let inputData: any = input.data;
 			let player: HumanPlayer;
 			switch (input.eventType) {
-				case SE.USE_ITEM:
+				case SE.ITEM_USED:
 					try {
-						this.itemUsed((<UseItemEvent>inputData).itemType, (<UseItemEvent>inputData).targetPlayerId, (<UseItemEvent>inputData).fromPlayerId);
-						if ((<UseItemEvent>inputData).itemType == ItemType.Book) {
-							this.useBook((<UseItemEvent>inputData).targetPlayerId);
-						}
-						this.context
-							.getNamespace()
-							.to(this.context.getRoomString())
-							.emit(CE.ITEM_USED, <ItemUsedEvent>{
-								itemType: (<UseItemEvent>inputData).itemType,
-								targetPlayerId: (<UseItemEvent>inputData).targetPlayerId,
-								fromPlayerId: (<UseItemEvent>inputData).fromPlayerId,
-							});
+						this.itemUsed((<ItemUsedEvent>inputData).itemType, (<ItemUsedEvent>inputData).targetPlayerId, (<ItemUsedEvent>inputData).fromPlayerId);
+						player = this.findHumanPlayer((<ItemUsedEvent>inputData).targetPlayerId);
+						let possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
+						this.context.getNamespace().to(player.id).emit(CE.BANANA_APPLIED, { walkableTiles: possibleTargetLocations });
 					} catch (error) {
 						console.log(error);
 					}
@@ -247,15 +265,36 @@ export default class ServerRaceGameController extends RaceGameController impleme
 					}
 					break;
 
-				case SE.ANSWER_QUESTION:
+				case SE.BOOK_USED:
+					try {
+						player = this.findHumanPlayer((<BookUsedEvent>inputData).playerId);
+						let newDifficulty = (<BookUsedEvent>inputData).questionDifficulty - 1;
+						if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
+						this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
+							(question) => {
+								player.promptQuestion(question);
+								this.context
+									.getNamespace()
+									.to(player.id)
+									.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
+										questionDTO: question.getDTO(),
+									});
+							}
+						);
+					} catch (err) {
+						console.log(err);
+					}
+					break;
+
+				case SE.QUESTION_ANSWERED:
 					try {
 						const correctionStartTimestamp = Clock.now();
-						player = this.findHumanPlayer((<AnswerQuestionEvent>inputData).playerId);
-						if (player.isWorkingOnQuestion()) {
-							const answerTimestamp = (<AnswerQuestionEvent>inputData).answerTimestamp;
-							const userInfo: UserInfo = this.context.getUserById((<AnswerQuestionEvent>inputData).playerId).userInfo;
-							const clientAnswerLabel = (<AnswerQuestionEvent>inputData).answer.label;
-							const clientAnswerId = (<AnswerQuestionEvent>inputData).answer.id;
+						player = this.findHumanPlayer((<QuestionAnsweredEvent>inputData).playerId);
+						if (player.isAnsweringQuestion()) {
+							const answerTimestamp = (<QuestionAnsweredEvent>inputData).answerTimestamp;
+							const userInfo: UserInfo = this.context.getUserById((<QuestionAnsweredEvent>inputData).playerId).userInfo;
+							const clientAnswerLabel = (<QuestionAnsweredEvent>inputData).answer.label;
+							const clientAnswerId = (<QuestionAnsweredEvent>inputData).answer.id;
 							const correspondingAnswer = player.getAnswerFromActiveQuestion(clientAnswerLabel);
 							let answerIsRight = false;
 							if (correspondingAnswer !== undefined) {
@@ -268,19 +307,28 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 							super.playerAnsweredQuestion(
 								answerIsRight,
-								(<AnswerQuestionEvent>inputData).targetLocation,
-								(<AnswerQuestionEvent>inputData).playerId,
+								(<QuestionAnsweredEvent>inputData).targetLocation,
+								(<QuestionAnsweredEvent>inputData).playerId,
 								moveTimestamp
 							);
-							//Send answer correction to clients
+							//Send answer correction to client
+							let possibleTargetLocations = [];
+							if (answerIsRight) {
+								possibleTargetLocations = this.grid.getPossibleMovementFrom(
+									(<QuestionAnsweredEvent>inputData).targetLocation,
+									player.getMaxMovementDistance()
+								);
+							} else {
+								possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
+							}
 							this.context
 								.getNamespace()
-								.to(this.context.getRoomString())
-								.emit(CE.QUESTION_ANSWERED, <QuestionAnsweredEvent>{
-									playerId: player.id,
+								.to(player.id)
+								.emit(CE.ANSWER_CORRECTED, <AnswerCorrectedEvent>{
 									answerIsRight: answerIsRight,
-									targetLocation: (<AnswerQuestionEvent>inputData).targetLocation,
+									targetLocation: (<QuestionAnsweredEvent>inputData).targetLocation,
 									correctionTimestamp: moveTimestamp,
+									walkableTiles: possibleTargetLocations,
 								});
 
 							//Save answer for stats
@@ -324,21 +372,22 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			//If it's not possible, we increase the difficulty
 			//If it's not possible, we simply reset the player answered questions id
 			if (!questionIdArray || !questionIdArray.length) {
-				if (actualDifficulty <= requestedDifficulty) {
-					if (actualDifficulty != RACE_PARAMETERS.QUESTION.MIN_DIFFICULTY) {
-						actualDifficulty--;
-					} else if (requestedDifficulty != RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
-						actualDifficulty = requestedDifficulty + 1;
-					} else {
-						player.resetAnsweredQuestionsId();
-						actualDifficulty = requestedDifficulty;
-					}
-				} else if (actualDifficulty == RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
-					player.resetAnsweredQuestionsId();
-					actualDifficulty = requestedDifficulty;
-				} else {
-					actualDifficulty++;
-				}
+				player.resetAnsweredQuestionsId();
+				// if (actualDifficulty <= requestedDifficulty) {
+				// 	if (actualDifficulty != RACE_PARAMETERS.QUESTION.MIN_DIFFICULTY) {
+				// 		actualDifficulty--;
+				// 	} else if (requestedDifficulty != RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
+				// 		actualDifficulty = requestedDifficulty + 1;
+				// 	} else {
+				// 		player.resetAnsweredQuestionsId();
+				// 		actualDifficulty = requestedDifficulty;
+				// 	}
+				// } else if (actualDifficulty == RACE_PARAMETERS.QUESTION.MAX_DIFFICULTY) {
+				// 	player.resetAnsweredQuestionsId();
+				// 	actualDifficulty = requestedDifficulty;
+				// } else {
+				// 	actualDifficulty++;
+				// }
 			}
 		}
 		const randomPosition = Math.floor(Math.random() * questionIdArray.length);
@@ -360,29 +409,19 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			.catch((error) => console.log(error));
 	}
 
-	private getPlayersDTO(): PlayerDTO[] {
-		let playersDTO: PlayerDTO[] = [];
+	private getPlayersState(): PlayerState[] {
+		let playersState: PlayerState[] = [];
 		this.playerRepo.getAllPlayers().forEach((player: Player) => {
-			playersDTO.push(player.getPlayerDTO());
+			playersState.push(player.getPlayerState());
 		});
-		return playersDTO;
+		return playersState;
 	}
 
 	protected handleItemCollisions(): void {
 		this.playerRepo.getAllPlayers().forEach((player) => {
-			const pickedUpItem: Item = this.grid.handleItemCollision(player);
-			if (pickedUpItem != null) {
+			const itemPickedUp: boolean = this.grid.handleItemCollision(player);
+			if (itemPickedUp) {
 				this.itemPickUpTimestamps.push(Clock.now());
-				if (pickedUpItem.type == ItemType.Brainiac) {
-					this.context
-						.getNamespace()
-						.to(this.context.getRoomString())
-						.emit(CE.ITEM_USED, <ItemUsedEvent>{
-							itemType: pickedUpItem.type,
-							targetPlayerId: player.getId(),
-							fromPlayerId: player.getId(),
-						});
-				}
 			}
 		});
 	}
@@ -401,7 +440,7 @@ export default class ServerRaceGameController extends RaceGameController impleme
 
 	private isMoveRequestValid(moveRequestEvent: MoveRequestEvent): boolean {
 		const player = this.findHumanPlayer(moveRequestEvent.playerId);
-		if (!player.isWorkingOnQuestion() && player.hasArrived()) {
+		if (!player.isAnsweringQuestion() && player.hasArrived()) {
 			const possibleTargetLocations = this.grid.getPossibleMovementFrom(player.getPosition(), player.getMaxMovementDistance());
 			if (
 				possibleTargetLocations.some(
@@ -414,37 +453,5 @@ export default class ServerRaceGameController extends RaceGameController impleme
 			}
 		}
 		return false;
-	}
-
-	protected playerPassingByFinishLine(player: Player): boolean {
-		const isLapCompleted = super.playerPassingByFinishLine(player);
-		if (isLapCompleted) {
-			this.context
-				.getNamespace()
-				.to(this.context.getRoomString())
-				.emit(CE.LAP_COMPLETED, <LapCompletedEvent>{ playerId: player.getId() });
-		}
-		return isLapCompleted;
-	}
-
-	private useBook(playerId: string): void {
-		try {
-			let player = this.findHumanPlayer(playerId);
-			let newDifficulty = player.getActiveQuestion().getDifficulty() - 1;
-			if (newDifficulty < 1) newDifficulty = 1; //difficulty can only be in range 1 to 6
-			this.findQuestionForPlayer(player, player.getInfoForQuestion().language, player.getInfoForQuestion().schoolGrade, newDifficulty).then(
-				(question) => {
-					player.promptQuestion(question);
-					this.context
-						.getNamespace()
-						.to(player.id)
-						.emit(CE.QUESTION_FOUND_WITH_BOOK, <QuestionFoundFromBookEvent>{
-							questionDTO: question.getDTO(),
-						});
-				}
-			);
-		} catch (err) {
-			console.log(err);
-		}
 	}
 }
